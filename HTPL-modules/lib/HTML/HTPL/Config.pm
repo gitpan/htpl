@@ -1,10 +1,13 @@
 package HTML::HTPL::Config;
 
-eval {
+eval <<'EOM';
 	require "/home/httpd/cgi-bin/htpl-config.pl";
 
-	require "./htpl-site.pl" if (-f "htpl-site.pl");
+        my $reg = "./htpl-site.pl";
+        my $alt = "../htpl-site.pl";
+        $reg = $alt if ((stat("."))[1] == (stat("../htpl-cache"))[1]);
+        require $reg if (-f $reg);
  
-};
+EOM
 
 1;

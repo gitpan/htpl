@@ -54,7 +54,7 @@ SCRIPTS = $(RUN) $(CMP) $(COMP) $(REP) $(SRVC) $(GEN) $(UPD) $(CON)
 TARGETS = $(BIN) $(DBG) $(PMS) $(SCRIPTS)
 CWD = `pwd`
 PL = @PL@
-MODULES = HTPL-modules HTPL-SQL Hebrew Calendar $(MODPERL)
+MODULES = HTPL-modules HTPL-SQL $(MODPERL)
 
 # Rules
 

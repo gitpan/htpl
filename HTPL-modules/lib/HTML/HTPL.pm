@@ -1,14 +1,16 @@
 package HTML::HTPL;
 
 BEGIN{
-    $VERSION = 3.03;
+    $VERSION = 3.05;
 }
 
 sub import {
+    EVAL <<'EOV';
     require HTML::HTPL::Lib;
     require HTML::HTPL::Sys;
     import HTML::HTPL::Sys;
     import HTML::HTPL::Lib;
+EOV
 }
 
 

@@ -1,6 +1,8 @@
 package HTML::HTPL::Sys;
-use HTML::HTPL::Lib;
-use HTML::HTPL::Config;
+
+require HTML::HTPL::Lib;
+require HTML::HTPL::Config;
+
 use Carp;
 use strict qw(vars subs);
 use vars qw($htpl_pkg $htpl_old_hnd $htpl_app_obj
@@ -17,7 +19,7 @@ parse_cookies getmailprog proper ch2x safehash parse_tags outhtmltag
 enforce_tags htpl_startup get_session gethash
 revmap ReadParse cleanup exit getvar safetags isheb safetags
 checktaint pushvars popvars pkglist getpkg compileutil
-$htpl_pkg DEBUG);
+$htpl_pkg DEBUG scriptdir);
 
 $in_mod_htpl ||= $HTML::HTPL::Lib::in_mod_htpl;
 
@@ -317,10 +319,14 @@ sub htpl_startup {
     $debug_file = undef;
     if ($HTML::HTPL::Config::htpl_debug) {
         my %h;
-        @h{@HTML::HTPL::Config::htpl_debug_hosts}++;
-        if ($h{$ENV{'REMOTE_ADDR'}}) {
+        if
+(HTML::HTPL::Lib::chknetmask($ENV{'REMOTE_ADDR'},
+		%HTML::HTPL::Config::htpl_debug_hosts)) {
+            my $slash = &slash;
+            my $qslash = quotemeta($slash);
             $debug_file = $0;
             $debug_file =~ s/\.\w+$/.txt/;
+	    $debug_file =~ s/${qslash}htpl-cache${qslash}(.*?)$/${slash}$1/;
             open(O, ">$debug_file") && close(O) || ($debug_file = undef);
         } 
     } 
@@ -660,6 +666,14 @@ sub DEBUG (&) {
     print O $txt;
     print O "$@\n" if ($@);
     close(O);
+}
+
+sub scriptdir {
+    my $slash = &HTML::HTPL::Lib::slash;
+    my @tokens = split($slash, $0);
+    pop @tokens;
+    pop @tokens if ($tokens[-1] eq 'htpl-cache');
+    join($slash, @tokens);
 }
 
 1;

@@ -52,6 +52,17 @@ $htpl_pts_port = 4002;
 ####
 # Uncomment to enable debugging
 # $htpl_debug = 1;
-@htpl_debug_hosts = qw(127.0.0.1);
-
+if ($htpl_debug) {
+    my $scriptdir = $0;
+    $scriptdir =~ s/[^\/\\]*$//;
+    $scriptdir =~ s/([\/\\])htpl-cache[\/\\]$/$1/;
+    my $fn = $scriptdir . "htpl.dbg";
+    open(DBGH, $fn);
+    while (<DBGH>) {
+        chomp;
+        my @t = split(/\s+/);
+        $htpl_debug_hosts{$t[0]} = $t[1];
+    }
+    close(DBGH);
+}
 1;

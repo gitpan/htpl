@@ -1,4 +1,5 @@
 use HTML::HTPL::Lib;
 use HTML::HTPL::Sys;
+use HTML::HTPL::EvalEmbed;
 
 &HTML::HTPL::Sys::init_offline;

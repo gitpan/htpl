@@ -34,7 +34,8 @@ html_treeview selfsameurl new_template new_select getweekday
 elapsed hebrewflip agg sum splitline $STD_BODY @MONTH_NAMES @WEEKDAY_NAMES
 randstr randrange filedepend capture popreturl pushreturl setreturl
 killnl getreturl @DoW @DoWs @MoY @MoYs echo exiterror timeago
-htdie latin_unix2dos latin_dos2unix heb_unix2dos heb_dos2unix);
+htdie latin_unix2dos latin_dos2unix heb_unix2dos heb_dos2unix
+ipnum netmask);
 
 CONFIG: {
     @MoY = qw(January February March April May June July August
@@ -1389,6 +1390,35 @@ sub timeago {
         return "$resp[0] ago";
     }
     return join(", ", @resp[0 .. $#resp - 1]) . " and $resp[-1] ago";
+}
+
+
+sub ipnum {
+    my $host = shift;
+    my $a = inet_aton($host);
+    my @a = unpack("N*", $a);
+    my $r = 0;
+    foreach (reverse @a) {
+        $r = $r << 32 | $_;
+    }
+    $r;
+}
+
+sub netmask {
+    my ($subnet, $netmask, $cand) = @_;
+    my ($sb) = &ipnum($subnet);
+    my $nm = &ipnum($netmask);
+    my $cn = &ipnum($cand);
+    return undef unless (defined($sb) && defined($nm) && defined($cn));
+    return (($sb & $nm) == ($cn & $nm));
+}
+
+sub chknetmask {
+	my ($cand, %hash) = @_;
+	while (my ($sub, $mask) = each %hash) {
+		return 1 if (&netmask($sub, $mask, $cand));
+	}
+	undef;
 }
 
 1;

@@ -495,7 +495,10 @@ void outplain(o, line, language)
     copy = escapevars(line);
 
     if (!language) {
-        outf(o, "print \"%s\";", copy);
+        if (strchr(copy, '\\'))
+            outf(o, "print \"%s\";", copy);
+        else
+            outf(o, "print qq\"%s\";", copy);
     } else {
         STR it = " -nonewline";
         STR ch = copy + strlen(copy) - 2;
@@ -822,7 +825,7 @@ automaton */
                 if (ptr > line && *(ptr - 1) == '\\') {
                     char *saveptr2 = ptr;
                     ptr = line;
-                    while (isblank(*ptr)) ptr++;
+                    while (isspace(*ptr)) ptr++;
 /* Allow multiline comments */
                     if (*ptr == '#') {
                         ptr = saveptr2 - 1;

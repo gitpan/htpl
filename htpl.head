@@ -1,4 +1,5 @@
 use HTML::HTPL::Lib;
 use HTML::HTPL::Sys qw(exit);
+use HTML::HTPL::EvalEmbed;
 
 &HTML::HTPL::Sys::htpl_startup;
