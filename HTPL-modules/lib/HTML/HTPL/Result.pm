@@ -69,8 +69,8 @@ sub receive {
     return undef unless ($self->{'origin'});
     my $rec = $self->{'origin'}->fetch;
     return undef unless ($rec);
-    $self->add($rec) if (ref($rec) =~ /HASH/);
-    $self->addrow(@$rec) if (ref($rec) =~ /ARRAY/);
+    $self->add($rec) if (UNIVERSAL::isa($rec, 'HASH'));
+    $self->addrow(@$rec) if (UNIVERSAL::isa($rec, 'ARRAY'));
     1;
 }
 
@@ -265,7 +265,7 @@ sub project ($$;@) {
 
     &HTML::HTPL::Sys::pushvars($self->{'fields'});
     $self->rewind;
-    my $ref = ref($field) =~ /CODE/ ? $field : (
+    my $ref = UNIVERSAL::isa($field, 'CODE') ? $field : (
          !$#fields ? sub {my $self = shift; $self->get($field);} :
          sub {my $self = shift; [map {$self->get($_);} @fields];});
     while ($self->fetch) {

@@ -1,3 +1,5 @@
+<?xml version="1.0" ?>
+<!DOCTYPE XPL>
 <HTPL>
 <SQL>
 	<__PRE>use HTML::HTPL::Db;</__PRE>
@@ -83,6 +85,13 @@ use HTML::HTPL::Db;</__PRE>
         <CUBE MIN="4"><__INCLUDE>TEXT PRECSV</__INCLUDE>
 	<__DO>$%1% = &amp;HTML::HTPL::CSV'opencsv("%2%", ["%3%", "%4%"],
 qw(%5*%));</__DO></CUBE>
+
+
+	<PREFIXED NOOP="1" PRIVATE="1"><__PRE>use HTML::HTPL::Fixed;</__PRE></PREFIXED>
+	<FIXED MIN="3"><__INCLUDE>TEXT PREFIXED</__INCLUDE>
+	<__DO>$%1% = &amp;HTML::HTPL::Fixed'openfixed("%2%", qw(%3*%));</__DO></FIXED>
+	<RECORDS MIN="3"><__INCLUDE>TEXT PREFIXED</__INCLUDE>
+	<__DO>$%1% = &amp;HTML::HTPL::Fixed'openfixed("%2%", \"IBM", qw(%3*%));</__DO></RECORDS>
 
 	<READ MIN="2" MAX="2">$%1% = &amp;readfile("%2%");</READ>
 

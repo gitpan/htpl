@@ -10,6 +10,11 @@ sub new {
     bless {'params' => \@copy}, $class;
 }
 
+sub realread {
+    my ($self, $hnd) = @_;
+    return scalar(<$hnd>);
+}
+
 sub realfetch {
     $self = shift;
 
@@ -19,7 +24,7 @@ sub realfetch {
 
     my $savedel = $/;
     $/ = $linedel;
-    my $l = <$hnd>;
+    my $l = $self->realread($hnd);
     return undef unless ($l);
     chomp $l;
     my $retval = $self->readln($l);

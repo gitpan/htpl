@@ -24,9 +24,9 @@ sub ashtml {
     my @data;
     my @labels = @{$self->{'labels'}};
     my $dataref = $self->{'data'};
-    if (ref($dataref) =~ /ARRAY/) {
+    if (UNIVERSAL::isa($dataref, 'ARRAY')) {
         @data = @$dataref;
-    } elsif (ref($dataref) =~ /HASH/) {
+    } elsif (UNIVERSAL::isa($dataref, 'HASH')) {
         my $label;
         my @vector;
         @data = ();
@@ -39,10 +39,10 @@ sub ashtml {
         }
     }
     my $ref = $self->{'dual'};
-    if (ref($ref) =~ /HASH/) {
+    if (UNIVERSAL::isa($ref, 'HASH')) {
         $ref = [ %$ref ];
     }
-    if (ref($ref) =~ /ARRAY/) {
+    if (UNIVERSAL::isa($ref, 'ARRAY')) {
         my @pairs = @$ref;
         @data = ();
         @labels = ();
@@ -73,7 +73,7 @@ sub ashtml {
     my $gif = $self->{'gif'} || 'pixel.gif';
     my $draw = $self->{'draw'} || sub {return qq!<IMG SRC="$gif" WIDTH=$_ HEIGHT=1>!;};
     my $fmt = $self->{'fmt'} || "%d";
-    my $cfmt = (ref($fmt) =~ /CODE/ ? $fmt :
+    my $cfmt = (UNIVERSAL::isa($fmt, 'CODE') ? $fmt :
              sub {return sprintf($fmt, $_);});
     my $i;
 
@@ -100,7 +100,7 @@ sub ashtml {
     }
     foreach $i ((0 .. $#data)) {
         my @these;
-        if (ref($data[$i]) =~ /ARRAY/) {
+        if (UNIVERSAL::isa($data[$i], 'ARRAY')) {
             my @cols = @colors;
             my (@dat, $datum);
             foreach $datum (@{$data[$i]}) {
@@ -160,7 +160,7 @@ sub ashtml {
 
 sub mymax {
     if (!$#_) {
-        return &mymax(@{$_[0]}) if (ref($_[0]) =~ /ARRAY/);
+        return &mymax(@{$_[0]}) if (UNIVERSAL::isa($_[0], 'ARRAY'));
         return $_[0];
     }
     my $start = &mymax(shift);

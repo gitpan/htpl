@@ -84,7 +84,7 @@ sub html_hidden {
 
 sub html_format {
     my ($msg, $tags, $nonl) = @_;
-    my (@ht_tags) = (ref($tags) =~ /ARRAY/) ? @$tags : split(/\|/, $tags);
+    my (@ht_tags) = (UNIVERSAL::isa($tags, 'ARRAY')) ? @$tags : split(/\|/, $tags);
     my ($i, @t, $s);
 
     $s = join("", map {"<$_>";} @ht_tags);
@@ -243,7 +243,7 @@ sub setcookie {
         $key = shift;
         $val = shift;
         &eraseheader("^Set-Cookie: $key=");
-        unless (ref($val) =~ /HASH/) {
+        unless (UNIVERSAL::isa($val, 'HASH')) {
             &addheader("Set-Cookie: $key=$val");
         } else {
             &HTML::HTPL::Sys::safehash($val);
@@ -496,7 +496,7 @@ sub html_selectbox {
     my ($o, $n, $default, %opt) = ();
     my ($name, $attr, $code);
     
-    unless (ref($par) =~ /HASH/) {
+    unless (UNIVERSAL::isa($par, 'HASH')) {
         $default = $par;
     } else {
         &HTML::HTPL::Sys::safehash($par);
@@ -511,7 +511,7 @@ sub html_selectbox {
     }
 
     if ($default) {
-        $default = [$default] unless (ref($default) =~ /ARRAY/);
+        $default = [$default] unless (UNIVERSAL::isa($default, 'ARRAY'));
         foreach (@$default) {
             $opt{$_} = " SELECTED";
         }
@@ -562,7 +562,7 @@ sub expect {
     $line = <$hnd>;
     return @ts if (@ts = ($line =~ /$re/));
     $_ = $line;
-    &$err if ($err && ref($err) =~ /CODE/);
+    &$err if ($err && UNIVERSAL::isa($err, 'CODE'));
     return undef;
 }
 
@@ -584,7 +584,7 @@ sub inputlist {
     my ($code);
     my ($oncheck, $name, $type, $default, $attr) = 
         @tags{('oncheck', 'name', 'type', 'default', 'attr')};
-    $default = [$default] unless (ref($default) =~ /ARRAY/);
+    $default = [$default] unless (UNIVERSAL::isa($default, 'ARRAY'));
     my (%opt);
     foreach (@$default) {
         $opt{$_} = " CHECKED";
@@ -976,7 +976,7 @@ sub querystring {
     my ($k, $v, $a);
     my @vars;
     while (($k, $v) = each %hash) {
-        $a = ((ref($v) =~ /ARRAY/) ? $v : [$v]);
+        $a = ((UNIVERSAL::isa($v, 'ARRAY')) ? $v : [$v]);
         foreach (@$a) {
             push(@vars, &urlencode($k) . '=' . &urlencode($_));
         }
@@ -998,7 +998,7 @@ sub selfsameurl {
 sub subhash {
     my ($t, $delim, @hash) = @_;
     my (%hash, %tags);
-    if (ref($hash[0]) =~ /HASH/) {
+    if (UNIVERSAL::isa($hash[0], 'HASH')) {
         %hash = %{shift @hash};
         %tags = @hash;
     } else {
@@ -1085,11 +1085,11 @@ sub html_treeview {
     foreach (@$tree) {
         my ($key, $html, $hash, $children) = @$_;
         my $this;
-        if (ref($hash) =~ SCALAR) {
+        if (UNIVERSAL::isa($hash, 'SCALAR')) {
             $hash = {$$hash => $key};
             $html = qq!<A HREF="#SELF#">$html</A>!;
         }
-        if (ref($hash) =~ /HASH/) {
+        if (UNIVERSAL::isa($hash, 'HASH')) {
             $this = &selfsameurl(%$hash);
         }            
         $html =~ s/#SELF#/$this/g;

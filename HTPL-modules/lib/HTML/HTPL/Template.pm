@@ -6,9 +6,9 @@ use HTML::HTPL::Result;
 sub new {
     my ($class, $filename, $delim) = @_;
     my $text;
-    if (ref($filename) =~ /SCALAR/) {
+    if (UNIVERSAL::isa($filename, 'SCALAR')) {
         $text = $$filename;
-    } elsif (ref($filename) =~ /GLOB/) {
+    } elsif (UNIVERSAL::isa($filename, 'GLOB')) {
         $text = join("", <$filename>);
         close($filename);
     } else {

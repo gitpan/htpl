@@ -71,7 +71,7 @@ sub html_table_out {
             $data = $$a[$x][$y];
             $cell = 'TD';
             $el = $tags{'cattr'};
-            if (ref($data) =~ /HASH/) {
+            if (UNIVERSAL::isa($data, 'HASH')) {
                 &safehash($data);
                 next if ($data->{'noop'});
                 $el = $data->{'cattr'};
@@ -79,7 +79,7 @@ sub html_table_out {
                 $data = $data->{'data'};
             }
             $el = " " . &evit($el) if ($el);
-            $data = &$data if (ref($data) =~ /CODE/);
+            $data = &$data if (UNIVERSAL::isa($data, 'CODE'));
             $data = "&nbsp;" unless (defined($data));
             $s .=  "<$cell$el>\n" . $data . "\n</$cell>\n";
         }
@@ -93,8 +93,8 @@ sub html_table_out {
 
 sub evit {
     my ($ev) = @_;
-    $ev = &$ev if (ref($ev) =~ /CODE/);
-    if (ref($ev) =~ /HASH/) {
+    $ev = &$ev if (UNIVERSAL::isa($ev, 'CODE'));
+    if (UNIVERSAL::isa($ev, 'HASH')) {
         my %this = %$ev;
         $ev = join(" ", grep /./, map {my $val = $ev->{$_};
                        my $toadd = ref($val) ? &evit($val) : $val;
@@ -106,7 +106,7 @@ sub evit {
 sub strong_publish {
     local (%_hash) = ($#_ ? @_ : %{$_[0]});
     foreach (keys %_hash) {
-        if (ref($_hash{$_}) =~ /ARRAY/) {
+        if (UNIVERSAL::isa($_hash{$_}, 'ARRAY')) {
             &setvar($_, $_hash{$_}->[0]);
             &setarray($_, @{$_hash{$_}});
         } else {
@@ -549,7 +549,7 @@ sub readini {
 
 sub pushvars {
     my @vars = @_;
-    @vars = @{$vars[0]} if (!$#vars && ref($vars[0]) =~ /ARRAY/);
+    @vars = @{$vars[0]} if (!$#vars && UNIVERSAL::isa($vars[0], 'ARRAY'));
     my $hash = {};
     foreach (@vars) {
         $hash->{$_} = &getvar($_);
@@ -624,7 +624,7 @@ sub compileutil {
         ! . join(" ", @trans) . qq!;
     }!;
     my $ref = eval($code);
-    &htdie($@) unless (ref($ref) =~ /CODE/);
+    &htdie($@) unless (UNIVERSAL::isa($ref, 'CODE'));
     $ref;
 }
 

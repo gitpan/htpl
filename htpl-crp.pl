@@ -12,7 +12,8 @@ my (%scopes, @subs);
 
 # Parse input
 
-my $result = $parser->parsefile($ARGV[0] || 'htpl.subs');
+my $result = $parser->parsefile($ARGV[0] || 
+         (-f 'macros.xpl' ? 'macros.xpl' : 'htpl.subs'));
 
 # Output parser
 
@@ -34,6 +35,8 @@ print <<EOM;
 EOM
 
 # Recurse over tree
+
+die "Root must be HTPL" unless($result->[0] eq 'HTPL');
 
 &recur($result);
 

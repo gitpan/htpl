@@ -14,7 +14,7 @@ sub opencsv {
     local ($rowdel, $coldel, $savedel, $chop);
 
 
-    if (ref($delimiter) =~ /ARRAY/) {
+    if (UNIVERSAL::isa($delimiter, 'ARRAY')) {
         ($coldel, $rowdel) = @$delimiter;
         $delimiter = $coldel;
     }

@@ -21,7 +21,7 @@ sub set {
 sub add {
     my $self = shift;
     my @cells = @_;
-    @cells=@{$cells[0]} if ($#cells == 0 && ref($cells[0]) =~ /ARRAY/);
+    @cells=@{$cells[0]} if ($#cells == 0 && UNIVERSAL::isa($cells[0], 'ARRAY'));
     push(@{$self->{'rows'}}, \@cells);
 }
 
