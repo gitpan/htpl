@@ -12,8 +12,24 @@ my (%scopes, @subs);
 
 # Parse input
 
-my $result = $parser->parsefile($ARGV[0] || 
-         (-f 'macros.xpl' ? 'macros.xpl' : 'htpl.subs'));
+my @files;
+push(@files, $ARGV[0] ||  (-f 'macros.xpl' ? 'macros.xpl' : 'htpl.subs'));
+foreach (qw(/usr/share/htpl-site.xpl /usr/local/share/htpl-site.xpl
+		htpl-site.xpl)) {
+	push(@files, $_) if (-f $_);
+}
+
+my @nodes;
+
+foreach (@files) {
+    my $tree = $parser->parsefile($_);
+    die "Root must be HTPL" unless($tree->[0] eq 'HTPL');
+    my @these = @{$tree->[1]};
+    shift @these;
+    push(@nodes, @these);
+}
+
+my $result = ['HTPL', [{}, @nodes]];
 
 # Output parser
 
@@ -36,7 +52,6 @@ EOM
 
 # Recurse over tree
 
-die "Root must be HTPL" unless($result->[0] eq 'HTPL');
 
 &recur($result);
 
@@ -220,7 +235,8 @@ sub recur {
         goto done;
     }
 
-    my $codet = &operations($sub, @array);
+    my $codet = &operations($sub, \%hash, @array);
+
     if ($codet || $atref->{'NOOP'}) {
         $precode = &outpersist . $precode;
         $postcode .= &outsuccess;
@@ -417,6 +433,7 @@ sub outcode {
 EOM
             next;
         } 
+        $scode =~ s/(\s+)%#/$1#/;
         if ($glob_ary) {
             $ret .= <<EOM;
     printfcode($scode);
@@ -529,8 +546,12 @@ EOM
 
 sub outnopop {
     my ($scope, $sub) = @_;
-    my @conds = map {"currscope->scope != " . &getscope($_)} split(/,\s*/, $scope);
-    my $cond = join(" && ", @conds);
+    my ($sym, $op) = ("!=", "&&");
+    ($sym, $op) = ("==", "||") if ($scope =~ s/^\!\s*//);
+    my @conds = map {
+          "currscope->scope $sym " . &getscope($_)
+      } split(/,\s*/, $scope);
+    my $cond = join(" $op ", @conds);
     my $ret = <<EOM;
     if (!currscope) RETURN(croak("Unexpected $sub"))
     if ($cond) RETURN(croak("Now in scope %s from %d and met $sub, expecting: $scope", scope_names[currscope->scope], currscope->nline))
@@ -598,7 +619,7 @@ EOM
 
 sub outset {
     my ($var, $val) = @_;
-    my $s = &expandstr($val);
+    my $s = expandstr($var);
     return <<EOM;
     setvar("$var", $s);
 EOM
@@ -623,6 +644,7 @@ sub operations {
 # fail. ASSERT can be used to check the parameters.
 
     my $sub = shift;
+    my $superhash = shift;
     my @a = @_;
     my $code = "";
     while (@a) {
@@ -635,6 +657,15 @@ sub operations {
         my $doneterminal = undef;
 
 
+
+        if ($key eq '__MACRO') {
+            my $atts = $this->[0];
+            my $name = $atts->{'NAME'} || $atts->{'ID'};
+            delete $atts->{'NAME'};
+            delete $atts->{'ID'};
+            $superhash->{$name} = $this;
+            next;
+        }
 # __INCLUDE parses another macro and includes it
 
         if ($key eq '__INCLUDE') {
@@ -675,25 +706,25 @@ sub operations {
 # __POP pops a scope
 
         if ($key eq '__POP') {
-            $codet = &outpop($todo, $subname);
+            $codet = &outpop($that{'SCOPE'} || $todo, $subname);
         }
 
 # __PUSH pushes a scope
 
         if ($key eq '__PUSH') {
-            $codet = &outpush($todo);
+            $codet = &outpush($that{'SCOPE'} || $todo);
         }
 
         if ($key eq '__SET') {
-            $codet = &outset($todo, $that{'VALUE'});
+            $codet = &outset($that{'VAR'} || $todo, $that{'VALUE'},);
         }
 
         if ($key eq '__IMPORT') {
-            $codet = &outxfer('import', $todo, $that{'SCOPE'});
+            $codet = &outxfer('import', $that{'VAR'} || $todo, $that{'SCOPE'});
         }
 
         if ($key eq '__EXPORT') {
-            $codet = &outxfer('export', $todo, $that{'SCOPE'});
+            $codet = &outxfer('export', $that{'VAR'} || $todo, $that{'SCOPE'});
         }
 
 # __C adds C code to the parser
@@ -709,11 +740,11 @@ sub operations {
 	if ($key eq '__BLOCK') {
                 my @those = @$this;
                 shift @those;
-                $codet =  &operations($sub, @those);
+                $codet =  &operations($sub, $superhash, @those);
         }
 
         if ($key eq '__CROAK') {
-            $codet = &outcroak($todo);
+            $codet = &outcroak($that{'MSG'} || $todo);
         }
 
         if ($codet) {

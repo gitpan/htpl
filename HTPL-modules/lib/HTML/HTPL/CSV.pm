@@ -21,6 +21,7 @@ sub opencsv {
 
     $delimiter = ' ' if ($delimiter eq 'BLANK');
     $delimiter =~ s/^'(.*)'$/$1/;
+    $delimiter = quotemeta($delimiter);
 
     $hnd = "htpl_csv'CSV" . ++$htpl_csv_handles;
 

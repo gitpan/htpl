@@ -134,6 +134,7 @@ STR preprocess(STR, STR);
 FILE *opensource(STR);
 FILE *openoutput(STR);
 FILE *openif(STR, STR);
+short debugfirbidden(FILE *);
 
 /*
 struct ldapp {

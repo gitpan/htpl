@@ -510,6 +510,7 @@ SCOPE searchback(name)
     STR name; {
 
     LINK_EL top = scopestack;
+
     if (!*name) return &mainscope;
     while (top) {
         SCOPE data = top->data;

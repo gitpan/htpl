@@ -373,7 +373,7 @@ sub get_session {
 
 sub revmap {
     my ($listref, $el) = @_;
-    map {$el;} @$listref;
+    ($el) x @$listref;
 }
 
 sub ReadParse {

@@ -66,7 +66,7 @@ FILE *FOPEN(filename, mode)
     if (strchr(mode, 'w')) printf(" for write"); else
     if (strchr(mode, 'r')) printf(" for read");
 #ifndef _WIN32
-    printf(": %s\n", sys_errlist[errno]);
+    printf(": %s%s", sys_errlist[errno], NEWLINE);
 #endif
     printf(NEWLINE);
     exit(0);
@@ -1364,6 +1364,12 @@ STR preprocess(str, cmd)
     return buff;
 }
 
+/**************************************************************
+ * Open a text file, optionally via a filter if such exists   *
+ * The second parameter contains the filename to search for   *
+ * filter instructions inside                                 *
+ **************************************************************/
+
 FILE* openif(filename, filter)
     STR filename, filter; {
     FILENAME dir;
@@ -1377,7 +1383,8 @@ FILE* openif(filename, filter)
         fgets(pn, sizeof(pn), f);
         fclose(f);
         pn[strlen(pn) - 1] = '\0';
-        sprintf(try, "%s %s", pn, filename);
+        if (!strstr(pn, "%s")) strcat(pn, " %s");
+        sprintf(try, pn, filename);
         if (f = popen(try, "r")) return f;
         puts("Content-type: text/plain\n");
         printf("Could not spawn filter %s: %s", filter, sys_errlist[errno]);
@@ -1386,13 +1393,87 @@ FILE* openif(filename, filter)
     return FOPEN(filename, "r");
 }
 
+/*********************************************************
+ * Open an HTPL source                                   *
+ *********************************************************/
+
 FILE* opensource(filename)
     STR filename; {
     return openif(filename, "htsource.pre");
 }
+
+/*********************************************************
+ * Open output of an HTPL script                         *
+ *********************************************************/
 
 FILE* openoutput(filename)
     STR filename; {
     return openif(filename, "htout.pre");
 }
 
+short debugforbidden(out) 
+    FILE *out; {
+
+    unsigned long a, b, c, d, e;
+    unsigned long rh, sn, nm;
+    FILE *i;
+    FILENAME inp;
+    TOKEN line;
+    pchar ch, ch2;
+
+#define VOUS(a, b, c, d) (((((((a) << 8) + (b)) << 8) + (c)) << 8) + (d))
+
+    static STR mask ="%s%chtpl.dbg";
+
+    STR remote = getenv("REMOTE_ADDR");
+    if (!remote) return 0;
+    sprintf(inp, mask, scriptdir, SLASH_CHAR);
+    i = fopen(inp, "r");
+
+    if (!i) {
+        sprintf(inp, mask, bindir, SLASH_CHAR);
+        i = fopen(inp, "r");
+    }
+
+    if (!i) return 0;
+
+    sscanf(remote, "%d.%d.%d.%d", &a, &b, &c, &d);
+    rh = VOUS(a, b, c, d);
+    if (rh == VOUS(127, 0, 0, 1)) {
+        fclose(i);
+        return 0;
+    }
+
+    for (;;) {
+        fgets(line, sizeof(line), i);
+        if (feof(i)) {
+            fclose(i);
+            return 1;
+        }
+        ch = &line[strlen(line)];
+        while (*ch == '\n' || isspace(*ch)) *ch-- = '\0';
+        strcpy(ch + 1, "\n");
+        ch2 = line;
+        while (isspace(*ch2)) ch2++;
+        ch = strpbrk(ch2, "\t ");
+        if (!ch) break;
+        *ch++ = '\0';
+        d = -1;
+        sscanf(ch2, "%d.%d.%d.%d", &a, &b, &c, &d);
+        if (d < 0) break;
+        sn = VOUS(a, b, c, d);
+        while (isspace(*ch)) ch++;
+        d = -1;
+        sscanf(ch, "%d.%d.%d.%d%c", &a, &b, &c, &d, &e);
+        if (e != '\n') break;
+        nm = VOUS(a, b, c, d);
+
+        if ((sn & nm) == (rh & nm)) {
+            fclose(i);
+            return 0;
+        }
+    }    
+    fprintf(out, "%sFormat of %s wrong%s", NEWLINE, inp, NEWLINE);
+    fclose(i);
+    return 1;
+}

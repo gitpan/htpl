@@ -1428,7 +1428,7 @@ dump processed perl script to STDOUT */
         }
 /* Allow web masters do avoid code listing. Otherwise, list processed code
 to allow matching of line numbers against error messages */
-        if (i = fopen("htpl.nodbg", "r")) {
+        if (debugforbidden(myout) || (i = fopen("htpl.nodbg", "r"))) {
             fprintf(myout, "%sDebug information omitted due to server set up.%s",
                   NEWLINE, NEWLINE);
             fclose(i);

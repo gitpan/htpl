@@ -1,3 +1,7 @@
+pacakge HTML::HTPL::Config;
+
 require "@INSTALLDIR@/htpl-config.pl";
 
+require "./htpl-site.pl" if (-f "htpl-site.pl");
+ 
 1;

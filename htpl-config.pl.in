@@ -1,5 +1,3 @@
-package HTML::HTPL::Config;
-
 ###
 # Created by configure
 
@@ -50,12 +48,6 @@ $htpl_db_save = 1;
 ####
 # HTPL PTS port
 $htpl_pts_port = 4002;
-
-###
-# Put configuration for directories in htpl-site.pl in directories
-# Override variables for these directories
-
-require "./htpl-site.pl" if (-f "htpl-site.pl");
 
 
 1;

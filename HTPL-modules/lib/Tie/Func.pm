@@ -7,7 +7,7 @@ $VERSION = '1.00';
 
 sub TIEHASH {
     my ($class, $fetch, $store, $del, %const) = @_;
-    foreach (qw($fetch $store $each $del)) {
+    foreach (qw($fetch $store $del)) {
         eval "$_ = &$_ if ($_ && ref($_) !~ /CODE/);";
     }
     bless {'data' => \%const, '__fetch' => $fetch, '__store' => $store,

@@ -22,14 +22,14 @@ sub dbdie {
 # Erase persistent database connections and queries
 
 sub zap {
-    %HTML::HTPL::Sys::db_pool = ();
+#    %HTML::HTPL::Sys::db_pool = ();
     %HTML::HTPL::Sys::query_pool = ();
 }
 
 ###
 # Construct an object
 
-sub new {
+sub old_new {
     my ($class, $dsn, @extra) = @_;
 
     my $dbh = $HTML::HTPL::Sys::db_pool{$dsn, @extra};
@@ -41,6 +41,20 @@ sub new {
         $HTML::HTPL::Sys::db_pool{$dsn, @extra} = $dbh
                if ($HTML::HTPL::Config::htpl_db_save);
     }
+    my $self = {'dbh' => $dbh};
+
+    bless $self, $class;
+}
+
+sub new {
+    my ($class, $dsn, @extra) = @_;
+
+    my $meth = ($HTML::HTPL::Config::htpl_db_save ? 'connect_cached'
+			: 'connect');
+
+    eval '$dbh = DBI->$meth($dsn, @extra);';
+        &dbdie("Connection to $dsn") unless ($dbh);
+
     my $self = {'dbh' => $dbh};
 
     bless $self, $class;
@@ -313,7 +327,7 @@ sub batch_insert {
     my $dbh = $self->{'dbh'};
     my @fields = &fieldnames($dbh, $table);
     my $sql = "INSERT INTO $table (" . join(", ", @fields) . ") 
-       VALUES (" . join(", ", map {"?"} @fields) . ")";
+       VALUES (" . join(", ", ("?") x @fields) . ")";
     my $sth = $dbh->prepare($sql);
     &HTML::HTPL::Sys::pushvars(@fields);
     my $save = $src->index;
@@ -422,7 +436,7 @@ sub load {
     my $str = join($boundary, @_);
 
 ## Build a regexp that will match it exactly
-    $re = join($boundary, map {"(.*)";} @_);
+    $re = join($boundary, ("(.*)") x @_);
     reset;
     $str =~ /^$re$/;
 

@@ -25,6 +25,8 @@ DBG = htpldbg
 RUN = htplrun
 COMP = htplp
 CMP = htplc
+UPD = htplu
+CON = htplcon
 SRVC = htplsrvc
 GEN = htpgen
 SH = /bin/sh
@@ -37,7 +39,7 @@ HS = htpl.h htpl-sh.h
 OBV = Makefile
 DEP = $(CS) $(HS) $(OBV) $(OBJEMBED)
 REP = htreporter
-SCRIPTS = $(RUN) $(CMP) $(COMP) $(REP) $(SRVC) $(GEN)
+SCRIPTS = $(RUN) $(CMP) $(COMP) $(REP) $(SRVC) $(GEN) $(UPD) $(CON)
 TARGETS = $(BIN) $(DBG) $(PMS) $(SCRIPTS)
 CWD = `pwd`
 DEFEMBED = `test -z "$(OBJEMBED)" || echo -D__PERLEMBED__`
@@ -61,10 +63,13 @@ realclean : clean
 
 release: 
 	$(PERL) -MHTML::HTPL::Lib -e 'increasefile("release.#")'
-	perl -np -e 's/^(.)/$$1./; s/:.*$$//;' release.# > release.v
+	$(PERL) -np -e 's/^(.)/$$1./; s/:.*$$//;' release.# > release.v
 	echo -n "htpl-"`cat release.v` > release.name
+	$(PERL) -np -e 'chomp' release.v | $(PERL) -pi -e \
+'s/^\$$VERSION\s+=.*;/"\$$VERSION = ". scalar(<STDIN>) . ";"/e;' \
+	HTPL-modules/lib/HTML/HTPL.pm 
 
-dist :
+dist : clean-modules
 	$(PERL) -e "print time;" > build
 	mkdir `cat release.name`
 	cp -r `cat MANIFEST` `cat release.name`
@@ -90,14 +95,24 @@ htpl-xsi.c :
 	$(PERL) -MExtUtils::Embed -e xsinit -- -o htpl-xsi.c
 
 $(RUN) : $(OBV)
-	echo "#!/bin/sh" > $(RUN)
-	echo "$(INSTALLDIR)/$(DBG) -rwb$(INSTALLDIR) \$$*" >> $(RUN)
-	chmod 755 $(RUN)
+	echo "#!/bin/sh" > $@
+	echo "$(INSTALLDIR)/$(DBG) -rwb$(INSTALLDIR) \$$*" >> $@
+	chmod 755 $@
 
 $(CMP) : $(OBV)
-	echo "#!/bin/sh" > $(CMP)
-	echo "$(INSTALLDIR)/$(DBG) -twb$(INSTALLDIR) \$$1" >> $(CMP)
-	chmod 755 $(CMP)
+	echo "#!/bin/sh" > $@
+	echo "$(INSTALLDIR)/$(DBG) -twb$(INSTALLDIR) \$$1" >> $@
+	chmod 755 $@
+
+$(CON) : $(OBV)
+	echo "#!/bin/sh" > $@
+	echo "$(INSTALLDIR)/$(DBG) -rbc$(INSTALLDIR) \$$1" >> $@
+	chmod 755 $@
+
+$(UPD) : $(OBV)
+	echo "#!/bin/sh" > $@
+	echo "$(INSTALLDIR)/$(DBG) -tb$(INSTALLDIR) \$$1" >> $@
+	chmod 755 $@
 
 install-it : 
 	for f in $(DBG) $(BIN) ; do \

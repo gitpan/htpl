@@ -14,7 +14,8 @@ $o = join("|", map {quotemeta($_);}
   EQUAL \=\=?
   NOTEQUAL \!\=|\<\>
   OP [><()]
-  STRING \w*(%.*?%\w*)+|".*?"), sub {my $s = $_[1]; $s =~ s/^"(.*)"$/$1/;
+  STRING \w*(%.*?%\w*)+|".*?"|'.*?'), sub {my $s = $_[1]; ("" =~ /^()$/);
+                   $s =~ s/^"(.*)"$/$1/; $s =~ s/^'(.*)'$/$1/ unless($1);
                                 $s;}, qw(
   ERROR .*) , sub {
                    die qq!can\'t analyze: "$_[1]"!;
@@ -38,6 +39,7 @@ sub code2c {
     $lexer->from($code);
     my $st = $parser->YYParse(yylex=>\&lexer);
     my $c = &formit($st);
+    $c;
 }
 
 sub formit {
