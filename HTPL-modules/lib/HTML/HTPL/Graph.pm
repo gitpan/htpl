@@ -3,6 +3,7 @@ package HTML::HTPL::Graph;
 use HTML::HTPL::Table;
 use HTML::HTPL::Lib;
 use HTML::HTPL::Sys qw(call);
+use strict;
 
 sub new {
     my $self = {};
@@ -19,7 +20,7 @@ sub set {
     }
 }
 
-sub ashtml {
+sub astable {
     my $self = shift;
     my @data;
     my @labels = @{$self->{'labels'}};
@@ -83,7 +84,7 @@ sub ashtml {
         my $ct = new HTML::HTPL::Table('cellpadding' => 0, 'border' => 0,
          'width' => $width, 'cellspacing' => 0, 'cols' => $cols);
         my $w = $width / $cols;
-        my $x, @v;
+        my ($x, @v);
         foreach $x (1 .. $cols) {
             push(@v, {'data' => &call($cfmt, (($x - 1) / $cols * $max)),
                       'cattr' => {'width' => $w}});
@@ -119,7 +120,7 @@ sub ashtml {
         my $tillnow = 0;
         my $datum;
         foreach (@these) {
-            ($datum, $col) = @$_;
+            my ($datum, $col) = @$_;
             my $this = int($datum * $width / $max);
             if ($this > $tillnow) {
                 push(@cells, {'data' => &call($draw, $this - $tillnow,), 
@@ -149,12 +150,18 @@ sub ashtml {
             push(@cells2, {'cattr' => {'width' => "$per%"},
                    'data' => qq!<FONT COLOR="$col">$_</FONT>!});
         }
-        $legend = new HTML::HTPL::Table('cols' => scalar(@legend),
+        my $legend = new HTML::HTPL::Table('cols' => scalar(@legend),
                'border' => 2, 'width' => $width, 'cellpadding' => 2);
         $legend->add(@cells);
         $legend->add(@cells2);
         $table->add("&nbsp;", $legend->ashtml);
     }
+    $table;
+}
+
+sub ashtml {
+    my $self;
+    my $table = $self->astable || return undef;
     $table->ashtml;
 }
 

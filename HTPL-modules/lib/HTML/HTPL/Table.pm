@@ -1,6 +1,7 @@
 package HTML::HTPL::Table;
 
 use HTML::HTPL::Lib;
+use strict;
 
 sub new {
     my $self = {};

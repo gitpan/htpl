@@ -1,4 +1,5 @@
 package HTML::HTPL::Config;
+use strict;
 
 eval <<'EOM';
 	require "@INSTALLDIR@/htpl-config.pl";

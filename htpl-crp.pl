@@ -238,7 +238,7 @@ sub recur {
 
     if ($this =~ /\S+/) {
         $precode = &outpersist . $precode;
-        $code .= &outcode($this);
+        $code .= &outcode($this, $atref);
         $postcode .= &outsuccess();
         goto done;
     }
@@ -371,7 +371,9 @@ sub outunify {
     $dn = "1" if ($dir eq 'REV');
     my $alias_parsed = &wrapcode(&assemble($alias));
     return <<EOM;
+    kludge_reunifying = 1;
     asprintf(&buff, $alias_parsed);
+    kludge_reunifying = 0;
     nest++;
     code = parse_htpl(buff, $dn);
     nest--;
@@ -425,13 +427,21 @@ sub ifscope {
 }
 
 sub outcode {
-    my $code = shift;
+    my ($code, $atts) = @_;
     my @p = @_;
     my $txt;
+    $atts ||= {};
+    my $favours = !($atts->{'NOFAVORS'} || $atts->{'NOFAVOURS'});
 
     my ($ret, $scode, $tcode, $l); 
     foreach $l (split(/\r?\n/, $code)) {
         next unless ($l);
+        if ($favours && $l !~ /^\s*#/) {
+            $l =~ s/qw\(%(\d+)\*%\)/%$1#%/g;
+            $l =~ s/\$%(\d+)%/\${"%$1%"}/g;
+            $l =~ s/'%(\d+)%'/"%$1%"/g;
+        }
+
         $tcode = &escape($l);
         $scode = &wrapcode(&assemble($tcode));
         if ($l =~ /^\s*\#\w/) {
@@ -677,7 +687,6 @@ sub operations {
         my $doneterminal = undef;
 
 
-
         if ($key eq '__MACRO') {
             my $atts = $this->[0];
             my $name = $atts->{'NAME'} || $atts->{'ID'};
@@ -720,7 +729,7 @@ sub operations {
 # __DO adds actual code to the buffer
 
         if ($key eq '__DO') {
-            $codet = &outcode($todo);
+            $codet = &outcode($todo, \%that);
         }
 
 # __POP pops a scope

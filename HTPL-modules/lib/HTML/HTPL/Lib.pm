@@ -424,15 +424,21 @@ sub opendoc {
     if (&isurl($filename)) {
         $fn = &tempfilename;
         $gottenfromweb{$handle} = $fn;
-        require LWP::Simple;
-        $txt = LWP::Simple::get($filename);
-        open($handle, ">$fn");
+        require LWP::UserAgent;
+        require HTTP::Request::Common;
+        my $request = HTTP::Request::Common::GET($filename);
+        my $ua = new LWP::UserAgent;
+        my $response = $ua->request($request);
+        unless ($response->is_success) {
+            die "GET request to $filename returned " . $response->code;
+        }
+        $txt = $response->content;
+        open($handle, ">$fn") || die "Could not open temporary file $fn: $!";
         print $handle $txt;
         close($handle);
-        open($handle, $fn);
-    } else {
-        open($handle, $filename);
+        $filename = $fn;
     }
+    open($handle, $filename) || die "Could not open $filename: $!";
 }
 
 sub closedoc {
@@ -584,6 +590,11 @@ sub html_selectbox {
 
 sub txt2html {
     my ($txt) = @_;
+    eval { require HTML::Entities; };
+    if (0 && UNIVERSAL::can('HTML::Entities', 'encode_entities')) {
+        HTML::Entities::encode_entities($txt);
+        return $txt;
+    }
     $txt =~ s/\&/&amp;/g;
     $txt =~ s/\</&lt;/g;
     $txt =~ s/\>/&gt;/g;

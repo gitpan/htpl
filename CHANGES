@@ -1,5 +1,6 @@
 Versions:
 
+3.13: Added multi word tokens for the macro processor
 3.12: Tie-Tools is no more a separate package.
 3.11: Rewrote HTPL.net with Crypt::CBC, it is not compatible with old HTPL.net.
 3.10: Rewrote all C functions that used varargs. Upgraded configure to guess defaults for RedHat Linux.

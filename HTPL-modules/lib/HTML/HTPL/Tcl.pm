@@ -6,6 +6,8 @@ use Tie::NormalArray;
 use vars qw($Interp $Result);
 use Exporter;
 use Carp;
+use strict qw(var subs);
+use vars qw(@ISA @EXPORT_OK);
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(tclexec);
@@ -36,7 +38,7 @@ sub importvars {
         } elsif (undef && $save eq '@') {
             my %hash;
             my $t = tie %hash, 'Tcl::Var', $Interp, $var;
-            tie @$r, Tie::NormalArray, $t;
+            tie @$r, 'Tie::NormalArray', $t;
         } else {
             Carp::croak("Can tie only scalars or hashes");
         }

@@ -3,17 +3,23 @@ package HTML::HTPL::Fixed;
 use HTML::HTPL::Lib;
 use HTML::HTPL::Result;
 use HTML::HTPL::Txt;
+use Symbol;
+use strict;
+use vars qw(@ISA);
 
 @ISA = qw(HTML::HTPL::Txt);
 
 sub openfixed {
-    local($filename, @fields) = @_;
+    my ($filename, @fields) = @_;
+
+# substitute second parameter by a scalar REFERENCE
+# to request subclass.
 
     my $sub;
     if (UNIVERSAL::isa($fields[0], 'SCALAR')) {
         $sub = ${shift @fields};
     }
-    my $class = 'HTML::HTPL::Fixed' . ($sub ? "::$sub" : "");
+    my $class = __PACKAGE__ . ($sub ? "::$sub" : "");
     my (@cols, @heads);
     foreach (@fields) {
         my ($name, $len) = split(/:/, $_);
@@ -21,12 +27,12 @@ sub openfixed {
         push(@heads, $len);
     }
 
-    my $hnd = "htpl_fixed'Fixed" . ++$htpl_fixed_handles;
+    my $hnd = &gensym;
 
     &HTML::HTPL::Lib'opendoc($hnd, $filename);
 
-    $orig = $class->new($hnd, \@heads);
-    $result = new HTML::HTPL::Result($orig, @cols);
+    my $orig = $class->new($hnd, \@heads);
+    my $result = new HTML::HTPL::Result($orig, @cols);
 
 
     $result;
@@ -35,6 +41,7 @@ sub openfixed {
 sub readln {
     my ($self, $line) = @_;
     my $re = $self->{'re'};
+    $line = sprintf("%-$self->{'len'}s", $line);
     my @values = ($line =~ /$re/);
     my @dummy = map {s/[\0\s]+$//;} @values;
     \@values;
@@ -42,14 +49,15 @@ sub readln {
 
 sub new {
     my ($class, $hnd, $lens) = @_;
-    my $self = HTML::HTPL::Txt::new($class, $hnd, $fields, "\n");
-    my $re = join("", map {"(" . ("." x $_) . ")";} @$lens);
+    my $self = $class->SUPER::new($hnd, "\n");
+    my $re = join("", map {"(.{$_})";} @$lens);
     $self->{'re'} = $re;
     $self->{'len'} = &HTML::HTPL::Lib::sum(@$lens);
     $self;
 }
 
 package HTML::HTPL::Fixed::IBM;
+use vars qw(@ISA);
 @ISA = qw(HTML::HTPL::Fixed);
 
 sub realread {

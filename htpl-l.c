@@ -17,14 +17,26 @@
  * Read one token from a string              *
  *********************************************/
 
+void croak(char *fmt, ...);
+
 void eat(line, token)
     STR *line, token; {
     pchar save = token;
     while (isdelim(**line)) (*line)++;
-    for (; !isdelim(**line) && **line; token++, (*line)++) 
-        *token = **line;
+    if (**line == '<' && (*line)[1] == '<') {
+	char *find;
+	(*line) += 2;
+	find = strstr(*line, ">>");
+	if (!find) croak("Unterminated long parameter: %s", *line - 2);
+	memcpy(token, *line, find - *line);
+	token[find - *line] = '\0';
+	*line = find + 2;
+    } else {
+        for (; !isdelim(**line) && **line; token++, (*line)++) 
+            *token = **line;
+        *token = '\0';
+    }
     while (isdelim(**line)) (*line)++;
-    *token = '\0';
 }
 
 /*********************************************
@@ -215,16 +227,19 @@ void finddir(file, dir)
     }
 #ifdef _WIN32
 /* CYGWIN is being nice - no thanks */
-    for (ch = dir; *ch; ch++ )
-        if (*ch == '/') *ch = SLASH_CHAR;
-    if (ch - dir > 3) {
-        if (dir[0] == SLASH_CHAR && dir[1] == SLASH_CHAR) {
-            STR path = strdup(dir + 3);
-            dir[0] = dir[2];
-            dir[1] = ':';
-            strcpy(dir + 2, path);
-            free(path);
-        }
+    if (SLASH_CHAR != '/') {
+        for (ch = dir; *ch; ch++ )
+            if (*ch == '/') *ch = SLASH_CHAR;
+        if (ch - dir > 3) {
+		/* Convert drive letter */
+            if (dir[0] == SLASH_CHAR && dir[1] == SLASH_CHAR) {
+                STR path = strdup(dir + 3);
+                dir[0] = dir[2];
+                dir[1] = ':';
+                strcpy(dir + 2, path);
+                free(path);
+            }
+	}
     }
 #endif
 /* Append slash */
@@ -1621,4 +1636,39 @@ short debugforbidden(out)
     fprintf(out, "%sFormat of %s wrong%s", NEWLINE, inp, NEWLINE);
     fclose(i);
     return 1;
+}
+
+void findpath(prog, dst)
+    STR prog, dst; {
+
+    STR path = getenv("PATH");
+    char sep;
+    STR copy;
+    pchar p;
+    
+    dst[0] = '\0';
+    if (!path) return;
+    sep = SLASH_CHAR == '/' ? ':' : ';';
+    copy = strdup(path);
+    p = copy;
+    while (p) {
+	pchar p2 = strchr(p, sep);
+	STR candidate;
+
+	if (p2) *p2++ = '\0';
+	asprintf(&candidate, "%s%c%s", p, SLASH_CHAR, prog);
+	if (!access(candidate, X_OK)) {
+	    while (readlink(candidate, dst, sizeof(TOKEN)) > 0) {
+		free(candidate);
+		candidate = strdup(dst);
+	    }
+            strcpy(dst, candidate);
+            free(candidate);
+	    free(copy);
+	    return;
+	}
+	free(candidate);
+	p = p2;
+    }
+    free(copy);
 }

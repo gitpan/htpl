@@ -2,6 +2,9 @@ package HTML::HTPL::Txt;
 
 use HTML::HTPL::Orig;
 use HTML::HTPL::Lib;
+use strict;
+use vars qw(@ISA);
+
 @ISA = qw(HTML::HTPL::Orig);
 
 sub new {
@@ -10,30 +13,29 @@ sub new {
     bless {'params' => \@copy}, $class;
 }
 
+# This method is overridable
+
 sub realread {
     my ($self, $hnd) = @_;
     return scalar(<$hnd>);
 }
 
 sub realfetch {
-    $self = shift;
+    my $self = shift;
 
-    return undef if ($self->{'closed'});
-
-    ($hnd, $fields, $linedel) = @{$self->{'params'}};
+    my ($hnd, $linedel) = @{$self->{'params'}};
 
     my $savedel = $/;
     $/ = $linedel;
     my $l = $self->realread($hnd);
-    return undef unless ($l);
+    unless ($l) {
+        closedoc($hnd);
+        return undef;
+    }
     chomp $l;
     my $retval = $self->readln($l);
     $/ = $savedel;
 
-    if (eof($hnd)) {
-        &HTML::HTPL::Lib'closedoc($hnd);
-        $self->{'closed'} = 1;
-    }
 
     $retval;
 }

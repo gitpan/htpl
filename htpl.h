@@ -107,6 +107,7 @@ void flpt(FILE *, FILE *);
 void eat(pchar *, STR);
 void nodir(STR, STR);
 void finddir(STR, STR);
+void findpath(STR, STR);
 FILE* FOPEN(STR, STR);
 long getftime(STR);
 long depend(STR, STR);
@@ -131,7 +132,7 @@ void makepersist(STR);
 void destroypersist();
 int retval(int);
 STR gettoken(int);
-STR gettokenlist(int, STR, STR);
+STR gettokenlist(int, STR, STR, STR);
 STR getsubtoken(int, char, int);
 pchar setworktoken(STR);
 int execperl(STR*, STR, STR, STR, int);
@@ -292,6 +293,8 @@ HTE struct persist_el *persist;
 HTE struct link_el *persiststack;
 
 HTE int internal_flags[32];
+
+HTE short kludge_reunifying HTZ;
 
 #undef HTE
 #undef HTZ

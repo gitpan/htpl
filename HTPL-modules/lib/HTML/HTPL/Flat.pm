@@ -4,22 +4,25 @@ use HTML::HTPL::Result;
 use Text::ParseWords;
 use HTML::HTPL::Txt;
 use HTML::HTPL::Lib;
+use Symbol;
+use strict;
+use vars qw(@ISA);
 
 @ISA = qw(HTML::HTPL::Txt);
 
 sub openflat {
-    local($filename, @fields) = @_;
+    my ($filename, @fields) = @_;
 
-    local ($phrase, @values);
+    my ($phrase, @values);
 
-    $hnd = "htpl_csv'FLAT" . ++$htpl_flat_handles;
+    $hnd = &gensym;
 
     my $savedel = $/;
  
     &HTML::HTPL::Lib'opendoc($hnd, $filename);
 
-    $orig = new HTML::HTPL::Flat($hnd, \@fields, "");
-    $result = new HTML::HTPL::Result($orig, @fields);
+    my $orig = new HTML::HTPL::Flat($hnd, \@fields, "");
+    my $result = new HTML::HTPL::Result($orig, @fields);
 
     $result;
 }

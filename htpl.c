@@ -1107,12 +1107,16 @@ int main(int argc, char *argv[], char **env) {
 
     getcwd(origdir, sizeof(FILENAME));
 
-    strcpy(myself, argv[0]);
-    finddir(argv[0], bindir);
-    nodir(argv[0], work);
-    sprintf(myself, "%s%c%s", bindir, SLASH_CHAR, work);
+    if (strchr(argv[0], '/')) {
+        finddir(argv[0], bindir);
+        nodir(argv[0], work);
+        sprintf(myself, "%s%c%s", bindir, SLASH_CHAR, work);
+    } else {
+	findpath(argv[0], myself);
+        finddir(myself, bindir);
+    }
     
-    replacechar(myself, '/', SLASH_CHAR);
+    if (SLASH_CHAR != '/') replacechar(myself, '/', SLASH_CHAR);
 
     script[0] = '\0';
 
@@ -1464,7 +1468,6 @@ HTPL page. Check in dependency database if used */
 	free(errloc);
 	free(errstr);
         dumpscopes();
-        free(errstr);
         unlink(script);
         return;
     }
@@ -1607,6 +1610,9 @@ to allow matching of line numbers against error messages */
     fcpy(i, myout, 0);
     fclose(i);
 
+    i = FOPEN(error, "r");
+    fcpy(i, stderr, 0);
+    fclose(i);
 /* Clean up */
 
     fflush(myout);

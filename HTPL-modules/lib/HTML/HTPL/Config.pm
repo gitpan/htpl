@@ -1,4 +1,5 @@
 package HTML::HTPL::Config;
+use strict;
 
 eval <<'EOM';
 	require "/var/www/cgi-bin/htpl-config.pl";

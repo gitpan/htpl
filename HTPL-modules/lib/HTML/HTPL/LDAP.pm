@@ -3,6 +3,7 @@ package HTML::HTPL::LDAP;
 use Net::LDAP;
 use HTML::HTPL::Lib;
 use HTML::HTPL::Result;
+use strict;
 
 sub new {
     my ($class, $server, $port, $bind, $pass) = &trans(@_);
@@ -13,15 +14,15 @@ sub new {
 }
 
 sub bind {
-    $self = shift;
+    my $self = shift;
 
-    $server = $self->{'server'};
-    $port = $self->{'port'};
-    $bind = $self->{'bind'};
-    $pass = $self->{'pass'};
+    my $server = $self->{'server'};
+    my $port = $self->{'port'};
+    my $bind = $self->{'bind'};
+    my $pass = $self->{'pass'};
 
     my $dir = Net::LDAP->new($server, port => $port);
-    $result = $dir->bind($bind, password => $pass) if ($bind && $pass);
+    my $result = $dir->bind($bind, password => $pass) if ($bind && $pass);
     $self->{'dir'} = $dir;
 }
 
@@ -52,7 +53,7 @@ sub search {
     sizelimit => $sizelimit,
         filter => $filter, @p);
 
-    @entries = ($sortkey ? $mesg->sorted($sortkey) :  $mesg->entries);
+    my @entries = ($sortkey ? $mesg->sorted($sortkey) :  $mesg->entries);
 
     @attrs = unitecolumns(@entries) unless (@attrs);
 
@@ -62,10 +63,10 @@ sub search {
 
     my $result = new HTML::HTPL::Result(undef, @attrs);
 
-    my $entry, $key, $val, @vals;
+    my ($entry, $key, $val, @vals);
 
     foreach $entry (@entries) {
-        @values = ();
+        my @values;
         foreach $key (@attrs) {
             if (lc($key) eq "dn") {
                 $val = $entry->dn;
@@ -92,7 +93,7 @@ sub add {
 
     my $dir = $self->{'dir'};
 
-    $result=$dir->add($dn, attributes => \@atts);
+    my $result = $dir->add($dn, attributes => \@atts);
 
     $self->unbind;
 }
@@ -126,7 +127,7 @@ sub delete {
 sub parseattr {
     my $attributes = shift;
     my $pair;
-    my $key, $val;
+    my ($key, $val);
     my @atts;
 
     foreach $pair(split(/;\s*/, $attributes)) {
@@ -139,7 +140,7 @@ sub parseattr {
 sub unitecolumns {
     my @entries = @_;
     my %h = {};
-    my $entry, $attr;
+    my ($entry, $attr);
 
     foreach $entry (@entries) {
         foreach $attr ($entry->attributes) {

@@ -2,6 +2,9 @@ package HTML::HTPL::Result;
 
 use HTML::HTPL::Lib;
 use HTML::HTPL::Sys qw(publish);
+use Carp;
+use strict qw(vars subs);
+use vars qw(@ISA @EXPORT);
 
 require Exporter;
 
@@ -70,6 +73,7 @@ sub fetch {
 sub receive {
     my $self = shift;
     return undef unless ($self->{'origin'});
+    return undef if $self->{'origin'}->eof;
     my $rec = $self->{'origin'}->fetch;
     return undef unless ($rec);
     $self->add($rec) if (UNIVERSAL::isa($rec, 'HASH'));
@@ -98,13 +102,13 @@ sub sync {
 sub retrieve {
     my $self = shift;
 
-    my $cursor = $self->{'cursor'};
+#    my $cursor = $self->{'cursor'};
 
     return undef unless ($self->sync);
 
     my @fields = $self->cols;
 
-    my $key, $val;
+    my ($key, $val);
 
     my %hash = %{$self->current};
     &HTML::HTPL::Lib'publish(%hash);
@@ -114,7 +118,7 @@ sub retrieve {
 
 sub current {
     my $self = shift;
-    ${$self->{'rows'}}[$self->{'cursor'}];
+    $self->{'rows'}->[$self->{'cursor'}];
 }
 
 sub unfetch {
@@ -284,7 +288,7 @@ sub project ($@;@) {
          !$#fields ? sub {my $self = shift; $self->get($fields[0]);} :
          sub {my $self = shift; [map {$self->get($_);} @fields];});
     while ($self->fetch) {
-        push(@r, &$ref($self));
+        push(@r, &HTML::HTPL::Sys::call($ref, $self));
     }
     $self->access($save);
     &HTML::HTPL::Sys::popvars;
@@ -320,12 +324,13 @@ sub structured {
 sub astable {
     my $self = shift;
     require HTML::HTPL::Table;
-    my $table = new HTML::HTPL::Table('cols' => scalar($self->cols));
     my $flag = shift;
+    my $table = new HTML::HTPL::Table('cols' => scalar($self->cols), @_);
     if (UNIVERSAL::isa($flag, 'HTML::HTPL::Table')) {
         $table = $flag;
     } else {
-        $table->add(map {{'data' => $_, 'header' => 1};} $self->cols) if
+        my $coderef = UNIVERSAL::isa($flag, 'CODE') ? $flag : sub {};
+        $table->add(map {&$coderef; {'data' => $_, 'header' => 1};} $self->cols) if
           ($flag);
     }
     $table->load($self->matrix);
@@ -338,6 +343,7 @@ sub asxml {
         $rec = $root;
         $root = 'xml';
     }
+    croak "Usage: asxml(['tree name',] 'record type name')" unless $rec;
     my $struct = {$rec => [$self->structured]};
     require XML::Simple;
     XML::Simple::XMLout($struct, 'rootname' => $root);

@@ -3,27 +3,38 @@ package HTML::HTPL::CSV;
 use HTML::HTPL::Result;
 use Text::ParseWords;
 use HTML::HTPL::Txt;
+use strict;
+use vars qw(@ISA);
+use Symbol;
 
 @ISA = qw(HTML::HTPL::Txt);
 
+sub parse ($$) {
+    my ($delim, $line) = @_;
+    if ($delim eq 'BLANK') {
+        return split(/\s+/, $line);
+    }
+    parse_line($delim, undef, $line);
+}
+ 
 sub opencsv {
-    local($filename, $delimiter, @fields) = @_;
+    my ($filename, $delimiter, @fields) = @_;
 
-    local ($phrase, @values);
+    my ($phrase, @values);
 
-    local ($rowdel, $coldel, $savedel, $chop);
-
+    my ($rowdel, $coldel, $savedel);
+    $rowdel = "\n";
 
     if (UNIVERSAL::isa($delimiter, 'ARRAY')) {
         ($coldel, $rowdel) = @$delimiter;
         $delimiter = $coldel;
     }
 
-    $delimiter = ' ' if ($delimiter eq 'BLANK');
+    $delimiter ||= ',';
     $delimiter =~ s/^'(.*)'$/$1/;
     $delimiter = quotemeta($delimiter);
 
-    $hnd = "htpl_csv'CSV" . ++$htpl_csv_handles;
+    my $hnd = &gensym;
 
     my $savedel = $/;
     $/ = $rowdel;
@@ -31,14 +42,15 @@ sub opencsv {
     &HTML::HTPL::Lib'opendoc($hnd, $filename);
 
     unless (@fields) {
-        <$hnd>;
-        @fields = &Text::ParseWords::parse_line($delimiter, undef, $_);
+        my $header = <$hnd>;
+        chop $header;
+        @fields = &parse($delimiter, $header);
     }
 
     $/ = $savedel;
 
-    $orig = new HTML::HTPL::CSV($hnd, \@fields, $delimiter, $/, $chop);
-    $result = new HTML::HTPL::Result($orig, @fields);
+    my $orig = new HTML::HTPL::CSV($hnd, $delimiter, $rowdel);
+    my $result = new HTML::HTPL::Result($orig, @fields);
 
 
     $result;
@@ -47,13 +59,13 @@ sub opencsv {
 sub readln {
     my ($self, $line) = @_;
     my $delimiter = $self->{'delimiter'};
-    my @values = &Text::ParseWords::parse_line($delimiter, undef, $line);
+    my @values = &parse($delimiter, $line);
     \@values;
 }
 
 sub new {
-    my ($class, $hnd, $fields, $delimiter, $linedel) = @_;
-    my $self = HTML::HTPL::Txt::new($class, $hnd, $fields, $linedel);
+    my ($class, $hnd, $delimiter, $linedel) = @_;
+    my $self = $class->SUPER::new($hnd, $linedel);
     $self->{'delimiter'} = $delimiter;
     $self;
 }

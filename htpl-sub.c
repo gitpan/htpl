@@ -359,20 +359,35 @@ STR gettoken(which)
     int prepend = 0;
     STR buff, result;
     pchar ptr1, ptr2;
+    short flag = 0;
+
     if (which < 0) {
         which = -which;
         prepend = 1;
     }
     if (which > persist->tokens->num || which < 1) return BLANK;
     result = persist->tokens->data[which - 1];
-    if (!prepend) return result;
+    if (!prepend && !kludge_reunifying) return result;
     buff = malloc(strlen(result) * 2);
     ptr1 = result;
     ptr2 = buff;
-    for (; *ptr1; *ptr2++ = *ptr1++) 
-        if (*ptr1 == '"' || *ptr1 == '\'' || *ptr1 == '\\'
+    for (; *ptr1; *ptr2++ = *ptr1++) {
+	if (!kludge_reunifying)
+            if (*ptr1 == '"' || *ptr1 == '\'' || *ptr1 == '\\'
                 || *ptr1 == '$' || *ptr1 == '%' || *ptr1 == '@') *ptr2++ = '\\';
+        if (isspace(*ptr1)) flag = 1;
+    }
     *ptr2 = '\0';
+    if ((!flag || !kludge_reunifying) && ptr1 - result == ptr2 - buff) {
+	free(buff);
+	return result;
+    }
+    if (kludge_reunifying && flag) {
+	memmove(buff + 2, buff, ptr1 - result);
+	buff[0] = buff[1] = '<';
+	buff[ptr1 - result + 2] = buff[ptr1 - result + 3] = '>';
+	buff[ptr1 - result + 4] = '\0';
+    }
     result = setworktoken(buff);
     free(buff);
     return result;
@@ -440,13 +455,25 @@ STR getsubtoken(which, how, where)
     return result;
 }
 
+STR convertmask(mask)
+    STR mask; {
+
+    pchar ch;
+    mask = setworktoken(mask);
+    for (ch = mask; *ch; ch++) if (*ch == '$') *ch = '%';    
+    return mask;
+}
+
 /*******************
  * Join tokens     *
  *******************/
 
-STR gettokenlist(which, delim, before)
+STR workf(STR, ...);
+
+STR gettokenlist(which, delim, before, mask)
     STR delim;
     STR before;
+    STR mask;
     int which; {
     
     int l = 100, ln = 0, ln2;
@@ -456,6 +483,10 @@ STR gettokenlist(which, delim, before)
     int lndlm = strlen(delim);
     int flag = 1;
 
+    if (mask) {
+	if (*mask) mask = convertmask(mask);
+	else mask = NULL;
+    }	   
     if (which < 0) {
         flag = -1;
         which = -which;
@@ -465,6 +496,7 @@ STR gettokenlist(which, delim, before)
 
     while (which <= persist->tokens->num) {
         t = gettoken(flag * which++);
+	if (mask) {t = workf(mask, t);}
         ln2  = strlen(t);
         if (ln2 + ln + lndlm + lnb4 + 4 > l - 1) {
             l = (ln2 + ln + lndlm + lnb4) * 2;
@@ -532,6 +564,24 @@ void printfcode(char *fmt, ...) {
     
     printcode(msg);
     free(msg);
+}
+
+/***************************
+ * Format pooled output    *
+ ***************************/
+
+STR workf(STR fmt, ...) {
+    va_list ap;
+    STR msg;
+    STR ret;
+
+    va_start(ap, fmt);
+    vasprintf(&msg, fmt, ap);
+    va_end(ap);
+   
+    ret = setworktoken(msg);
+    free(msg);
+    return ret;
 }
 
 /*********************************************

@@ -1,5 +1,6 @@
 package HTML::HTPL::Select;
 use HTML::HTPL::Lib;
+use strict;
 
 sub new {
     my $class = shift;

@@ -32,7 +32,7 @@ Saturday);
 
 sub call (&$) {
     my ($code, $val) = @_;
-    $_ = $val;
+    local ($_) = $val;
     &$code($val);
 }
 
@@ -77,7 +77,7 @@ sub html_table_out {
 
         foreach $x (0 .. $xx) {
             &setvar('x' => $x);
-            $data = $$a[$x][$y];
+            $data = $a->[$x][$y];
             $cell = 'TD';
             $el = $tags{'cattr'};
             if (UNIVERSAL::isa($data, 'HASH')) {
@@ -88,8 +88,9 @@ sub html_table_out {
                 $data = $data->{'data'};
             }
             $el = " " . &evit($el) if ($el);
-            $data = &$data if (UNIVERSAL::isa($data, 'CODE'));
-            $data = "&nbsp;" unless (defined($data));
+            $data = &$data($x, $y, $a->[$x][$y]) 
+                if (UNIVERSAL::isa($data, 'CODE'));
+            $data = "&nbsp;" unless $data;
             $s .=  "<$cell$el>\n" . $data . "\n</$cell>\n";
         }
         $s .= "</TR>\n";

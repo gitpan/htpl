@@ -4,10 +4,18 @@
 <__MACRO NAME="SQL">
 	<__PRE>use HTML::HTPL::Db;</__PRE>
 	<__MACRO NAME="SCOPE">
-		<__MACRO MIN="1" MAX="3" NAME="CONNECT">
+		<__MACRO NAME="BEGIN" MAX="0">
 			<__SET VALUE="$__htpl_db_%id%_%random%"
 				VAR="dbobj"/>
 			<__EXPORT SCOPE="" VAR="dbobj"/>
+		</__MACRO>
+		<__MACRO NAME="GOTO" MAX="1" MIN="1">
+			<__SET VALUE="%1%"
+				VAR="dbobj"/>
+			<__EXPORT SCOPE="" VAR="dbobj"/>
+		</__MACRO>
+		<__MACRO MIN="1" MAX="3" NAME="CONNECT">
+			<__INCLUDE>SQL SCOPE RETRIEVE</__INCLUDE>
 			<__DO>my %$dbobj% = 
 			HTML::HTPL::Db->new("%1%", "%2%", "%3%");
 		</__DO></__MACRO>
@@ -31,7 +39,7 @@ $%1% = %$dbobj%->cursor(&amp;HTML::HTPL::Db'parse_sql("%2*%"));
 
         <__MACRO MIN="1" NAME="EXEC">$HTML::HTPL::htpl_db_obj->execsql(&amp;HTML::HTPL::Db'parse_sql("%1*%"));</__MACRO>
 	<__MACRO NAME="EXECUTE"><__ALIAS>SQL EXEC %1*%</__ALIAS></__MACRO>
-	<__MACRO NAME="DECLARE">$HTML::HTPL::Sys::query_pool{'%1%'} ||= $HTML::HTPL::htpl_db_obj->prepare("%2*%");</__MACRO>
+	<__MACRO NAME="DECLARE">$HTML::HTPL::Sys::query_pool{"%1%"} ||= $HTML::HTPL::htpl_db_obj->prepare("%2*%");</__MACRO>
 	<__MACRO MIN="2" NAME="CURSOR">$%1% = $HTML::HTPL::htpl_db_obj->cursor(&amp;HTML::HTPL::Db'parse_sql("%2*%"));</__MACRO>
 	<__MACRO NAME="SEARCH"><__ALIAS>SQL CURSOR %1*%</__ALIAS></__MACRO>
 	<__MACRO NAME="IMMEDIATE"><__DO>{ my $imm;</__DO>
@@ -52,7 +60,7 @@ $%1% = %$dbobj%->cursor(&amp;HTML::HTPL::Db'parse_sql("%2*%"));
 	<__MACRO NAME="MODIFY"><__ALIAS>SQL UPDATE %1*%</__ALIAS></__MACRO>
 	<__MACRO NAME="DELETE">$HTML::HTPL::htpl_db_obj->delete("%1%, qw(%2*%));</__MACRO>
 	<__MACRO NAME="ERASE"><__ALIAS>SQL ERASE %1*%</__ALIAS></__MACRO>
-	<__MACRO MIN="2" MAX="2" NAME="BATCH">$HTML::HTPL::htpl_db_obj->batch_insert('%1%', $%2%);</__MACRO>
+	<__MACRO MIN="2" MAX="2" NAME="BATCH">$HTML::HTPL::htpl_db_obj->batch_insert("%1%", $%2%);</__MACRO>
 
 	<__MACRO NAME="QUERY">$%1% = $HTML::HTPL::htpl_db_obj->query("%2%", qw(%3*%));</__MACRO>
 </__MACRO>
@@ -72,9 +80,9 @@ $%1% = %$dbobj%->cursor(&amp;HTML::HTPL::Db'parse_sql("%2*%"));
 			$tags{'LIMIT'} . $tags{'SIZELIMIT'}, $tags{'KEY'}
 			. $tags{'SORTKEY'});
 	</__MACRO>
-	<__MACRO MIN="2" NAME="ADD">$HTML::HTPL::htpl_dir_obj->add('%1%', '%2*');</__MACRO>
-	<__MACRO MIN="2" NAME="MODIFY">$HTML::HTPL::htpl_dir_obj->modify('%1%', '%2*');</__MACRO>
-	<__MACRO MIN="1" MAX="1" NAME="DELETE">$HTML::HTPL::htpl_dir_obj->modify('%1%');</__MACRO>
+	<__MACRO MIN="2" NAME="ADD">$HTML::HTPL::htpl_dir_obj->add("%1%", "%2*");</__MACRO>
+	<__MACRO MIN="2" NAME="MODIFY">$HTML::HTPL::htpl_dir_obj->modify("%1%", "%2*");</__MACRO>
+	<__MACRO MIN="1" MAX="1" NAME="DELETE">$HTML::HTPL::htpl_dir_obj->modify("%1%");</__MACRO>
  </__MACRO>
 
 <__MACRO NAME="MEM">
@@ -109,8 +117,9 @@ use HTML::HTPL::Db;</__PRE>
 
 <__MACRO NAME="TEXT">
         <__MACRO NOOP="1" PRIVATE="1" NAME="PRECSV"><__PRE>use HTML::HTPL::CSV;</__PRE></__MACRO>
-	<__MACRO MIN="3" NAME="CSV"><__INCLUDE>TEXT PRECSV</__INCLUDE>
-	<__DO>$%1% = &amp;HTML::HTPL::CSV'opencsv("%2%", "%3%", qw(%4*%));</__DO></__MACRO>
+	<__MACRO MIN="2" NAME="CSV"><__INCLUDE>TEXT PRECSV</__INCLUDE>
+	<__DO MAX="2">$%1% = &amp;HTML::HTPL::CSV'opencsv("%2%");</__DO>
+	<__DO MIN="3">$%1% = &amp;HTML::HTPL::CSV'opencsv("%2%", "%3%", qw(%4*%));</__DO></__MACRO>
 
 	<__MACRO MIN="3" NAME="FLAT"><__PRE>use HTML::HTPL::Flat;</__PRE>
 	$%1% = &amp;HTML::HTPL::Flat'openflat("%2%", qw(%3*%));</__MACRO>
@@ -139,8 +148,8 @@ qw(%5*%));</__DO></__MACRO>
 
 </__MACRO>
 
-<__MACRO MIN="1" NAME="LOAD">die "Unknown query" unless $HTML::HTPL::Sys::query_pool{'%1%'};
-$%1% = $HTML::HTPL::Sys::query_pool{'%1%'}->load(qw(%2*%));</__MACRO>
+<__MACRO MIN="1" NAME="LOAD">die "Unknown query" unless $HTML::HTPL::Sys::query_pool{"%1%"};
+$%1% = $HTML::HTPL::Sys::query_pool{"%1%"}->load(qw(%2*%));</__MACRO>
 
 <__MACRO AREA="1" NAME="FETCH"><__FWD MIN="1" MAX="1" PUSH="fetch">$%1%->rewind if ($%1%);
 while ($%1% &amp;&amp; !$%1%->eof &amp;&amp; $%1%->fetch) {</__FWD>
@@ -281,7 +290,7 @@ __htpl_try_lbl%id%:
 <__MACRO BROTHER="try,catch" CHANGE="catch" NAME="CATCH"><__DO>};
 </__DO>
 <__DO MAX="0">$__htpl_default_handler = sub {$_ = shift; </__DO>
-<__DO MIN="1">$__htpl_handler{'%1*%'} = sub {$_ = shift; </__DO>
+<__DO MIN="1">$__htpl_handler{"%1*%"} = sub {$_ = shift; </__DO>
 </__MACRO>
 <__MACRO NAME="THROW">
 %#line %line% %page%
@@ -423,8 +432,8 @@ SYNC
 <__MACRO MIN="3" SCOPE="1" NAME="GRAPH"><__PRE>use HTML::HTPL::Graph;</__PRE>
 <__DO>
 	my $g = new HTML::HTPL::Graph;
-	$g->set('data' => [$%1%->project('%2%')]);
-	$g->set('labels' => [$%1%->project('%3%')]);
+	$g->set('data' => [$%1%->project("%2%")]);
+	$g->set('labels' => [$%1%->project("%3%")]);
 </__DO>
 <__DO MIN="4">
 	$g->set('width' => %4%);
@@ -477,14 +486,27 @@ $%$var% = &amp;endtransaction;
 <__MACRO NAME="DIE">
 &amp;htdie("%1*%");
 </__MACRO>
-<__MACRO NAME="LISTBOX" SCOPE="1">
-<__INCLUDE>%1*%</__INCLUDE>
-<__DO>
-&amp;html_selectbox({'name' => '%3%'}, $%3%->project(sub {
-($%3%->getcol(0), $%3%->getcol(1));
+
+<__MACRO NAME="SERVBOXEN" PRIVATE="1">
+<__MACRO NAME="DOIT" MIN="2" MAX="2">
+&amp;html_selectbox({'name' => "%1%"}, $%1%->project(sub {
+($_->getcol(0), $_->getcol(%2%));
 }));
-</__DO>
 </__MACRO>
+<__MACRO NAME="DECIDE" MIN="2">
+<__INCLUDE MIN="3">%2*%</__INCLUDE>
+<__INCLUDE MIN="3">SERVBOXEN DOIT %4% %1%</__INCLUDE>
+<__INCLUDE MAX="2">SERVBOXEN DOIT %2% %1%</__INCLUDE>
+</__MACRO>
+</__MACRO>
+
+<__MACRO NAME="LISTBOX" SCOPE="1">
+<__ALIAS>SERVBOXEN DECIDE 1 %1*%</__ALIAS>
+</__MACRO>
+<__MACRO NAME="COMBOBOX" SCOPE="1">
+<__ALIAS>SERVBOXEN DECIDE 0 %1*%</__ALIAS>
+</__MACRO>
+
 <__MACRO NAME="ASSERT" MIN="1">
 die "Assertion failed: (%-1*%)" unless (%1*%);
 </__MACRO>

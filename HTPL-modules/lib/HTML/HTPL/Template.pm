@@ -2,6 +2,7 @@ package HTML::HTPL::Template;
 
 use HTML::HTPL::Lib;
 use HTML::HTPL::Result;
+use strict;
 
 sub new {
     my ($class, $filename, $delim) = @_;

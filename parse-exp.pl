@@ -98,12 +98,32 @@ sub proctoken {
     return "%%" if (!$token);
     if ($token =~ /^-?\d+$/) {
         push(@$aryref, "gettoken($token)");
-    } elsif ($token =~ /^(-?\d+)\*$/) {
-        push(@$aryref, qq!gettokenlist($1, " ", "")!);
+    } elsif ($token =~ /^(-?\d+)\*(.*)$/) {
+        push(@$aryref, qq!gettokenlist($1, " ", "", "$2")!);
     } elsif ($token =~ /^(-?\d+)\!$/) {
-        push(@$aryref, qq!gettokenlist($1, ", ", "\$")!);
-    } elsif ($token =~ /^(-?\d+)(.*?)\*$/) {
-        push(@$aryref, qq!gettokenlist($1, "$2", "")!);
+        push(@$aryref, qq!gettokenlist($1, ", ", "\$", "")!);
+    } elsif ($token =~ /^(-?\d+)\#$/) {
+        push(@$aryref, qq!numtokens >= abs($1) ? gettokenlist($1, ", ", "", "\\\"\$s\\\"") : "()"!);
+    } elsif ($token =~ /^(-?\d+)(.*?)\*(.*)$/) {
+        push(@$aryref, qq!gettokenlist($1, "$2", "", "$3")!);
+    } elsif ($token =~ /^(-?\d+)(.)(\d+)$/) {
+        push(@$aryref, "getsubtoken($1, '$2', $3)");
+    } elsif ($token =~ /^\?(.?)((?:[+-]\d+)?)$/) {
+	my $extra = $2 ? (" " . substr($2, 0, 1) . " " . substr($2, 1)) : "";
+	my $count = "numtokens$extra";
+	unless ($1) {
+	        push(@$aryref, $count);
+        	return "%d";
+	} else {
+		push(@$aryref, "repeat($count, '$1')");
+		return "%s";
+	}
+    } elsif ($token =~ /^\$(.*)$/) {
+        push(@$aryref, qq!getvar("$1")!);
+    } elsif ($token eq 'id') {
+        push(@$aryref, qq!getblockid("")!);
+    } elsif ($token =~ /^\@(.*)$/) {
+        push(@$aryref, qq!getblockid("$1")!);
     } elsif ($token =~ /^(-?\d+)(.)(\d+)$/) {
         push(@$aryref, "getsubtoken($1, '$2', $3)");
     } elsif ($token =~ /^\?(.?)((?:[+-]\d+)?)$/) {

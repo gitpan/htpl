@@ -206,11 +206,11 @@ sub load {
 ## Check if there was anytihng returned
     my $hashref; # Do NOT check if rows == 0, will fail on INFORMIX
 
-    return new HTML::HTPL::Result(undef, @{$sth->{NAME}}) unless
+    my @fields =  @{$sth->{NAME}};
+
+    return new HTML::HTPL::Result(undef, @fields) unless
 		($hashref = $sth->fetchrow_hashref);
 
-
-    my @fields = keys %$hashref;
 
 ## Prepare a queue
     my $orig = HTML::HTPL::Db::Orig->new($sth, @fields);
