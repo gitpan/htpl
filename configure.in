@@ -105,7 +105,9 @@ unneeded"
 ]
 ], MODPERL=)
 
+AC_CACHE_CHECK(for web root, ab_cv_httpdroot, [
 [ 
+echo ""
 HTTPDROOT=""
 if [ ! "$UID" = 0 ] && [ -z "$PRERUN" ]; then
     MODMAKE=build-it
@@ -155,7 +157,11 @@ else
         HTTPDROOT=$DEFH
     fi
 fi
-
+]
+ab_cv_httpdroot=$HTTPDROOT
+])
+HTTPDROOT=$ab_cv_httpdroot
+[
 HTDOCS=""
 if [ -n "$HTTPDROOT" ] ; then
     DEFAULT="$HTTPDROOT"/htdocs
@@ -172,13 +178,21 @@ else
 fi
 NEXTDEF=$DEFAULT
 DEFAULT=$DEFAULT"/htpl"
+]
+AC_CACHE_CHECK(for document directory, ab_cv_htdocs, [
+[
+echo ""
 echo Enter the name of the documents directory where HTPL should install sample files and access scripts
 echo -n "Default ["$PREDISP"$DEFAULT] "
 read HTDOCS
 if [ -z "$HTDOCS" ] ; then
     HTDOCS=$DEFAULT
 fi
-
+ab_cv_htdocs=$HTDOCS
+]
+])
+HTDOCS=$ab_cv_htdocs
+[
 if [ -n "$HTTPDROOT" ]; then
     DEFAULT=$HTTPDROOT"/cgi-bin"
 else
@@ -188,22 +202,31 @@ else
     fi
     DEFAULT=$DEFAULT"/cgi-bin"
 fi
-
+]
+AC_CACHE_CHECK(for cgi directory, ab_cv_cgibin, [
+[
+echo ""
 echo Enter the name of the cgi-bin directory where HTPL should be installed
 echo -n "Default ["$PREDISP"$DEFAULT] "
 read INSTALLDIR
 if [ -z "$INSTALLDIR" ] ; then
     INSTALLDIR=$DEFAULT
 fi
-
-
+ab_cv_cgibin=$INSTALLDIR
+]
+])
+INSTALLDIR=$ab_cv_cgibin
+[
 if [ -n "$HTTPDROOT" ]; then
     DEFAULT=$HTTPDROOT"/conf/httpd.conf"
 else
     DEFAULT=$NEXTDEF"/.htaccess"
 fi
+]
 
-
+AC_CACHE_CHECK(for config file, ab_cv_conf, [
+[
+echo ""
 echo Enter the name of the config file for your web site
 echo -n "Default ["$PREDISP"$DEFAULT] "
 read HTCONF
@@ -211,14 +234,22 @@ if [ -z "$HTCONF" ] ; then
     HTCONF=$DEFAULT
 fi
 
+ab_cv_conf=$HTCONF
+]
+])
+HTCONF=$ab_cv_conf
 
+[
 if [ -n "$HTTPDROOT" ]; then
     DEFAULT=$HTTPDROOT"/logs/htpl_log"
 else
     DEFAULT=$NEXTDEF"/.htpl.log"
 fi
+]
 
-
+AC_CACHE_CHECK(for log file, ab_cv_logfile, [
+[
+echo ""
 echo Enter the name of the system log file 
 echo -n "Default ["$PREDISP"$DEFAULT] "
 read HTLOGS
@@ -226,7 +257,10 @@ if [ -z "$HTLOGS" ] ; then
     HTLOGS=$DEFAULT
 fi
 
+ab_cv_logfile=$HTLOGS
 ]
+])
+HTLOGS=$ab_cv_logfile
 
 [
 
@@ -240,7 +274,7 @@ if [ "$isego" = "no" ] || [ "$isego" = "n" ] ; then
 else
     EGO=htpl-author.ego
 fi
-
+touch htpl-author.ego
 fi
 ]
 

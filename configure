@@ -2004,6 +2004,7 @@ echo "configure:1999: checking if your Perl version has Tie::DeepTied" >&5
         echo "$ac_t""no" 1>&6
 	 echo You must get Tie-Tools from CPAN to run this package,
 echo Try \$CPAN/authors/id/S/SC/SCHOP or use CPAN.pm module for Tie::DeepTied.
+exit 
 
     fi
 
@@ -2078,7 +2079,14 @@ else
 fi
 
 
+echo $ac_n "checking for web root""... $ac_c" 1>&6
+echo "configure:2084: checking for web root" >&5
+if eval "test \"`echo '$''{'ab_cv_httpdroot'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
  
+echo ""
 HTTPDROOT=""
 if [ ! "$UID" = 0 ] && [ -z "$PRERUN" ]; then
     MODMAKE=build-it
@@ -2098,7 +2106,7 @@ do
 
 ac_safe=`echo "$ac_file" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_file""... $ac_c" 1>&6
-echo "configure:2103: checking for $ac_file" >&5
+echo "configure:2110: checking for $ac_file" >&5
 if eval "test \"`echo '$''{'ac_cv_file_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2135,7 +2143,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:2140: checking for $ac_word" >&5
+echo "configure:2147: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_HTTPD'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2198,6 +2206,13 @@ done
     fi
 fi
 
+ab_cv_httpdroot=$HTTPDROOT
+
+fi
+
+echo "$ac_t""$ab_cv_httpdroot" 1>&6
+HTTPDROOT=$ab_cv_httpdroot
+
 HTDOCS=""
 if [ -n "$HTTPDROOT" ] ; then
     DEFAULT="$HTTPDROOT"/htdocs
@@ -2214,12 +2229,28 @@ else
 fi
 NEXTDEF=$DEFAULT
 DEFAULT=$DEFAULT"/htpl"
+
+echo $ac_n "checking for document directory""... $ac_c" 1>&6
+echo "configure:2235: checking for document directory" >&5
+if eval "test \"`echo '$''{'ab_cv_htdocs'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+
+echo ""
 echo Enter the name of the documents directory where HTPL should install sample files and access scripts
 echo -n "Default ["$PREDISP"$DEFAULT] "
 read HTDOCS
 if [ -z "$HTDOCS" ] ; then
     HTDOCS=$DEFAULT
 fi
+ab_cv_htdocs=$HTDOCS
+
+
+fi
+
+echo "$ac_t""$ab_cv_htdocs" 1>&6
+HTDOCS=$ab_cv_htdocs
 
 if [ -n "$HTTPDROOT" ]; then
     DEFAULT=$HTTPDROOT"/cgi-bin"
@@ -2231,13 +2262,27 @@ else
     DEFAULT=$DEFAULT"/cgi-bin"
 fi
 
+echo $ac_n "checking for cgi directory""... $ac_c" 1>&6
+echo "configure:2267: checking for cgi directory" >&5
+if eval "test \"`echo '$''{'ab_cv_cgibin'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+
+echo ""
 echo Enter the name of the cgi-bin directory where HTPL should be installed
 echo -n "Default ["$PREDISP"$DEFAULT] "
 read INSTALLDIR
 if [ -z "$INSTALLDIR" ] ; then
     INSTALLDIR=$DEFAULT
 fi
+ab_cv_cgibin=$INSTALLDIR
 
+
+fi
+
+echo "$ac_t""$ab_cv_cgibin" 1>&6
+INSTALLDIR=$ab_cv_cgibin
 
 if [ -n "$HTTPDROOT" ]; then
     DEFAULT=$HTTPDROOT"/conf/httpd.conf"
@@ -2246,12 +2291,28 @@ else
 fi
 
 
+echo $ac_n "checking for config file""... $ac_c" 1>&6
+echo "configure:2296: checking for config file" >&5
+if eval "test \"`echo '$''{'ab_cv_conf'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+
+echo ""
 echo Enter the name of the config file for your web site
 echo -n "Default ["$PREDISP"$DEFAULT] "
 read HTCONF
 if [ -z "$HTCONF" ] ; then
     HTCONF=$DEFAULT
 fi
+
+ab_cv_conf=$HTCONF
+
+
+fi
+
+echo "$ac_t""$ab_cv_conf" 1>&6
+HTCONF=$ab_cv_conf
 
 
 if [ -n "$HTTPDROOT" ]; then
@@ -2261,6 +2322,14 @@ else
 fi
 
 
+echo $ac_n "checking for log file""... $ac_c" 1>&6
+echo "configure:2327: checking for log file" >&5
+if eval "test \"`echo '$''{'ab_cv_logfile'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  
+
+echo ""
 echo Enter the name of the system log file 
 echo -n "Default ["$PREDISP"$DEFAULT] "
 read HTLOGS
@@ -2268,7 +2337,13 @@ if [ -z "$HTLOGS" ] ; then
     HTLOGS=$DEFAULT
 fi
 
+ab_cv_logfile=$HTLOGS
 
+
+fi
+
+echo "$ac_t""$ab_cv_logfile" 1>&6
+HTLOGS=$ab_cv_logfile
 
 
 
@@ -2282,7 +2357,7 @@ if [ "$isego" = "no" ] || [ "$isego" = "n" ] ; then
 else
     EGO=htpl-author.ego
 fi
-
+touch htpl-author.ego
 fi
 
 

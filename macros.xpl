@@ -154,7 +154,7 @@ while ($%1% &amp;&amp; !$%1%->eof &amp;&amp; $%1%->fetch) {</__FWD>
 <__FWD MIN="1" MAX="4">
 <__DO MAX="1">foreach (1 .. %1%) {</__DO>
 <__DO MIN="2" MAX="2">foreach $%1% (1 .. %2%) {</__DO>
-<__DO MIN="3" MAX="3">foreach $%1% (%1% .. %2%) {</__DO>
+<__DO MIN="3" MAX="3">foreach $%1% (%2% .. %3%) {</__DO>
 <__DO MIN="4" MAX="4">for ($%1% = %2%; $%1% &lt;= %3%; $%1% += %4%) {</__DO>
 </__FWD>
 <__REV>}</__REV>
