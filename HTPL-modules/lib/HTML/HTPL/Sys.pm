@@ -9,7 +9,7 @@ require Exporter;
 @EXPORT = qw(call html_table html_table_out evit publish doredirect
 parse_cookies getmailprog proper ch2x safehash parse_tags outhtmltag
 enforce_tags begintransaction endtransaction htpl_startup get_session
-revmap ReadParse cleanup exit getvar safetags isheb htdie
+revmap ReadParse cleanup exit getvar safetags isheb htdie safetags
 checktaint pushvars popvars pkglist getpkg compileutil);
 
 $in_mod_htpl ||= $HTML::HTPL::Lib::in_mod_htpl;
@@ -190,13 +190,7 @@ sub ch2x {
 
 sub safehash {
     my ($hashref) = @_;
-    my ($k, $v);
-# Heuristics
-    while (($k, $v) = each %$hashref) {
-        goto haveto if ($k =~ /[a-z]/);
-    }
-    return;
-haveto:
+
     my %hash = %$hashref;
     %hash = safetags(%hash);
     %$hashref = %hash;

@@ -1,0 +1,21 @@
+Versions:
+
+2.66: HTML::HTPL::Select working.
+2.65: htplsrvc working.
+2.64: improved subhash working, html_treeview working.
+2.63: Deprecated Crypt::Simple and Parse::TopDown.
+2.61: Reporter generator, security checks for sendmail exploit.
+2.60WIN: Experimental.
+2.60: Database component compiler, new date-time functions, list
+      functions, HTML::HTPL::Table, persistent objects, cookies,
+      web client, log and buffer dump functions, directory recursion,
+      directory and file handling functions,  self reference functions.
+2.50: HTPL net, new macros, HTML generation, improved result sets,
+      Extensions to XPL (XML macro language for HTPL), module includes,
+      line oriented pre-processor, multiple fields form processing,
+      mail, web and internet functions, socket functions, one command
+      page coutner, obsolette GD support, Hebrew forms support, wrapping,
+      splitting and text processing.
+2.20: Macros, memory result sets, improved result sets.
+2: Result sets, HTML generation. URL Redirection & MIME types. 
+1: HTML/Perl preprocessor.

@@ -3,40 +3,55 @@ use HTML::HTPL::Lib;
 
 sub new {
     my $class = shift;
-    my $self = {'name' => shift, @_, 'rows' => []};
+    my $self = {'name' => shift, &HTML::HTPL::Sys::safetags(@_), 'rows' => []};
     bless $self, $class;
 }
 
 sub add {
+    my ($self) = shift;
+    while (@_) {
+        my $key = shift;
+        my $value = (shift) || $key;
+        push(@{$self->{'rows'}}, [$value, $key]);
+    }
+}
+
+sub adddefault {
     my ($self, $key, $value) = @_;
     $value ||= $key;
     push(@{$self->{'rows'}}, [$key, $value]);
+    $self->default($key);
 }
 
-sub add_default {
-    my ($self, $key, $value) = @_;
-    $value ||= $key;
-    push(@{$self->{'rows'}}, [$key, $value]);
-    $self->set_default($key);
-}
-
-sub set_default {
+sub default {
     my ($self, $key) = @_;
+    return $self->{'default'} unless(defined($key));
     $self->{'default'} = $key;
 }
 
-sub as_html {
+sub set {
+    my ($self) = @_;
+    while (@_) {
+        my $prop = lc(shift);
+        my $val = shift;
+        $self->{$prop} = $val;
+    }
+}
+
+sub ashtml {
     my $self = shift;
     my $attr;
-    my $rows = $self->{'rows'};
-    $attr = " MULTIPLE SIZE=$rows" if ($rows > 1);
+    $attr = " MULTIPLE" if ($self->{'multi'});
+    my $rows = $self->{'size'};
+    $rows = scalar(@{$self->{'rows'}}) if ($rows < 0);
+    $attr .= " SIZE=$rows" if ($rows > 1);
+    $attr = substr($attr, 1);
     my $name = $self->{'name'};
     my $default = $self->{'default'};
-    my $hash = {'name' => $name, $attr => $attr, 'noout' => 1};
+    my $hash = {'name' => $name, 'attr' => $attr, 'noout' => 1};
     $hash->{'default'} = $default if ($default);
-    my @elems;
-    foreach (@{$self->{'rows'}}) {
-        push(@elems, @$_);
-    }
+    my @elems = map {@$_;} @{$self->{'rows'}};
     HTML::HTPL::Lib::html_selectbox($hash, @elems);
 }
+
+1;

@@ -66,7 +66,7 @@ sub jewishdate {
 
 sub html_hidden {
     my ($key, $value, $noout) = @_;
-    $value = eval(${$key}) unless ($value);
+    $value = &HTML::HTPL::Sys::getvar($key) unless ($value);
     $code = "<INPUT NAME=\"$key\" VALUE=\"$value\" TYPE=HIDDEN>\n";
     print $code unless ($noout);
     $code;
@@ -74,17 +74,12 @@ sub html_hidden {
 
 sub html_format {
     my ($msg, $tags, $nonl, $noout) = @_;
-    my (@ht_tags) = split(/\|/, $tags);
+    my (@ht_tags) = (ref($tags) =~ /ARRAY/) ? @$tags : split(/\|/, $tags);
     my ($i, @t, $s);
 
-    foreach $i (@ht_tags) {
-        $s .= "<$i>";
-    }
+    $s = join("", map {"<$_>";} @ht_tags);
     $s .= $msg;
-    foreach $i (reverse(@ht_tags)) {
-        @t = split(/ /, $i);
-        $s .= "</$t[0]>";
-    }
+    $s .= join("", map { s/\s.*$//; "</$_>";} reverse @ht_tags);
     $s .= "\n" unless ($nonl);
     print $s unless ($noout);
     $s;
@@ -242,7 +237,7 @@ sub setcookie {
         unless (ref($val) =~ /HASH/) {
             &addheader("Set-Cookie: $key=$val");
         } else {
-            safehash($val);
+            &HTML::HTPL::Sys::safehash($val);
             my @ary;
             push(@ary, $val->{'data'});
             my $server = $val->{'server'};
@@ -495,7 +490,7 @@ sub html_selectbox {
     unless (ref($par) =~ /HASH/) {
         $default = $par;
     } else {
-        &safehash($par);
+        &HTML::HTPL::Sys::safehash($par);
         $default = $par->{'default'};
         $attr = $par->{'attr'};
         $attr = " $attr" if ($attr);

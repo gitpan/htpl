@@ -63,8 +63,7 @@ $(DBG) : $(DEP)
 
 # Cancel this dependency if you fail to compile with no XML
 htpl-parse.c : htpl.subs htpl-crp.pl $(OBV)
-	test -z "$(XML)"  || yapp htplparse.yp || true
-	test -z "$(XML)"  || $(PERL) htpl-crp.pl
+	test -z "$(XML)"  || yapp htplparse.yp  && $(PERL) htpl-crp.pl
 
 htpl-sh.h : htpl-parse.c
 
