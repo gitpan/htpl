@@ -20,6 +20,7 @@ DFA eat_one(ch, status, perlkind, language)
     int language;
     int perlkind;
     DFA status; {
+    int sch = ch;
     static int tcllist = 0;
     ch = toupper(ch);
     if (cstate == CC) return PERL;
@@ -100,6 +101,7 @@ DFA eat_one(ch, status, perlkind, language)
                                                 return PERL;
                                         return TAG;
                              case '%':  return PERL_EXP;
+                             case '@':  return PREP;
                              case 'H':  return TAG_H;
                              case '>':  return HTML;
                              case '/':  return UNTAG;
@@ -215,6 +217,11 @@ DFA eat_one(ch, status, perlkind, language)
                              case '>': return HTML;
                              default:  return SILENCE;
                         }
+        case PREP:      switch(ch) {
+                            case '>': return UNPREP;
+                            default:  return PREP;
+                        }
+        case PREPBUFF:  return PREPBUFF;
     }
 }
 
@@ -397,7 +404,7 @@ void doinclude(o, filename1)
     nline = 1;
 
     tryexts(filename1, filename, ".hh.inc");
-    i = FOPEN(filename, "r");
+    i = opensource(filename);
     strcpy(thefilename, filename);
 
     chdir(ndir);
@@ -490,8 +497,8 @@ void outplain(o, line, language)
     if (!language) {
         outf(o, "print \"%s\";", copy);
     } else {
-        char *it = " -nonewline";
-        char *ch = copy + strlen(copy) - 2;
+        STR it = " -nonewline";
+        STR ch = copy + strlen(copy) - 2;
         if (!strcmp(ch, "\\n")) {
             it = "";
             *ch = '\0';
@@ -502,7 +509,7 @@ void outplain(o, line, language)
     rline++;
 }
 
-char *tcl_boundary = "ThisIsTheEndOfOurTCLCodeEmbededIntoThePerlCodeInsideHTPL";
+STR tcl_boundary = "ThisIsTheEndOfOurTCLCodeEmbededIntoThePerlCodeInsideHTPL";
 
 void begintcl(o)
     FILE *o; {
@@ -634,6 +641,7 @@ void process(f, c, o)
     int ch;
     DFA before;
     DFA after;
+    DFA finish;
     STR line, htmlbuff;
     pchar ptr, saveptr;
     short code;
@@ -642,6 +650,11 @@ void process(f, c, o)
     TOKEN engine, check;
     int perlkind;
     int language = LNG_PERL;
+    TOKEN prep;
+    STR prepbuff;
+    long preplen;
+    static STR prepend = "</@>";
+    short prepstate = 0;
 
 /* Initialize */
     scopestack = NULL;
@@ -657,6 +670,7 @@ void process(f, c, o)
     before = HTML;
     intag = 0;
     save = NULL;
+
     bzero(internal_flags, sizeof(internal_flags));
 #ifdef __DEBUG__
     if (noweb) {
@@ -665,6 +679,8 @@ void process(f, c, o)
     }
 #endif
 
+    finish = before;
+
 /* Get a char from input, unless rollback buffer has chars */
     while ((ch=(save && *save ? *save++ : getc(f))) != EOF) {
 /* If we have left over from  a macro tag */
@@ -672,6 +688,51 @@ void process(f, c, o)
 /* Ignore CR to make dos users' life easier */
         if (ch == '\r') continue;
         after = eat_one(ch, before, perlkind, language);
+
+/* preprocess */
+        if (after == PREP && before != PREP && intag) {
+            intag = 0;
+            ptr = prep;
+            goto nxt;
+        }
+        if (after == UNPREP) {
+            STR res;
+            int ln;
+            *ptr = '\0';
+            preplen = BUFF_SIZE;
+            ptr = prepbuff = malloc(preplen);
+            after = PREPBUFF;
+            goto nxt;
+        }
+
+        if (after == PREPBUFF) {
+            int sofar = ptr - prepbuff;
+            if (sofar + 2 > preplen) {
+                preplen += BUFF_SIZE;
+                prepbuff = realloc(prepbuff, preplen);
+                ptr = prepbuff + sofar;
+            }
+            *ptr++ = ch;
+            if (ch != prepend[prepstate++]) prepstate = 0;
+            if (!prepend[prepstate]) {
+                char *res;
+                long len2;
+                long len;
+                ptr -= strlen(prepend);
+                *ptr = '\0';
+                res = preprocess(prepbuff, prep); 
+                free(prepbuff);
+                len = strlen(res);
+                if (len > BUFF_SIZE) htmlbuff = realloc(htmlbuff, len);
+                strcpy(htmlbuff, res);
+                free(res);
+                save = htmlbuff;
+                ptr = saveptr;
+                after = HTML;
+            }
+            goto nxt;
+        }
+
 /* If we just started a tag and we are not inside the rollback buffer */
 /* Start accumulating tag for later macro tag match */
         if (after == BRAC && !save && !intag) {
@@ -753,11 +814,21 @@ automaton */
             goto nxt;
         }
 /* If we reached a new line */
-        if (ch == '\n' && !intag || feof(f) && !intag) {
+        if (ch == '\n' && !intag && before != PREPBUFF || feof(f) && !intag) {
             *ptr = '\0';
-            ptr = line;
 /* If it was a command */
             if (isperl(after)) {
+                if (ptr > line && *(ptr - 1) == '\\') {
+                    char *saveptr2 = ptr;
+                    ptr = line;
+                    while (isblank(*ptr)) ptr++;
+/* Allow multiline comments */
+                    if (*ptr == '#') {
+                        ptr = saveptr2 - 1;
+                        *ptr++ = ' ';
+                        goto nxt;
+                    }
+                }
                 outperl(o, c, line, language);
 /* It is now allowed to escape back to HTML  - allow matching > */
                 if (language == LNG_PERL) after = PERL_END; 
@@ -766,6 +837,7 @@ automaton */
                 strcat(line, qNEWLINE);
                 outplain(o, line, language);
             }
+            ptr = line;
             nline++;
             if (feof(f) && !intag) return;
             goto nxt;
@@ -874,7 +946,6 @@ nxt:
 /* if croak() was called, no need to continue */
         if (fatal) return;
     }
-
 /* free resources */
     free(line);
     free(htmlbuff);
@@ -885,6 +956,10 @@ nxt:
 	croak("Unterminated scope %s from line %d",  scope_names[currscope->scope], currscope->nline);
 /*        while (scopestack) popscope(); 
 ** This is obsolette, as dumpscopes will be called */
+    }
+
+    if (after != finish) {
+        croak("Did not end in correct section");
     }
 }
 
@@ -967,6 +1042,7 @@ int main(int argc, char *argv[], char **env) {
                      exit(1);
         }
     }
+
     if  (inputcgi && !runit || inputcgi && noweb || noout && runit) {
         printf("Invalid option combination%s", NEWLINE);
         exit(1);
@@ -1173,7 +1249,7 @@ HTPL page. Check in dependency database if used */
 /* Open source */
 
     chdir(origdir);
-    i = FOPEN(inputfile, "r");  
+    i = opensource(inputfile);  
     strcpy(infile, inputfile);
     strcpy(thefilename, infile);
     nline = 1;
@@ -1262,7 +1338,7 @@ void execute(script, postdata, headers, output, error)
     FILE *o, *i;
     int code;
     char *array[2];
-    char *devnull = "/dev/null";
+    STR devnull = "/dev/null";
     FILE *myout;
     char c;
     char **newargv;
@@ -1374,7 +1450,7 @@ to allow matching of line numbers against error messages */
 
 /* Dump the actual page */
 
-    i = FOPEN(output, "r");
+    i = openoutput(output);
     fcpy(i, myout, 0);
     fclose(i);
 
@@ -1396,7 +1472,7 @@ to allow matching of line numbers against error messages */
  ****************************************/
 
 void xsub_entry(inp, outp, binary) 
-    char *inp, *binary, *outp; {
+    STR inp, binary, outp; {
 
     char *argv[5] = {binary, "-t", "-o", outp, inp};
 

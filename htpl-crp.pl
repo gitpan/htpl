@@ -476,9 +476,9 @@ EOM
 sub outgettags {
     my $mand = shift;
     my $sub = shift;
-    my $ret = &outcode("my %%tags = &HTML::HTPL::Lib::parse_tags('%1*%\');");
-    $ret .= &outcode("&publish(&proper(sub {lc($_);}, %%tags));");
-    $ret .= &outcode("&HTML::HTPL::Lib::enforce_tags('$mand', '$sub', %%tags);") if ($mand);
+    my $ret = &outcode("my %%tags = &HTML::HTPL::Sys::parse_tags('%1*%\');");
+    $ret .= &outcode("&publish(&proper(sub {uc(\$_);}, %%tags));");
+    $ret .= &outcode("&HTML::HTPL::Sys::enforce_tags('$mand', '$sub', %%tags);") if ($mand);
     $ret;
 }
 

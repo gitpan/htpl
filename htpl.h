@@ -52,6 +52,7 @@ enum states {ESCAPE = 0, COMMENT, QUOTE, D_QUOTE, FIELD = 10,  PERL_END,
     BRAC, TCL_DO_INTER, TAG, UNTAG, T_QUOTE, TAG_H,
     TAG_T, TAG_NONE, PRECOM_1, PRECOM_2, PRECOM_3, 
     PERL_1, PERL_2, PERL_3, PERL_4, TCL_1, TCL_2, TCL_3,
+    PREP, UNPREP, PREPBUFF,
     HTML = 60, CC,
     SILENCE, POSTCOM_1, POSTCOM_2, POSTCOM_3, POSTCOM_4};
 
@@ -129,6 +130,10 @@ void replacechar(STR, char, char);
 STR qualify(STR, int);
 void fcopy(STR, STR);
 STR escapevars(STR);
+STR preprocess(STR, STR);
+FILE *opensource(STR);
+FILE *openoutput(STR);
+FILE *openif(STR, STR);
 
 /*
 struct ldapp {

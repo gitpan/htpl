@@ -42,4 +42,9 @@ sub ashtml {
                        %{$self->{'vars'}});
 }
 
+sub asstring {
+    my $self = shift;
+    $self->ashtml(@_);
+}
+
 1;

@@ -1,5 +1,9 @@
 Versions:
 
+2.69: Added preprocessor, post processor and inprocessor.
+2.68: LDAP support resumed, perl lines begiining with a hash sign can be
+      continued next line if ended with a backslash. (For the sake of
+      macros)
 2.66: HTML::HTPL::Select working.
 2.65: htplsrvc working.
 2.64: improved subhash working, html_treeview working.

@@ -22,7 +22,7 @@ begintransaction endtransaction imagesize finger revmap safemkdir mkfile
 jewishdate getdmy monthname weekdayname foreachdir slash wrap hebrew_wrap
 pusht popt undouble uniq timestep rotate ror rol getcwd hostname core
 selfurl querystring takebroadlog subpkg subhash maketime
-html_treeview selfsameurl new_template
+html_treeview selfsameurl new_template new_select getweekday
 elapsed hebrewflip agg sum splitline $STD_BODY @MONTH_NAMES @WEEKDAY_NAMES);
 
 @MONTH_NAMES = qw(January February March April May June July August
@@ -50,6 +50,16 @@ sub getmdy {
     (getdmy(@_))[(1, 0, 2)];
 }
     
+sub getweekday {
+    require Time::Local;
+    my ($t) = ($#_ > 4) ? Time::Local::timelocal(@_) :
+                   ($#_ == 2 ? &maketime(@_)
+                        :
+                ($_[0] || time)
+             );
+    (localtime($t))[6];
+}
+    
 
 sub convyear {
    $_[0] + int((2100 - $_[0]) / 1900) *
@@ -65,15 +75,15 @@ sub jewishdate {
 
 
 sub html_hidden {
-    my ($key, $value, $noout) = @_;
+    my ($key, $value) = @_; # noout deprecated
     $value = &HTML::HTPL::Sys::getvar($key) unless ($value);
     $code = "<INPUT NAME=\"$key\" VALUE=\"$value\" TYPE=HIDDEN>\n";
-    print $code unless ($noout);
+    print $code unless defined wantarray;
     $code;
 }
 
 sub html_format {
-    my ($msg, $tags, $nonl, $noout) = @_;
+    my ($msg, $tags, $nonl) = @_;
     my (@ht_tags) = (ref($tags) =~ /ARRAY/) ? @$tags : split(/\|/, $tags);
     my ($i, @t, $s);
 
@@ -81,7 +91,7 @@ sub html_format {
     $s .= $msg;
     $s .= join("", map { s/\s.*$//; "</$_>";} reverse @ht_tags);
     $s .= "\n" unless ($nonl);
-    print $s unless ($noout);
+    print $s unless defined wantarray;
     $s;
 }
 
@@ -95,7 +105,7 @@ sub min {
 
 sub agg (&@) {
     my ($code, @elems) = @_;
-    my ($a, $b);
+    local ($a, $b);
     $a = shift @elems;
     while (@elems) {
         $b = shift @elems;
@@ -128,7 +138,7 @@ sub html_table_cols {
 $STD_BODY = "BGCOLOR=#FFFFFF TEXT=#000000 LINK=#0000FF VLINK=#FF00FF ALINK=#FF0000";
 
 sub html_header {
-    my ($title, $body, $noout) = @_;
+    my ($title, $body) = @_;
     my ($html) = <<EOM;
 <HTML>
 <HEAD>
@@ -143,17 +153,16 @@ EOM
 <BODY $body>
 EOM
     }
-    print $html unless ($noout);
+    print $html unless defined wantarray;
     $html;
 }
 
 sub html_footer {
-    my ($noout) = @_;
     my ($html) = <<EOM;
 </BODY>
 </HTML>
 EOM
-    print $html unless ($noout);
+    print $html unless defined wantarray;
     $html;
 }
 
@@ -313,7 +322,7 @@ sub getemail {
     require Mail::Address;
     my (@a) = Mail::Address->parse($recpt);
     my ($email) = $a[0]->address;
-    return &checktaint($email);
+    return &HTML::HTPL::Sys::checktaint($email);
 }
 
 sub tempfilename {
@@ -383,7 +392,7 @@ sub closedoc {
 }
 
 sub isurl {
-    $_[0] =~ /^(http|ftp)/i;
+    $_[0] =~ /^\w+:\/\//i;
 }
 
 sub nslookup {
@@ -485,7 +494,7 @@ sub trim {
 sub html_selectbox {
     my ($par) = shift;
     my ($o, $n, $default, %opt) = ();
-    my ($name, $attr, $code, $noout);
+    my ($name, $attr, $code);
     
     unless (ref($par) =~ /HASH/) {
         $default = $par;
@@ -515,7 +524,7 @@ sub html_selectbox {
         $code .= ' ' x 4 . '<OPTION VALUE="' . $o . '"' . $opt{$o} . '>' . $n . "\n";
     }
     $code .= "</SELECT>\n" if ($name);
-    print $code unless ($noout);
+    print $code unless defined wantarray;
     $code;
 }
 
@@ -731,7 +740,7 @@ sub foreachdir (&$@) {
         $code = eval "sub {&\$proc if ($exp);};";
     }
     foreach (@dirs) {
-        File::Recurse::recurse($proc, $_);
+        File::Recurse::recurse($code, $_);
     }
     $File::Recurse::MAX_DEPTH = $save;
 }
@@ -785,7 +794,6 @@ sub maketime {
 }
 
 sub calcweek {
-    require POSIX;
     require Time::Local;
     my ($t) = ($#_ > 4) ? Time::Local::timelocal(@_) : 
                    ($#_ == 2 ? &maketime(@_)
@@ -795,7 +803,7 @@ sub calcweek {
     my (@t) = localtime($t);
     my ($yday) = $t[7];
     @t[3, 4] = (1, 0);
-    $t = POSIX::mktime(@t);
+    $t = Time::Local::timelocal(@t);
     @t = localtime($t);
     my ($wdayjan1) = $t[6];
     int(($yday + $wdayjan1) / 7);
@@ -824,8 +832,10 @@ sub wrap {
 
 sub hebrew_wrap {
     my ($line, $ln) = @_;
-    return wrap($line) unless HTML::HTPL::Sys::isheb($line);
-    $line = hebrewflip($line);
+    return &wrap($line) unless HTML::HTPL::Sys::isheb($line);
+    my @lines = split(/\n/, &wrap($line));
+    join("\n", map { hebrewflip($_); } @lines);
+
 }
 
 sub dos2unix {
@@ -858,6 +868,11 @@ sub catfile {
     File::Spec->catfile(@_);
 }
 
+sub devnull {
+    require File::Spec;
+    File::Spec->devnull;
+}
+
 sub mkfile {
     my ($fn, $txt) = @_;
     open(OF, ">$fn");
@@ -880,6 +895,11 @@ sub new_table {
 sub new_template {
     require HTML::HTPL::Template;
     return new HTML::HTPL::Template(@_);
+}
+
+sub new_select {
+    require HTML::HTPL::Select;
+    return new HTML::HTPL::Select(@_);
 }
 
 sub pusht {
@@ -1055,7 +1075,7 @@ sub subpkg {
 }
 
 sub html_treeview {
-    my ($tree, $param, $noout) = @_;
+    my ($tree, $param) = @_;
     my %hash = &HTML::HTPL::Sys::gethash('url');
     my $init = $hash{$param};
     my @open = split(/\$/, $init);
@@ -1094,7 +1114,7 @@ sub html_treeview {
         $result .= &html_treeview($children, $param, 1);
     }
     $result = "<UL>$result</UL>";
-    print $result unless ($noout);
+    print $result unless defined wantarray;
     $result;
 }
 

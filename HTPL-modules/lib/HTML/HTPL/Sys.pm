@@ -497,7 +497,7 @@ sub gethash {
 
 sub checktaint {
     my $val = shift;
-    dieTaint if ($val =~ /[`;(<|]/);
+    dieTaint if ($val =~ /[`;(<>|&]/);
     $val;
 }
 

@@ -1265,3 +1265,134 @@ int makecomponent(filename)
     unlink(temp);
     chdir(dirbefore);
 }
+
+/********************************************************
+ * Pipe a string through a process                      *
+ ********************************************************/
+
+STR preprocess(str, cmd)
+    STR str, cmd; {
+
+    int dad_rdr, dad_wtr, kid_rdr, kid_wtr, dad_err, kid_err;
+    int pi[2], po[2], pe[2];
+    int pid;
+    FILE *f, *i;
+    int code;
+    STR buff;
+    char chunk[BUFF_SIZE];
+    int len, red;
+
+    fflush(stdout);
+
+    pipe(pi);
+    pipe(po);
+    pipe(pe);
+
+
+    dad_rdr = po[0];
+    dad_wtr = pi[1];
+    kid_rdr = pi[0];
+    kid_wtr = po[1];
+    dad_err = pe[0];
+    kid_err = pe[1];
+    
+
+    if ((pid = fork()) == 0) {
+        close(dad_wtr);
+        close(dad_rdr);
+        close(dad_err);
+        close(0);
+        dup(kid_rdr);
+        close(1);
+        dup(kid_wtr);
+        close(2);
+        dup(kid_err);
+        system(cmd);
+        fflush(stdout);
+        exit(0);
+    }
+
+    if (pid < 0) {
+        croak("PP: fork failed: %s", sys_errlist[errno]);
+        close(kid_err);
+        close(kid_rdr);
+        close(kid_wtr);
+        close(dad_wtr);
+        close(dad_rdr);
+        close(dad_err);
+      
+        return strdup("");
+    }
+
+    close(kid_err);
+    close(kid_rdr);
+    close(kid_wtr);
+
+    write(dad_wtr, str, strlen(str));
+    close(dad_wtr);
+
+    waitpid(pid, &code, 0);
+
+
+
+    if (!WIFEXITED(code)) {
+        TOKEN err;
+        FILE *e = fdopen(dad_err, "r");
+        close(dad_rdr);
+        if (e) {
+            fgets(err, sizeof(err), e);
+            err[strlen(err) - 1] = '\0';
+        }
+        fclose(e);
+        croak("PP: Child returned error: %s", err);
+        return strdup("");
+    }
+
+    close(dad_err);
+
+    buff = strdup("");
+    len = 0;
+
+    while ((red = read(dad_rdr, chunk, sizeof(chunk))) > 0) {
+        buff = realloc(buff, len + red);
+        memcpy(buff + len, chunk, red);
+        len += red;
+    }
+
+    close(dad_rdr);
+    buff[len] = '\0';
+    return buff;
+}
+
+FILE* openif(filename, filter)
+    STR filename, filter; {
+    FILENAME dir;
+    FILENAME try;
+    FILE *f;
+    TOKEN pn;
+
+    finddir(filename, dir);
+    sprintf(try, "%s%c%s", dir, SLASH_CHAR, filter);
+    if (f = fopen(try, "r")) {
+        fgets(pn, sizeof(pn), f);
+        fclose(f);
+        pn[strlen(pn) - 1] = '\0';
+        sprintf(try, "%s %s", pn, filename);
+        if (f = popen(try, "r")) return f;
+        puts("Content-type: text/plain\n");
+        printf("Could not spawn filter %s: %s", filter, sys_errlist[errno]);
+        exit(-1);
+    }
+    return FOPEN(filename, "r");
+}
+
+FILE* opensource(filename)
+    STR filename; {
+    return openif(filename, "htsource.pre");
+}
+
+FILE* openoutput(filename)
+    STR filename; {
+    return openif(filename, "htout.pre");
+}
+

@@ -1,6 +1,7 @@
 package HTML::HTPL::LDAP;
 
 use Net::LDAP;
+use HTML::HTPL::Lib;
 use HTML::HTPL::Result;
 
 sub new {
@@ -42,11 +43,12 @@ sub search {
 
     my @attrs = split(/\s+/, $attributes);
 
-    my @p = @attrs && ('attrs' => \@attrs);
+    my @p = (@attrs && ('attrs' => \@attrs), $start && ('base' => $start));
+    
 
     $sizelimit = undef unless ($sizelimit > 0);
 
-    my $mesg = $dir->search(base => $start, scope => $scope, 
+    my $mesg = $dir->search(scope => $scope, 
     sizelimit => $sizelimit,
         filter => $filter, @p);
 
@@ -154,7 +156,7 @@ sub trans {
 
     push(@t, shift @p);
     foreach (@p) {
-        push(@t, &main'trim($_));
+        push(@t, &HTML::HTPL::Lib::trim($_));
     }
 
     return @t;

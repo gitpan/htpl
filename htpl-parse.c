@@ -95,6 +95,163 @@ int parse_htpl_method(stack, untag)
         else return parse_htpl_method___rev(stack, untag);
 }
 
+int parse_htpl_ldap_delete(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (numtokens < 1) RETURN(croak("LDAP DELETE called with %d arguments, minimum needed is 1", numtokens))
+    if (numtokens > 1) RETURN(croak("LDAP DELETE called with %d arguments, maximum needed is 1", numtokens))
+
+    printfcode("$HTML::HTPL::htpl_dir_obj->modify('%s');\n", gettoken(1));
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_ldap_init(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (numtokens < 1) RETURN(croak("LDAP INIT called with %d arguments, minimum needed is 1", numtokens))
+    if (numtokens > 4) RETURN(croak("LDAP INIT called with %d arguments, maximum needed is 4", numtokens))
+
+    printcode("$HTML::HTPL::htpl_dir_obj = new\n");
+    printfcode("              HTML::HTPL::LDAP(qw(%s));\n", gettokenlist(1, " ", ""));
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_ldap_search(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    printcode("{\n");
+    if (numtokens < 1) RETURN(croak("LDAP SEARCH called with %d arguments, minimum needed is 1", numtokens))
+    code = 1;
+    buff = (STR)mysprintf("LDAP DOSEARCH %s", gettokenlist(1, " ", ""));
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    printfcode("$%s = $HTML::HTPL::ldap_query;\n", gettoken(1));
+    printcode("}\n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_ldap_modify(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (numtokens < 2) RETURN(croak("LDAP MODIFY called with %d arguments, minimum needed is 2", numtokens))
+    printfcode("$HTML::HTPL::htpl_dir_obj->modify('%s', '%2*');\n", gettoken(1));
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_ldap_dosearch(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    printcode("{\n");
+    printfcode("my %%tags = &HTML::HTPL::Sys::parse_tags('%s');\n", gettokenlist(1, " ", ""));
+    printcode("&publish(&proper(sub {uc($_);}, %tags));\n");
+    printcode("&HTML::HTPL::Sys::enforce_tags('filter,base', 'LDAP DOSEARCH', %tags);\n");
+    if (!nest) RETURN(0)
+    printcode("		$HTML::HTPL::ldap_query =\n");
+    printcode("			$HTML::HTPL::htpl_dir_obj->search(\n");
+    printcode("			$tags{'FILTER'}, $tags{'BASE'}, $tags{'SCOPE'},\n");
+    printcode("                        $tags{'ATTR'} . $tags{'ATTRS'} .\n");
+    printcode("			$tags{'ATTRIBUTES'}, $tags{'SIZE'} .\n");
+    printcode("			$tags{'LIMIT'} . $tags{'SIZELIMIT'}, $tags{'KEY'}\n");
+    printcode("			. $tags{'SORTKEY'});\n");
+    printcode("	\n");
+    printcode("}\n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_ldap_add(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (numtokens < 2) RETURN(croak("LDAP ADD called with %d arguments, minimum needed is 2", numtokens))
+    printfcode("$HTML::HTPL::htpl_dir_obj->add('%s', '%2*');\n", gettoken(1));
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_ldap(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    if (!done) {
+        done = 1;
+        printcode("use HTML::HTPL::LDAP;\n");
+    }
+    eat(&stack, token);
+    if (!strcasecmp(token, "DELETE")) return parse_htpl_ldap_delete(stack, untag);
+    if (!strcasecmp(token, "INIT")) return parse_htpl_ldap_init(stack, untag);
+    if (!strcasecmp(token, "SEARCH")) return parse_htpl_ldap_search(stack, untag);
+    if (!strcasecmp(token, "MODIFY")) return parse_htpl_ldap_modify(stack, untag);
+    if (!strcasecmp(token, "DOSEARCH")) return parse_htpl_ldap_dosearch(stack, untag);
+    if (!strcasecmp(token, "ADD")) return parse_htpl_ldap_add(stack, untag);
+    return 0;
+}
+
 int parse_htpl_include(stack, untag)
     int untag;
     STR stack; {
@@ -190,6 +347,27 @@ int parse_htpl_text_precsv(stack, untag)
     RETURN(1)
 }
 
+int parse_htpl_text_flat(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (numtokens < 3) RETURN(croak("TEXT FLAT called with %d arguments, minimum needed is 3", numtokens))
+    if (!done) {
+        done = 1;
+        printcode("use HTML::HTPL::Flat;\n");
+    }
+    printfcode(" $%s = &HTML::HTPL::Flat'openflat(\"%s\", qw(%s));\n", gettoken(1), gettoken(2), gettokenlist(3, " ", ""));
+    nesting = 0;
+    RETURN(1)
+}
+
 int parse_htpl_text_read(stack, untag)
     int untag;
     STR stack; {
@@ -268,27 +446,6 @@ int parse_htpl_text_cube(stack, untag)
     RETURN(1)
 }
 
-int parse_htpl_text_flat(stack, untag)
-    int untag;
-    STR stack; {
-
-    TOKEN token;
-    static done = 0;
-    STR buff;
-    int code;
-    static int nesting = 0;
-
-    makepersist(stack);
-    if (numtokens < 3) RETURN(croak("TEXT FLAT called with %d arguments, minimum needed is 3", numtokens))
-    if (!done) {
-        done = 1;
-        printcode("use HTML::HTPL::Flat;\n");
-    }
-    printfcode(" $%s = &HTML::HTPL::Flat'openflat(\"%s\", qw(%s));\n", gettoken(1), gettoken(2), gettokenlist(3, " ", ""));
-    nesting = 0;
-    RETURN(1)
-}
-
 int parse_htpl_text(stack, untag)
     int untag;
     STR stack; {
@@ -301,10 +458,10 @@ int parse_htpl_text(stack, untag)
 
     eat(&stack, token);
     if (!strcasecmp(token, "PRECSV")) return parse_htpl_text_precsv(stack, untag);
+    if (!strcasecmp(token, "FLAT")) return parse_htpl_text_flat(stack, untag);
     if (!strcasecmp(token, "READ")) return parse_htpl_text_read(stack, untag);
     if (!strcasecmp(token, "CSV")) return parse_htpl_text_csv(stack, untag);
     if (!strcasecmp(token, "CUBE")) return parse_htpl_text_cube(stack, untag);
-    if (!strcasecmp(token, "FLAT")) return parse_htpl_text_flat(stack, untag);
     return 0;
 }
 
@@ -1423,9 +1580,9 @@ int parse_htpl_mail___fwd(stack, untag)
 
     makepersist(stack);
     printcode("{\n");
-    printfcode("my %%tags = &HTML::HTPL::Lib::parse_tags('%s');\n", gettokenlist(1, " ", ""));
-    printcode("&publish(&proper(sub {lc(\"my %tags = &HTML::HTPL::Lib::parse_tags('%s');\\n\", gettokenlist(1, \" \", \"\"));}, %tags));\n");
-    printcode("&HTML::HTPL::Lib::enforce_tags('FROM,TO,SUBJECT', 'MAIL', %tags);\n");
+    printfcode("my %%tags = &HTML::HTPL::Sys::parse_tags('%s');\n", gettokenlist(1, " ", ""));
+    printcode("&publish(&proper(sub {uc($_);}, %tags));\n");
+    printcode("&HTML::HTPL::Sys::enforce_tags('FROM,TO,SUBJECT', 'MAIL', %tags);\n");
     pushscope(scope_mail, 0);
     printcode("{\n");
     printcode("		my %mailtags = %tags;\n");
@@ -2318,9 +2475,9 @@ int parse_htpl_img_rnd(stack, untag)
 
     makepersist(stack);
     printcode("{\n");
-    printfcode("my %%tags = &HTML::HTPL::Lib::parse_tags('%s');\n", gettokenlist(1, " ", ""));
-    printcode("&publish(&proper(sub {lc(\"my %tags = &HTML::HTPL::Lib::parse_tags('%s');\\n\", gettokenlist(1, \" \", \"\"));}, %tags));\n");
-    printcode("&HTML::HTPL::Lib::enforce_tags('SRC', 'IMG RND', %tags);\n");
+    printfcode("my %%tags = &HTML::HTPL::Sys::parse_tags('%s');\n", gettokenlist(1, " ", ""));
+    printcode("&publish(&proper(sub {uc($_);}, %tags));\n");
+    printcode("&HTML::HTPL::Sys::enforce_tags('SRC', 'IMG RND', %tags);\n");
     printcode("my @ims = split(/,\\s*/, $tags{'SRC'}); my $f = $ims[int(rand() * ($#ims + 1))];\n");
     printcode("		$tags{'SRC'} = $f; \n");
     code = 1;
@@ -2605,6 +2762,7 @@ int parse_htpl(stack, untag)
     eat(&stack, token);
     if (!strcasecmp(token, "LOAD")) return parse_htpl_load(stack, untag);
     if (!strcasecmp(token, "METHOD")) return parse_htpl_method(stack, untag);
+    if (!strcasecmp(token, "LDAP")) return parse_htpl_ldap(stack, untag);
     if (!strcasecmp(token, "INCLUDE")) return parse_htpl_include(stack, untag);
     if (!strcasecmp(token, "DEFAULT")) return parse_htpl_default(stack, untag);
     if (!strcasecmp(token, "CONTINUE")) return parse_htpl_continue(stack, untag);

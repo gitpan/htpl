@@ -1,0 +1,8 @@
+<#
+
+#TEXT CSV userfile /etc/passwd : user pass uid gid name shell dir
+
+$temp = new_template('template.tmpl');
+$temp->fromresult('rec', $userfile);
+print $temp->ashtml;
+>

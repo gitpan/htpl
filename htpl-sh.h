@@ -3,16 +3,23 @@ int parse_htpl_load(STR, int);
 int parse_htpl_method(STR, int);
 int parse_htpl_method___fwd(STR, int);
 int parse_htpl_method___rev(STR, int);
+int parse_htpl_ldap(STR, int);
+int parse_htpl_ldap_delete(STR, int);
+int parse_htpl_ldap_init(STR, int);
+int parse_htpl_ldap_search(STR, int);
+int parse_htpl_ldap_modify(STR, int);
+int parse_htpl_ldap_dosearch(STR, int);
+int parse_htpl_ldap_add(STR, int);
 int parse_htpl_include(STR, int);
 int parse_htpl_default(STR, int);
 int parse_htpl_continue(STR, int);
 int parse_htpl_break(STR, int);
 int parse_htpl_text(STR, int);
 int parse_htpl_text_precsv(STR, int);
+int parse_htpl_text_flat(STR, int);
 int parse_htpl_text_read(STR, int);
 int parse_htpl_text_csv(STR, int);
 int parse_htpl_text_cube(STR, int);
-int parse_htpl_text_flat(STR, int);
 int parse_htpl_endif(STR, int);
 int parse_htpl_net(STR, int);
 int parse_htpl_net_get(STR, int);
@@ -152,4 +159,4 @@ extern char *scope_names[];
 extern int scope_ids[];
 #endif
 
-#define NUM_MACROS 115
+#define NUM_MACROS 122

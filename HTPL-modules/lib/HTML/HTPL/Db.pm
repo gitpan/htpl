@@ -50,6 +50,12 @@ sub add {
     my $key;
     my @values = ();
 
+    unless (@fields) {
+        my $sth = $dbh->prepare("SELECT * FROM $table WHERE 2 = 3");
+        $sth->execute;
+        @fields = @{$sth->{NAME}};
+    }
+
     foreach $key (@fields) {
         push(@qs, "?");
         push(@values, &getvar($key));
@@ -321,19 +327,24 @@ sub new {
 
 sub load {
     my $self = shift;
-    my $sth = $self->{'sth'}
-    my @ary = $self->{'vars'}
+    my $sth = $self->{'sth'};
+    my @ary = @{$self->{'vars'}};
     unless ($sth) {
         my $dbh = $self->{'dbh'};
         my $sql = $self->{'sql'};
         $sth = $dbh->prepare($sql) || &dbdie(qq!SQL "$sql"!);
         $self->{'sth'} = $sth;
     } 
-    my $i;
-    foreach (@_) {
-        $i++;
-        &HTML::HTPL::Sys::setvar("__$i", $_);
+    my ($i, $boundary, $re);
+    while (1) {
+        $boundary = pack("C*", map {int(random(256));} (0 .. 10));
+        $re = quotemeta($boundary);
+        last unless grep /^$re$/, @_;
     }
+    my $str = join($boundary, @_);
+    $re = join($boundary, map {".*";} @_);
+    reset;
+    $str =~ /^$re$/;
     $sth->execute(map {$$_;} @ary);
     &HTML::HTPL::Db::load($sth);
 }

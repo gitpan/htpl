@@ -18,7 +18,7 @@
 		<__INCLUDE>FETCHIT imm</__INCLUDE>
 		<__DO>}</__DO>
 	</IMMEDIATE>
-	<PROJECT><__DO>{ my $imm;</__DO>
+	<PROJECT MIN="2"><__DO>{ my $imm;</__DO>
                 <__INCLUDE>SQL CURSOR imm %2*%</__INCLUDE>
                 <__INCLUDE>PROJECT imm %1% %1%</__INCLUDE>
 		<__DO>}</__DO>
@@ -34,6 +34,26 @@
 
 	<QUERY>$%1% = $HTML::HTPL::htpl_db_obj->query("%2%", qw(%3*%));</QUERY>
 </SQL>
+
+<LDAP>
+	<__PRE>use HTML::HTPL::LDAP;</__PRE>
+	<INIT MIN="1" MAX="4">$HTML::HTPL::htpl_dir_obj = new
+              HTML::HTPL::LDAP(qw(%1*%));</INIT>
+        <SEARCH MIN="1" SCOPE="1"><__INCLUDE>LDAP DOSEARCH %1*%</__INCLUDE>
+                <__DO>$%1% = $HTML::HTPL::ldap_query;</__DO></SEARCH>
+	<DOSEARCH PRIVATE="1" MANDATORY="filter,base" PARAMS="1">
+		$HTML::HTPL::ldap_query =
+			$HTML::HTPL::htpl_dir_obj->search(
+			$tags{'FILTER'}, $tags{'BASE'}, $tags{'SCOPE'},
+                        $tags{'ATTR'} . $tags{'ATTRS'} .
+			$tags{'ATTRIBUTES'}, $tags{'SIZE'} .
+			$tags{'LIMIT'} . $tags{'SIZELIMIT'}, $tags{'KEY'}
+			. $tags{'SORTKEY'});
+	</DOSEARCH>
+	<ADD MIN="2">$HTML::HTPL::htpl_dir_obj->add('%1%', '%2*');</ADD>
+	<MODIFY MIN="2">$HTML::HTPL::htpl_dir_obj->modify('%1%', '%2*');</MODIFY>
+	<DELETE MIN="1" MAX="1">$HTML::HTPL::htpl_dir_obj->modify('%1%');</DELETE>
+ </LDAP>
 
 <MEM>
 	<__PRE>use HTML::HTPL::Mem;
