@@ -2,7 +2,7 @@ package HTML::HTPL::Sys;
 use HTML::HTPL::Lib;
 use HTML::HTPL::Config;
 use Carp;
-use strict;
+use strict qw(vars subs);
 use vars qw($htpl_pkg $htpl_old_hnd $htpl_app_obj
 	$have_time_hires $started_time $htpl_redirected $on_htpl
 	@cookies $TCL_LOADED $in_mod_htpl @ISA @EXPORT
@@ -243,8 +243,8 @@ sub initrun {
     tie ${$htpl_pkg . "::timer"}, 'Tie::Func', \&HTML::HTPL::Lib::elapsed,
                undef, undef;
     my $filter = $HTML::HTPL::Config::filter;
+    $htpl_old_hnd = select;
     if ($filter) {
-        $htpl_old_hnd = select;
 	tie *HOUT, 'HTML::HTPL::Filter', $filter, $htpl_old_hnd;
 	select HOUT;
     }
@@ -447,7 +447,7 @@ sub ReadParse {
 }
 
 sub cleanup {
-    select $htpl_old_hnd;
+    select $htpl_old_hnd if (ref($htpl_old_hnd));
     return unless ($on_htpl);
     truncate(STDOUT, tell(STDOUT));
     close(HEADERS);
