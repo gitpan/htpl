@@ -3,8 +3,8 @@ package HTML::HTPL::Db;
 use DBI;
 use HTML::HTPL::SQL;
 use HTML::HTPL::Result;
-use HTML::HTPL::Sys qw(getvar gethash htdie);
-use HTML::HTPL::Lib;
+use HTML::HTPL::Sys qw(getvar gethash DEBUG);
+use HTML::HTPL::Lib qw(htdie);
 use strict;
 
 ###
@@ -14,7 +14,7 @@ sub dbdie {
     my $par = shift;
     my $err = $DBI::errstr || $@;
     &HTML::HTPL::Lib::takebroadlog("$par failed: $err");
-    &HTML::HTPL::Sys::htdie("Database error. Please report administrator: "
+    &HTML::HTPL::Sys::htdie("Database error: $err. Please report administrator: "
       . $ENV{'SERVER_ADMIN'});
 }
 
@@ -52,10 +52,14 @@ sub new {
     my $meth = ($HTML::HTPL::Config::htpl_db_save ? 'connect_cached'
 			: 'connect');
 
+    my $dbh;
+
     eval '$dbh = DBI->$meth($dsn, @extra);';
         &dbdie("Connection to $dsn") unless ($dbh);
 
     my $self = {'dbh' => $dbh};
+
+    DEBUG { print "New connection: $dsn\n"; };
 
     bless $self, $class;
 }
@@ -63,9 +67,22 @@ sub new {
 ####
 # Execute a statement with parameters
 
+sub dbgout {
+    my ($script, @values) = @_;
+    my $text = $script;
+    my @v = @values;
+    $text =~ s/\?/pop @v/ge;
+    print "$text\n";
+}
+
 sub execsql {
     my ($self, $script, @values) = @_;
     my $dbh = $self->{'dbh'};
+
+    DEBUG {
+        print "Executing:\n";
+        &dbgout($script, @values);
+    };
 
     $dbh->do($script, undef, @values) || &dbdie(qq!SQL "$script"!);
 }
@@ -99,6 +116,11 @@ sub add {
     }
     my $sql = "INSERT INTO $table (" . join(", ", @fields) .
          ") VALUES (" . join(", ", @qs) . ")";
+
+    DEBUG {
+        print "Inserting:\n";
+        &dbgout($sql, @values);
+    };
 # Do it
     my $sth = $dbh->prepare($sql) || &dbdie(qq!SQL "$sql"!);
     $sth->execute(@values) || &dbdie(qq!SQL "$sql"!);
@@ -128,7 +150,12 @@ sub update {
     my ($where, @vals2) = &makewhere(@conds);
     push(@values, @vals2);
 
-    my $sql = "UPDATE $table SET $ins WHERE $where"; 
+    my $sql = "UPDATE $table SET $ins WHERE $where";
+
+    DEBUG {
+        print "Updating:\n";
+        &dbgout($sql, @values);
+    };
 
 # Do it
     my $sth = $dbh->prepare($sql) || &dbdie(qq!SQL "$sql"!);
@@ -151,12 +178,22 @@ sub DESTROY {
 sub cursor {
     my ($self, $sql, @values) = @_;
 
+    DEBUG {
+        print "Querying:\n";
+        &dbgout($sql, @values);
+    };
+
     my $dbh = $self->{'dbh'};
     my $sth = $dbh->prepare($sql) || &dbdie(qq!SQL "$sql"!);
 
     return $sth && $sth->execute(@values) && &load($sth)
         || &dbdie(qq!SQL "$sql"!);
 
+}
+
+sub dumpfld {
+    my ($txt, $len) = @_;
+    print substr($txt . " " . " " x $len, 0, $len + 1);
 }
 
 ####
@@ -167,9 +204,11 @@ sub load {
 
     my $rows = $sth->rows;
 ## Check if there was anytihng returned
-    return new HTML::HTPL::Result(undef, @{$sth->{NAME}}) unless ($rows);
+    my $hashref; # Do NOT check if rows == 0, will fail on INFORMIX
 
-    my $hashref = $sth->fetchrow_hashref;
+    return new HTML::HTPL::Result(undef, @{$sth->{NAME}}) unless
+		($hashref = $sth->fetchrow_hashref);
+
 
     my @fields = keys %$hashref;
 
@@ -178,6 +217,30 @@ sub load {
 ## Create result set
     my $result = new HTML::HTPL::Result($orig, @fields);
     $result->add($hashref);
+
+    DEBUG {
+        print "Result:\n";
+        my @tbl = $result->matrix;
+        my (@max, @lens);
+        foreach (@fields) {
+            @lens = $result->project(sub {length($result->get($_));});
+            push(@lens, length($_));
+            push(@max, (sort @lens)[0] + 2);
+            &dumpfld($_, $max[-1]);
+        }
+        print "\n";
+        foreach (@max) {
+            print "-" x $_ . " "; 
+        }
+        print "\n";
+        foreach (@tbl) {
+            my $i = 0;
+            foreach (@$_) {
+                &dumpfld($_, $max[$i++]);
+            }
+            print "\n";
+        }
+    };
 
     $result;
 }
@@ -254,8 +317,9 @@ sub query {
 
     my $code = "SELECT * FROM $table$sql";
 
-    my $sth = $dbh->prepare($code) || &dbdie(qq!SQL "$sql"!);
-    return $sth->execute(@values) && &load($sth) || &dbdie(qq!SQL "$sql"!);
+    return $self->cursor($code, @values);
+#    my $sth = $dbh->prepare($code) || &dbdie(qq!SQL "$sql"!);
+#    return $sth->execute(@values) && &load($sth) || &dbdie(qq!SQL "$sql"!);
 
 }
 
@@ -293,7 +357,7 @@ sub parse_sql2 {
 
 sub parse_sql {
     my @ary = &parse_sql2(@_);
-    (shift @ary, map {$$_;} @ary);
+    (shift @ary, map {getvar($_);} @ary);
 }
 
 sub delete {

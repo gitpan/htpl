@@ -33,8 +33,8 @@ selfurl querystring takebroadlog subpkg subhash maketime power findbin
 html_treeview selfsameurl new_template new_select getweekday
 elapsed hebrewflip agg sum splitline $STD_BODY @MONTH_NAMES @WEEKDAY_NAMES
 randstr randrange filedepend capture popreturl pushreturl setreturl
-killnl getreturl @DoW @DoWs @MoY @MoYs echo exiterror
-htdie);
+killnl getreturl @DoW @DoWs @MoY @MoYs echo exiterror timeago
+htdie latin_unix2dos latin_dos2unix heb_unix2dos heb_dos2unix);
 
 CONFIG: {
     @MoY = qw(January February March April May June July August
@@ -73,7 +73,7 @@ sub weekdayname {
 }
 
 sub getdmy {
-    my $t = shift || time;
+    my $t = (@_, time)[0];
     my @t = localtime($t);
     $t[4]++;
     $t[5] = &convyear($t[5]);
@@ -97,7 +97,7 @@ sub getweekday {
 
 sub convyear {
    $_[0] + int((2100 - $_[0]) / 1900) *
-    (1900 + 100 * int((170 - $_[0]) / 100));
+    (1900 + 100 * int((169 - $_[0]) / 100));
 }
 
 sub jewishdate {
@@ -1321,6 +1321,74 @@ EOM
   &html_footer;
   &takelog(join(", ", @_));
   exit(0);
+}
+
+my @l1asc2ans = (128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 
+141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 
+154, 155, 156, 157, 158, 159, 160, 161, 189, 156, 164, 165, 166, 
+167, 168, 184, 170, 171, 172, 173, 169, 175, 176, 241, 178, 179, 
+180, 230, 244, 183, 184, 185, 186, 187, 188, 189, 190, 168, 183, 
+181, 182, 199, 142, 143, 146, 128, 212, 144, 210, 211, 222, 214, 
+215, 216, 208, 165, 227, 224, 226, 229, 153, 215, 157, 235, 233, 
+234, 154, 221, 222, 225, 133, 160, 131, 198, 132, 134, 145, 135, 
+138, 130, 136, 137, 141, 161, 140, 139, 240, 164, 149, 162, 147, 
+228, 148, 247, 155, 151, 163, 150, 129, 253, 254, 255);
+
+use vars qw($l1ans $l1asc);
+$l1ans = pack("C*", @l1asc2ans);
+$l1asc = pack("C*", 128 .. 255);
+
+sub latin_dos2unix {
+    my $str = shift;
+    $str =~ tr/$l1asc/$l1ans/;
+    $str;
+}
+
+sub latin_unix2dos {
+    my $str = shift;
+    $str =~ tr/$l1ans/$l1asc/;
+    $str;
+}
+
+sub heb_dos2unix {
+    my $str = shift;
+    $str =~ tr/\x80-\x9A/\xE0-\xFA/;
+    $str;
+}
+
+sub heb_unix2dos {
+    my $str = shift;
+    $str =~ tr/\xE0-\xFA/\x80-\x9A/;
+    $str;
+}
+
+sub timeago {
+    my ($b4, $now) = (@_, time);
+    ($b4, $now) = ($now, $b4) if ($b4 > $now);
+    my ($hour, $minute, $second);
+    my $delta = ($now - $b4) % (24 * 3600);
+    $second = $delta % 60;
+    $delta = int($delta / 60);
+    $minute = $delta % 60;
+    $hour = int($delta / 60);
+    my ($d2, $m2, $y2) = &getdmy($now);
+    my ($d1, $m1, $y1) = &getdmy($b4);
+    my $year = $y2 - $y1;
+    my $month = ($m2 - $m1 + 12) % 12;
+    my $day = ($d2 - $d1);
+    $day += &daysin($m1, $y1) if ($day < 0);
+    my @resp;
+    foreach (qw(year month day hour minute second)) {
+        my $val = eval "\$$_";
+        push(@resp, $val > 1 ? "$val ${_}s" : "1 $_") if ($val);
+    }
+    return ($year, $month, $day, $hour, $minute, $second) if (wantarray);
+    if (@resp == 0) {
+        return "just now";
+    } elsif (@resp == 1) {
+        return "$resp[0] ago";
+    }
+    return join(", ", @resp[0 .. $#resp - 1]) . " and $resp[-1] ago";
 }
 
 1;

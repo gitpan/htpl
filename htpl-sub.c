@@ -339,8 +339,26 @@ static const STR BLANK = "";
 
 STR gettoken(which) 
     int which; {
+    int prepend = 0;
+    STR buff, result;
+    pchar ptr1, ptr2;
+    if (which < 0) {
+        which = -which;
+        prepend = 1;
+    }
     if (which > persist->tokens->num || which < 1) return BLANK;
-    return persist->tokens->data[which - 1];
+    result = persist->tokens->data[which - 1];
+    if (!prepend) return result;
+    buff = malloc(strlen(result) * 2);
+    ptr1 = result;
+    ptr2 = buff;
+    for (; *ptr1; *ptr2++ = *ptr1++) 
+        if (*ptr1 == '"' || *ptr1 == '\'' || *ptr1 == '\\'
+                || *ptr1 == '$' || *ptr1 == '%' || *ptr1 == '@') *ptr2++ = '\\';
+    *ptr2 = '\0';
+    result = setworktoken(buff);
+    free(buff);
+    return result;
 }
 
 /**************************************************
@@ -406,11 +424,17 @@ STR gettokenlist(which, delim, before)
     STR t;
     int lnb4 = strlen(before);
     int lndlm = strlen(delim);
+    int flag = 1;
+
+    if (which < 0) {
+        flag = -1;
+        which = -which;
+    }
 
     s[0] = '\0';
 
     while (which <= persist->tokens->num) {
-        t = gettoken(which++);
+        t = gettoken(flag * which++);
         ln2  = strlen(t);
         if (ln2 + ln + lndlm + lnb4 + 4 > l - 1) {
             l = (ln2 + ln + lndlm + lnb4) * 2;

@@ -778,8 +778,8 @@ void tryexts(src, dst, exts)
 
 #include <db_185.h>
 
-#define VECTOR 6
-typedef int dst_t[2][VECTOR];
+#define VECTOR_LN 6
+typedef int dst_t[2][VECTOR_LN];
 
 /*************************************
  * File checksum                     *
@@ -805,7 +805,7 @@ int loadstat(ary, filename)
     struct stat st; 
 
     if (stat(filename, &st) < 0) return 0;
-    bzero(ary, sizeof(int) * VECTOR);
+    bzero(ary, sizeof(int) * VECTOR_LN);
     ary[0] = st.st_mtime;
     ary[1] = st.st_ctime;
     ary[2] = st.st_mode;

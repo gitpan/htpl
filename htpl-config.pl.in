@@ -11,15 +11,15 @@ $temp = "@TEMP@";
 # Uncomment to allow persistency
 
 # $htpl_persistent = 1;
-# $htpl_db_file = "@HTDOCS@/htpl.db";
-# $htpl_per_session_idle_time = 3600;
-# $htpl_persist_cachesize = 4;
+$htpl_db_file = "@HTDOCS@/htpl.db";
+$htpl_per_session_idle_time = 3600;
+$htpl_persist_cachesize = 4;
 
 ###
 # Uncomment to use cookies
 
 # $htpl_use_cookies = 1;
-# $htpl_cookie = "htpl-ck-id";
+$htpl_cookie = "htpl-ck-id";
 
 ###
 # Uncomment if your web site contains forms in hebrew
@@ -49,5 +49,9 @@ $htpl_db_save = 1;
 # HTPL PTS port
 $htpl_pts_port = 4002;
 
+####
+# Uncomment to enable debugging
+# $htpl_debug = 1;
+@htpl_debug_hosts = qw(127.0.0.1);
 
 1;

@@ -671,7 +671,7 @@ void process(f, c, o)
     intag = 0;
     save = NULL;
 
-    bzero(internal_flags, sizeof(internal_flags));
+    bzero((void *)&internal_flags[0], sizeof(internal_flags));
 #ifdef __DEBUG__
     if (noweb) {
         before = PERL_END;
@@ -1419,6 +1419,7 @@ dump processed perl script to STDOUT */
     if (code) {
 #ifndef __DEBUG__
         fprintf(myout, "Content-type: text/plain\n\n");
+        fprintf(myout, "HTPL version %04.2f\n", (float)VERSION);
 #endif
         fprintf(myout, "Perl script returned errors%s%s", NEWLINE, NEWLINE);
         fprintf(myout, "%sStderr follows:%s", NEWLINE, NEWLINE);
@@ -1426,12 +1427,13 @@ dump processed perl script to STDOUT */
             fcpy(i, myout, 0);
             fclose(i);
         }
-/* Allow web masters do avoid code listing. Otherwise, list processed code
+        i = NULL;
+/* Allow web masters to avoid code listing. Otherwise, list processed code
 to allow matching of line numbers against error messages */
         if (debugforbidden(myout) || (i = fopen("htpl.nodbg", "r"))) {
             fprintf(myout, "%sDebug information omitted due to server set up.%s",
                   NEWLINE, NEWLINE);
-            fclose(i);
+            if (i) fclose(i);
         } else {
             fprintf(myout, "%sScript follows:%s", NEWLINE, NEWLINE);
             if (i = fopen(script, "r")) {
@@ -1461,7 +1463,7 @@ to allow matching of line numbers against error messages */
     fflush(myout);
     fclose(myout);
 
-    unlink(postdata);
+    if (strcmp(postdata, "/dev/null")) unlink(postdata);
     unlink(headers);
     unlink(output);
     unlink(error);

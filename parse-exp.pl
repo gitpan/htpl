@@ -83,15 +83,15 @@ sub assemble {
 sub proctoken {
     my ($token, $aryref) = @_;
     return "%%" if (!$token);
-    if ($token =~ /^\d+$/) {
+    if ($token =~ /^-?\d+$/) {
         push(@$aryref, "gettoken($token)");
-    } elsif ($token =~ /^(\d+)\*$/) {
+    } elsif ($token =~ /^(-?\d+)\*$/) {
         push(@$aryref, qq!gettokenlist($1, " ", "")!);
-    } elsif ($token =~ /^(\d+)\!$/) {
+    } elsif ($token =~ /^(-?\d+)\!$/) {
         push(@$aryref, qq!gettokenlist($1, ", ", "\$")!);
-    } elsif ($token =~ /^(\d+)(.*?)\*$/) {
+    } elsif ($token =~ /^(-?\d+)(.*?)\*$/) {
         push(@$aryref, qq!gettokenlist($1, "$2", "")!);
-    } elsif ($token =~ /^(\d+)(.)(\d+)$/) {
+    } elsif ($token =~ /^(-?\d+)(.)(\d+)$/) {
         push(@$aryref, "getsubtoken($1, '$2', $3)");
     } elsif ($token eq "?") {
         push(@$aryref, "numtokens");

@@ -7,7 +7,7 @@ use vars qw($htpl_pkg $htpl_old_hnd $htpl_app_obj
 	$have_time_hires $started_time $htpl_redirected $on_htpl
 	@cookies $TCL_LOADED $in_mod_htpl @ISA @EXPORT
 	@MONTH_NAMES @WEEKDAY_NAMES $DB_HASH $REMOTE_HOST $REMOTE_USER
-	@__htpl_stack);
+        @__htpl_stack $debug_file);
 
 require Exporter;
 @ISA = qw(Exporter);
@@ -17,7 +17,7 @@ parse_cookies getmailprog proper ch2x safehash parse_tags outhtmltag
 enforce_tags htpl_startup get_session gethash
 revmap ReadParse cleanup exit getvar safetags isheb safetags
 checktaint pushvars popvars pkglist getpkg compileutil
-$htpl_pkg);
+$htpl_pkg DEBUG);
 
 $in_mod_htpl ||= $HTML::HTPL::Lib::in_mod_htpl;
 
@@ -269,6 +269,7 @@ sub htpl_startup {
     &setvar('HTTP_REFERER' => $ENV{'HTTP_REFERER'});
     &setvar('SERVER_NAME' => $host = $ENV{'SERVER_NAME'});
     &setvar('SERVER_PORT' => $port = $ENV{'SERVER_PORT'});
+    &setvar('REQUEST_METHOD' => $ENV{'REQUEST_METHOD'});
     $port = ($port == 80 ? "" : ":$port");
     &setvar('SELF_URL' => "http://$host$port$scr");
     require Tie::Func;
@@ -313,6 +314,16 @@ sub htpl_startup {
     &readini;
     &get_session if ($HTML::HTPL::Config::htpl_persistent);
     &initrun;
+    $debug_file = undef;
+    if ($HTML::HTPL::Config::htpl_debug) {
+        my %h;
+        @h{@HTML::HTPL::Config::htpl_debug_hosts}++;
+        if ($h{$ENV{'REMOTE_ADDR'}}) {
+            $debug_file = $0;
+            $debug_file =~ s/\.\w+$/.txt/;
+            open(O, ">$debug_file") && close(O) || ($debug_file = undef);
+        } 
+    } 
 }
 
 sub makepersist {
@@ -503,7 +514,7 @@ sub checktaint {
 }
 
 sub init_offline {
-    my ($i) = 0;
+    my $i = 0;
     return if ($htpl_pkg);
     foreach (@main'ARGV) {
         ${'main::arg' . ++$i} = $_;
@@ -531,7 +542,7 @@ sub getcc {
 
 sub dieTaint {
     &HTML::HTPL::Lib::rewind;
-    &HTML::HTPL::Lib::setmimetype("Text/plain");
+    &HTML::HTPL::Lib::setmimetype("text/plain");
     my $log = sprintf("Taint attempt from %s on %s", getvar('REMOTE_HOST'),
           scalar(localtime));
     &HTML::HTPL::Lib::takelog($log, $HTML::HTPL::Config::htpl_system_log);
@@ -637,6 +648,18 @@ sub compileutil {
     my $ref = eval($code);
     &HTML::HTPL::Lib::htdie($@) unless (UNIVERSAL::isa($ref, 'CODE'));
     $ref;
+}
+
+sub DEBUG (&) {
+    return unless ($debug_file);
+    my $code = shift;
+    &HTML::HTPL::Lib::begintransaction;
+    eval '&$code';
+    my $txt = &HTML::HTPL::Lib::endtransaction;
+    open(O, ">>$debug_file");
+    print O $txt;
+    print O "$@\n" if ($@);
+    close(O);
 }
 
 1;

@@ -267,9 +267,8 @@ sub unite {
     &HTML::HTPL::Sys::popvars;
 }
 
-sub project ($$;@) {
+sub project ($@;@) {
     my ($self, @fields) = @_;
-
     my @r;
     my $save = $self->index;
     if (!$#fields && $fields[0] =~ /:/ && !UNIVERSAL::isa($fields[0], 'CODE')) {

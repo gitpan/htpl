@@ -134,6 +134,7 @@ while ($%1% &amp;&amp; !$%1%->eof &amp;&amp; $%1%->fetch) {</__FWD>
 <__REV MAX="0"><__ALIAS>LOOP</__ALIAS></__REV>
 </__MACRO>
 <__MACRO MIN="1" MAX="1" NAME="FETCHIT">$%1%->fetch;</__MACRO>
+<__MACRO MIN="1" MAX="1" NAME="FETCHITORBREAK">last unless ($%1%->fetch);</__MACRO>
 <__MACRO MIN="2" MAX="2" NAME="FETCHCOLS">foreach %2% (%1%->cols) {</__MACRO>
 <__MACRO MIN="3" MAX="3" NAME="FETCHCELL">$%3% = $%1%->get("%2%");</__MACRO>
 <__MACRO MIN="3" NAME="PROJECT">@%2% = $%1%->project(qw(%3*%));</__MACRO>
@@ -174,6 +175,9 @@ while ($%1% &amp;&amp; !$%1%->eof &amp;&amp; $%1%->fetch) {</__FWD>
 <__MACRO MAX="0" NAME="ELSE"><__POP>if-then</__POP>
 <__PUSH>if-then-else</__PUSH>
 <__DO>} else {</__DO></__MACRO>
+
+<__MACRO NAME="BREAK">last;</__MACRO>
+<__MACRO NAME="CONTINUE">next;</__MACRO>
 
 <__MACRO NAME="FILTER">$%2% = $%1%->filter(sub {%3*%;});</__MACRO>
 
@@ -460,10 +464,15 @@ $%$var% = &amp;endtransaction;
 <__MACRO NAME="DIE">
 &amp;htdie("%1*%");
 </__MACRO>
-<__MACRO NAME="LISTBOX">
+<__MACRO NAME="LISTBOX" SCOPE="1">
 <__INCLUDE>%1*%</__INCLUDE>
 <__DO>
-&amp;html_selectbox({'name' => '%3%'}, map {@$_;} $%3%->matrix);
+&amp;html_selectbox({'name' => '%3%'}, $%3%->project(sub {
+($%3%->getcol(0), $%3%->getcol(1));
+}));
 </__DO>
+</__MACRO>
+<__MACRO NAME="ASSERT" MIN="1">
+die "Assertion failed: (%-1*%)" unless (%1*%);
 </__MACRO>
 </HTPL>
