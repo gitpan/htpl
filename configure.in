@@ -91,10 +91,10 @@ fi
 
 ]
 
-AB_PERL_CHECK(Tie::DeepTied, , [ echo You must get Tie-Tools from CPAN to run this package,
-echo Try \$CPAN/authors/id/S/SC/SCHOP or use CPAN.pm module for Tie::DeepTied.
-exit ]
-)
+dnl AB_PERL_CHECK(Tie::DeepTied, , [ echo You must get Tie-Tools from CPAN to run this package,
+dnl echo Try \$CPAN/authors/id/S/SC/SCHOP or use CPAN.pm module for Tie::DeepTied.
+dnl exit ]
+dnl )
 
 AB_PERL_CHECK(XML::Parser, [
     AB_PERL_CHECK(Parse::Lex, [
