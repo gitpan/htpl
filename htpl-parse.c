@@ -1065,6 +1065,37 @@ int parse_htpl_ifnotnull(stack, untag)
         else RETURN(parse_htpl_ifnotnull___rev(stack, untag))
 }
 
+int parse_htpl_connection(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (numtokens < 1) RETURN(croak("%sCONNECTION called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    printfcode("        *HTML::HTPL::htpl_db_obj = \\$%s;\n", gettoken(1));
+    printcode("        \n");
+    if (numtokens >= 3)  {
+        code = 1;
+        buff = (STR)mysprintf("SQL %s", gettokenlist(2, " ", ""));
+        nest++;
+        code = parse_htpl(buff, untag);
+        nest--;
+        if (!code) {
+            croak("Unification of '%s' failed", buff);
+            free(buff);
+            RETURN(0)
+        }
+        free(buff);
+    }
+    nesting = 0;
+    RETURN(1)
+}
+
 int parse_htpl_time_modified(stack, untag)
     int untag;
     STR stack; {
@@ -1108,6 +1139,23 @@ int parse_htpl_time(stack, untag)
         fun = funs[n];
         RETURN(fun(stack, untag))
     }
+}
+
+int parse_htpl_auth_create(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    printcode("use HTML::HTPL::ACL;\n");
+    printcode("HTML::HTPL::ACL::CreateDDL($HTML::HTPL::htpl_db_obj->{'dbh'});\n");
+    nesting = 0;
+    RETURN(1)
 }
 
 int parse_htpl_loop(stack, untag)
@@ -1193,6 +1241,24 @@ int parse_htpl_counter(stack, untag)
     RETURN(1)
 }
 
+int parse_htpl_redirect(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (numtokens < 1) RETURN(croak("%sREDIRECT called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 1) RETURN(croak("%sREDIRECT called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
+    printfcode("&redirect(\"%s\");\n", gettoken(1));
+    nesting = 0;
+    RETURN(1)
+}
+
 int parse_htpl_call(stack, untag)
     int untag;
     STR stack; {
@@ -1226,6 +1292,400 @@ int parse_htpl_throw(stack, untag)
     printfcode("%#line %d %s\n", rline + currbuffer->lines + 1 + 1, thescript);
     nesting = 0;
     RETURN(1)
+}
+
+int parse_htpl_auth_iflogin(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (numtokens < 2) RETURN(croak("%sAUTH IFLOGIN called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
+    if (numtokens > 2) RETURN(croak("%sAUTH IFLOGIN called with %d arguments, maximum needed is 2", (untag ? "/" : ""), numtokens))
+    code = 1;
+    buff = (STR)mysprintf("AUTH LOGIN %s", gettokenlist(1, " ", ""));
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    code = 1;
+    buff = (STR)mysprintf("AUTH IFLOGGED");
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_auth_realm(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (numtokens < 1) RETURN(croak("%sAUTH REALM called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 1) RETURN(croak("%sAUTH REALM called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
+    printcode("                $HTML::HTPL::authorized = undef;\n");
+    printfcode("                $REALM = \"%s\";\n", gettoken(1));
+    printcode("                if ($session{'username'}) {\n");
+    printcode("                        $HTML::HTPL::authorized =\n");
+    printcode("$HTML::HTPL::acl->{'acl'}->IsAuthorized($session{'username'}, $REALM);\n");
+    printcode("                }\n");
+    printcode("        \n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_auth_ifunauthorized___fwd(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    pushscope(scope_if_then, 0);
+    printcode("unless\n");
+    printcode("	($HTML::HTPL::authorized) {\n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_auth_ifunauthorized___rev(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    nesting++;
+    if (nesting > 1) RETURN(croak("Infinite loop in AUTH IFUNAUTHORIZED"))
+    buff = (STR)mysprintf("ENDIF");
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_auth_ifunauthorized(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_auth_ifunauthorized___fwd(stack, untag))
+        else RETURN(parse_htpl_auth_ifunauthorized___rev(stack, untag))
+}
+
+int parse_htpl_auth_iflogged___fwd(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    pushscope(scope_if_then, 0);
+    printcode("if\n");
+    printcode("	($session{'username'}) {\n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_auth_iflogged___rev(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    nesting++;
+    if (nesting > 1) RETURN(croak("Infinite loop in AUTH IFLOGGED"))
+    buff = (STR)mysprintf("ENDIF");
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_auth_iflogged(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_auth_iflogged___fwd(stack, untag))
+        else RETURN(parse_htpl_auth_iflogged___rev(stack, untag))
+}
+
+int parse_htpl_auth_login(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (numtokens < 2) RETURN(croak("%sAUTH LOGIN called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
+    if (numtokens > 2) RETURN(croak("%sAUTH LOGIN called with %d arguments, maximum needed is 2", (untag ? "/" : ""), numtokens))
+    printfcode("                $HTML::HTPL::acl->Login(\"%s\", \"%s\");\n", gettoken(1), gettoken(2));
+    printcode("        \n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_auth_adduser(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (numtokens < 2) RETURN(croak("%sAUTH ADDUSER called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
+    if (numtokens > 3) RETURN(croak("%sAUTH ADDUSER called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
+    if (numtokens <= 2)  {
+        printfcode("$HTML::HTPL::acl->AddUser(\"%s\", \"%s\");\n", gettoken(1), gettoken(2));
+    }
+    if (numtokens >= 3 && (disposeicmp((STR)mysprintf("%s", gettoken(1)), (STR)mysprintf("crypted")) == 0))  {
+        printfcode("$HTML::HTPL::acl->AddUser(\"%s\", \"%s\", 1);\n", gettoken(1), gettoken(2));
+    }
+    if (numtokens >= 3 && (disposeicmp((STR)mysprintf("%s", gettoken(1)), (STR)mysprintf("crypted")) != 0))  {
+        RETURN(croak("Must use two arguments or 'crypted' as first argument"))
+    }
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_auth_ifnotlogged___fwd(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    pushscope(scope_if_then, 0);
+    printcode("unless\n");
+    printcode("	($session{'username'}) {\n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_auth_ifnotlogged___rev(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    nesting++;
+    if (nesting > 1) RETURN(croak("Infinite loop in AUTH IFNOTLOGGED"))
+    buff = (STR)mysprintf("ENDIF");
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_auth_ifnotlogged(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_auth_ifnotlogged___fwd(stack, untag))
+        else RETURN(parse_htpl_auth_ifnotlogged___rev(stack, untag))
+}
+
+int parse_htpl_auth_ifauthorized___fwd(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    pushscope(scope_if_then, 0);
+    printcode("if\n");
+    printcode("	($HTML::HTPL::authorized) {\n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_auth_ifauthorized___rev(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    nesting++;
+    if (nesting > 1) RETURN(croak("Infinite loop in AUTH IFAUTHORIZED"))
+    buff = (STR)mysprintf("ENDIF");
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_auth_ifauthorized(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_auth_ifauthorized___fwd(stack, untag))
+        else RETURN(parse_htpl_auth_ifauthorized___rev(stack, untag))
+}
+
+int parse_htpl_auth(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (!done) {
+        done = 1;
+        printcode("use HTML::HTPL::ACL;\n	$HTML::HTPL::acl = new\n		HTML::HTPL::ACL($HTML::HTPL::htpl_db_obj->{'dbh'});\n");
+    }
+    eat(&stack, token);
+    {
+        static char *auth_table[] = {"ADDUSER",
+            "IFAUTHORIZED",
+            "IFLOGGED",
+            "IFLOGIN",
+            "IFNOTLOGGED",
+            "IFUNAUTHORIZED",
+            "LOGIN",
+            "REALM"};
+        static int auth_locations[] = { 5, -1, 1, -1, 3, 7, -1, 2, -1, 0, 6, -1, 4, -1 };
+        static int auth_shortcuts[] = { 0, -1, 7, 9, -1, 12, -1, -1, 2, 4 };
+        static struct hash_t auth_hash = {auth_table,
+             auth_locations, auth_shortcuts};
+
+        static parser funs[] = { parse_htpl_auth_adduser, parse_htpl_auth_ifauthorized, parse_htpl_auth_iflogged, parse_htpl_auth_iflogin, parse_htpl_auth_ifnotlogged, parse_htpl_auth_ifunauthorized, parse_htpl_auth_login, parse_htpl_auth_realm };
+        int n;
+        parser fun;
+        n = search_hash(&auth_hash, token, 0);
+        if (n < 0) RETURN(0)
+        fun = funs[n];
+        RETURN(fun(stack, untag))
+    }
 }
 
 int parse_htpl_fetchcols(stack, untag)
@@ -1734,6 +2194,22 @@ int parse_htpl_for(stack, untag)
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_for___fwd(stack, untag))
         else RETURN(parse_htpl_for___rev(stack, untag))
+}
+
+int parse_htpl_exit(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    printcode("exit;\n");
+    nesting = 0;
+    RETURN(1)
 }
 
 int parse_htpl_load(stack, untag)
@@ -3463,12 +3939,15 @@ int parse_htpl(stack, untag)
     eat(&stack, token);
     {
         static char *htpl_table[] = {"ASSERT",
+            "AUTH",
+            "AUTH_CREATE",
             "BREAK",
             "CALL",
             "CASE",
             "CATCH",
             "CLASS",
             "CLSUTILS",
+            "CONNECTION",
             "CONSTRUCTOR",
             "CONTINUE",
             "COUNTER",
@@ -3479,6 +3958,7 @@ int parse_htpl(stack, untag)
             "ELSE",
             "END",
             "ENDIF",
+            "EXIT",
             "FETCH",
             "FETCHCELL",
             "FETCHCOLS",
@@ -3507,6 +3987,7 @@ int parse_htpl(stack, untag)
             "PROJECT",
             "PTS",
             "PUBLISH",
+            "REDIRECT",
             "REM",
             "SQL",
             "SWITCH",
@@ -3514,12 +3995,12 @@ int parse_htpl(stack, untag)
             "THROW",
             "TIME",
             "TRY"};
-        static int htpl_locations[] = { 11, 12, 21, 29, 36, 48, -1, 7, 27, 46, -1, 33, 47, 50, -1, 6, 18, 23, 43, 45, -1, 5, 30, 31, 34, 37, 41, -1, 8, 13, 14, 15, 17, 32, 38, 49, -1, 28, 39, -1, 1, 16, 20, 24, 25, 42, 44, -1, 0, 2, 22, 26, 35, -1, 3, 4, 9, 10, 19, 40, 51, -1 };
-        static int htpl_shortcuts[] = { 0, 7, 11, 15, 21, 28, 37, 40, 48, 54 };
+        static int htpl_locations[] = { 14, 15, 25, 33, 40, 49, 53, -1, 10, 31, 51, -1, 20, 37, 52, 55, -1, 8, 22, 27, 47, 50, -1, 1, 2, 7, 34, 35, 38, 41, 45, -1, 11, 16, 17, 18, 21, 36, 42, 54, -1, 9, 32, 43, -1, 3, 19, 24, 28, 29, 46, 48, -1, 0, 4, 26, 30, 39, -1, 5, 6, 12, 13, 23, 44, 56, -1 };
+        static int htpl_shortcuts[] = { 0, 8, 12, 17, 23, 32, 41, 45, 53, 59 };
         static struct hash_t htpl_hash = {htpl_table,
              htpl_locations, htpl_shortcuts};
 
-        static parser funs[] = { parse_htpl_assert, parse_htpl_break, parse_htpl_call, parse_htpl_case, parse_htpl_catch, parse_htpl_class, parse_htpl_clsutils, parse_htpl_constructor, parse_htpl_continue, parse_htpl_counter, parse_htpl_default, parse_htpl_define, parse_htpl_destructor, parse_htpl_die, parse_htpl_else, parse_htpl_end, parse_htpl_endif, parse_htpl_fetch, parse_htpl_fetchcell, parse_htpl_fetchcols, parse_htpl_fetchit, parse_htpl_fetchitorbreak, parse_htpl_filter, parse_htpl_for, parse_htpl_foreach, parse_htpl_graph, parse_htpl_if, parse_htpl_ifnotnull, parse_htpl_ifnull, parse_htpl_img, parse_htpl_include, parse_htpl_ldap, parse_htpl_listbox, parse_htpl_load, parse_htpl_loop, parse_htpl_mail, parse_htpl_mem, parse_htpl_method, parse_htpl_net, parse_htpl_next, parse_htpl_out, parse_htpl_proc, parse_htpl_project, parse_htpl_pts, parse_htpl_publish, parse_htpl_rem, parse_htpl_sql, parse_htpl_switch, parse_htpl_text, parse_htpl_throw, parse_htpl_time, parse_htpl_try };
+        static parser funs[] = { parse_htpl_assert, parse_htpl_auth, parse_htpl_auth_create, parse_htpl_break, parse_htpl_call, parse_htpl_case, parse_htpl_catch, parse_htpl_class, parse_htpl_clsutils, parse_htpl_connection, parse_htpl_constructor, parse_htpl_continue, parse_htpl_counter, parse_htpl_default, parse_htpl_define, parse_htpl_destructor, parse_htpl_die, parse_htpl_else, parse_htpl_end, parse_htpl_endif, parse_htpl_exit, parse_htpl_fetch, parse_htpl_fetchcell, parse_htpl_fetchcols, parse_htpl_fetchit, parse_htpl_fetchitorbreak, parse_htpl_filter, parse_htpl_for, parse_htpl_foreach, parse_htpl_graph, parse_htpl_if, parse_htpl_ifnotnull, parse_htpl_ifnull, parse_htpl_img, parse_htpl_include, parse_htpl_ldap, parse_htpl_listbox, parse_htpl_load, parse_htpl_loop, parse_htpl_mail, parse_htpl_mem, parse_htpl_method, parse_htpl_net, parse_htpl_next, parse_htpl_out, parse_htpl_proc, parse_htpl_project, parse_htpl_pts, parse_htpl_publish, parse_htpl_redirect, parse_htpl_rem, parse_htpl_sql, parse_htpl_switch, parse_htpl_text, parse_htpl_throw, parse_htpl_time, parse_htpl_try };
         int n;
         parser fun;
         n = search_hash(&htpl_hash, token, 0);

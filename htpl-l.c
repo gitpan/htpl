@@ -1066,6 +1066,8 @@ STR escapevars(code)
                 dst = save + strlen(save);
                 flag = 0;
             }
+	    if (*ch == '[' && (dst == buff || dst[-1] != '\\')
+                && flag == 0) *dst++ = '\\';
             *dst++ = *ch;
         }
         ch++;

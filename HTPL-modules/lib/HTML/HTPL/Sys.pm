@@ -142,15 +142,7 @@ sub doredirect {
     my ($url) = @_;
     my (@hds) = ();
     return unless ($on_htpl);
-    seek(HEADERS, 0, 0);
-    while (<HEADERS>) {
-        chop;
-        next unless ($_);
-        next if (/^Content-type: /);
-        push(@hds, $_);
-    }
-    seek(HEADERS, 0, 0);
-    print HEADERS join("\n", @hds, '') if (@hds);
+    &HTML::HTPL::Lib::eraseheader('Content-type');
     print HEADERS "Location: $url\n";
     close(HEADERS);
     &rewind;
@@ -347,7 +339,7 @@ sub makepersist {
                    0644, $DB_HASH) || die "No dbm: $!";
     my $htpl_dbm = tie %HTML::HTPL::Root::persist, 'MLDBM' || die "no mldbm";
     $htpl_dbm->UseDB($dbm) || die "No db";
-    tie %HTML::HTPL::Root::objects, 'Tie::Collection', $htpl_dbm, {'MaxBytes' => 1024 * ($HTML::HTPL::Config::htpl_persist_cachesize || 4)};
+    tie %HTML::HTPL::Root::objects, 'Tie::Collection', $htpl_dbm, $HTML::HTPL::Config::htpl_persist_cachesize, {'MaxBytes' => 1024 * ($HTML::HTPL::Config::htpl_persist_cachesize || 4)};
 }
 
 sub get_session {
@@ -412,15 +404,9 @@ sub ReadParse {
     my ($q);
     my ($e) = &getvar('QUERY_STRING');
     return if ($e && $e !~ /=/ && $ENV{'REQUEST_METHOD'} != 'GET');
-    if ($in_mod_htpl) {
-        require CGI::Apache;
-        import CGI::Apache;
-        $q = new CGI::Apache;
-    } else {
-        require CGI;
-        import CGI;
-        $q = new CGI;
-    }
+    require CGI;
+    import CGI;
+    $q = new CGI;
     my (@keys) = $q->param;
     my (%hash, %upfile);
     my $key;

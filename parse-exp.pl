@@ -10,9 +10,11 @@ $o = join("|", map {quotemeta($_);}
 @token = (qw(
   AND \&\&?|\b[Aa][Nn][Dd]\b
   OR \|\|?|\b[Oo][Rr]\b
-  NOT [!~]|\b[Nn][Oo][Tt]\b
   EQUAL \=\=?
   NOTEQUAL \!\=|\<\>
+  LIKE -
+  NOTLIKE !-
+  NOT [!~]|\b[Nn][Oo][Tt]\b
   OP [><()]
   STRING \w*(%.*?%\w*)+|".*?"|'.*?'), sub {my $s = $_[1]; ("" =~ /^()$/);
                    $s =~ s/^"(.*)"$/$1/; $s =~ s/^'(.*)'$/$1/ unless($1);
@@ -60,13 +62,24 @@ sub formit {
         my $l = &formit($ary[1]);
         my $r = &formit($ary[2]);
         my $o = $ary[0];
+	$o =~ s/^OR$/||/i;
+	$o =~ s/^\|$/||/;
+	$o =~ s/^AND$/&&/i;
+	$o =~ s/^&$/&&/;
         return "($l $o $r)";
     }
     if (@ary == 4) {
         my $l = &expandstr($ary[2]);
         my $r = &expandstr($ary[3]);
         my $o = $ary[1];
-        my $s = qq!(disposecmp($l, $r) $o 0)!;
+        my $i = '';
+        if ($o eq '-' || $o eq '!-') {
+                $o =~ s/-/=/;
+                $i = 'i';
+        }
+	$o =~ s/^=$/==/;
+	$o =~ s/\<\>/!=/;
+        my $s = qq!(dispose${i}cmp($l, $r) $o 0)!;
     }
 }
 

@@ -259,7 +259,7 @@ sub eraseheader {
     @lines = grep {!/$re/} @lines;
     seek(HTML::HTPL::Sys::HEADERS, 0, 0);
     print HTML::HTPL::Sys::HEADERS join("\n", @lines, "");
-    truncate(HTML::HTPL::Sys::HEADERS, 0);
+    truncate(HTML::HTPL::Sys::HEADERS, tell(HTML::HTPL::Sys::HEADERS));
     @lines;
 }
 
@@ -1310,14 +1310,14 @@ sub findbin {
 sub htdie {
   &rewind;
   setmimetype("text/html");
-  my $err = join("<BR>", @_);
+  my $err = &txt2html(join("<BR>", @_));
   &html_header("Error", $STD_BODY);
   print <<EOM;
 <H1>HTPL version $HTML::HTPL::VERSION</H1>
 <H3>Error occurred</H3>
 $err
 <HR>
-Please report to web master
+Please report to web master: $ENV{'SERVER_ADMIN'}
 EOM
   &html_footer;
   &takelog(join(", ", @_));

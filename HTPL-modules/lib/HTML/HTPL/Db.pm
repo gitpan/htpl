@@ -14,7 +14,7 @@ sub dbdie {
     my $par = shift;
     my $err = $DBI::errstr || $@;
     &HTML::HTPL::Lib::takebroadlog("$par failed: $err");
-    &HTML::HTPL::Sys::htdie("Database error: $err. Please report administrator: "
+    &HTML::HTPL::Lib::htdie("Database error: $err. Please report administrator: "
       . $ENV{'SERVER_ADMIN'});
 }
 

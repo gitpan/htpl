@@ -475,4 +475,62 @@ $%$var% = &amp;endtransaction;
 <__MACRO NAME="ASSERT" MIN="1">
 die "Assertion failed: (%-1*%)" unless (%1*%);
 </__MACRO>
+<__MACRO NAME="REDIRECT" MIN="1" MAX="1">&amp;redirect("%1%");</__MACRO>
+<__MACRO NAME="CONNECTION" MIN="1">
+        <__DO>
+        *HTML::HTPL::htpl_db_obj = \$%1%;
+        </__DO>
+        <__INCLUDE MIN="3">SQL %2*%</__INCLUDE>
+</__MACRO>
+<__MACRO NAME="AUTH_CREATE">
+use HTML::HTPL::ACL;
+HTML::HTPL::ACL::CreateDDL($HTML::HTPL::htpl_db_obj->{'dbh'});
+</__MACRO>
+	
+<__MACRO NAME="AUTH">
+        <__PRE>use HTML::HTPL::ACL;
+	$HTML::HTPL::acl = new
+		HTML::HTPL::ACL($HTML::HTPL::htpl_db_obj->{'dbh'});</__PRE>
+        <__MACRO NAME="LOGIN" MIN="2" MAX="2">
+                $HTML::HTPL::acl->Login("%1%", "%2%");
+        </__MACRO>
+        <__MACRO NAME="IFLOGIN" MIN="2" MAX="2">
+                <__INCLUDE>AUTH LOGIN %1*%</__INCLUDE>
+                <__INCLUDE>AUTH IFLOGGED</__INCLUDE>
+        </__MACRO>
+        <__MACRO NAME="REALM" MIN="1" MAX="1">
+                $HTML::HTPL::authorized = undef;
+                $REALM = "%1%";
+                if ($session{'username'}) {
+                        $HTML::HTPL::authorized =
+$HTML::HTPL::acl->{'acl'}->IsAuthorized($session{'username'}, $REALM);
+                }
+        </__MACRO>
+        <__MACRO NAME="IFLOGGED" AREA="1">
+                <__FWD MAX="0" PUSH="if-then">if
+	($session{'username'}) {</__FWD>
+                <__REV><__ALIAS>ENDIF</__ALIAS></__REV>
+        </__MACRO>
+        <__MACRO NAME="IFNOTLOGGED" AREA="1">
+                <__FWD MAX="0" PUSH="if-then">unless
+	($session{'username'}) {</__FWD>
+                <__REV><__ALIAS>ENDIF</__ALIAS></__REV>
+        </__MACRO>
+        <__MACRO NAME="IFAUTHORIZED" AREA="1">
+                <__FWD MAX="0" PUSH="if-then">if
+	($HTML::HTPL::authorized) {</__FWD>
+                <__REV><__ALIAS>ENDIF</__ALIAS></__REV>
+        </__MACRO>
+        <__MACRO NAME="IFUNAUTHORIZED" AREA="1">
+                <__FWD MAX="0" PUSH="if-then">unless
+	($HTML::HTPL::authorized) {</__FWD>
+                <__REV><__ALIAS>ENDIF</__ALIAS></__REV>
+        </__MACRO>
+        <__MACRO NAME="ADDUSER" MIN="2" MAX="3">
+                <__DO MAX="2">$HTML::HTPL::acl->AddUser("%1%", "%2%");</__DO>
+                <__DO MIN="3" ASSERT="%1% - 'crypted'">$HTML::HTPL::acl->AddUser("%1%", "%2%", 1);</__DO>
+                <__CROAK MIN="3" ASSERT="%1% !- 'crypted'">Must use two arguments or 'crypted' as first argument</__CROAK>
+        </__MACRO>
+</__MACRO>
+<__MACRO NAME="EXIT">exit;</__MACRO>
 </HTPL>

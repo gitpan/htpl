@@ -43,14 +43,34 @@ int parse_htpl_text_cube(STR, int);
 int parse_htpl_ifnotnull(STR, int);
 int parse_htpl_ifnotnull___fwd(STR, int);
 int parse_htpl_ifnotnull___rev(STR, int);
+int parse_htpl_connection(STR, int);
 int parse_htpl_time(STR, int);
 int parse_htpl_time_modified(STR, int);
+int parse_htpl_auth_create(STR, int);
 int parse_htpl_loop(STR, int);
 int parse_htpl_end(STR, int);
 int parse_htpl_default(STR, int);
 int parse_htpl_counter(STR, int);
+int parse_htpl_redirect(STR, int);
 int parse_htpl_call(STR, int);
 int parse_htpl_throw(STR, int);
+int parse_htpl_auth(STR, int);
+int parse_htpl_auth_iflogin(STR, int);
+int parse_htpl_auth_realm(STR, int);
+int parse_htpl_auth_ifunauthorized(STR, int);
+int parse_htpl_auth_ifunauthorized___fwd(STR, int);
+int parse_htpl_auth_ifunauthorized___rev(STR, int);
+int parse_htpl_auth_iflogged(STR, int);
+int parse_htpl_auth_iflogged___fwd(STR, int);
+int parse_htpl_auth_iflogged___rev(STR, int);
+int parse_htpl_auth_login(STR, int);
+int parse_htpl_auth_adduser(STR, int);
+int parse_htpl_auth_ifnotlogged(STR, int);
+int parse_htpl_auth_ifnotlogged___fwd(STR, int);
+int parse_htpl_auth_ifnotlogged___rev(STR, int);
+int parse_htpl_auth_ifauthorized(STR, int);
+int parse_htpl_auth_ifauthorized___fwd(STR, int);
+int parse_htpl_auth_ifauthorized___rev(STR, int);
 int parse_htpl_fetchcols(STR, int);
 int parse_htpl_mail(STR, int);
 int parse_htpl_mail___fwd(STR, int);
@@ -73,6 +93,7 @@ int parse_htpl_fetch___rev(STR, int);
 int parse_htpl_for(STR, int);
 int parse_htpl_for___fwd(STR, int);
 int parse_htpl_for___rev(STR, int);
+int parse_htpl_exit(STR, int);
 int parse_htpl_load(STR, int);
 int parse_htpl_include(STR, int);
 int parse_htpl_sql(STR, int);
@@ -187,4 +208,4 @@ extern char *scope_names[];
 extern int scope_ids[];
 #endif
 
-#define NUM_MACROS 149
+#define NUM_MACROS 170

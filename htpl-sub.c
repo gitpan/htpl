@@ -23,7 +23,7 @@ void outperlline(o, code)
     pchar ch;
     int rcode;
 
-    for (ch = code; isblank(*ch); ch++) ;
+    for (ch = code; isspace(*ch); ch++) ;
 
     if (*ch == '#') {
         ch++;
@@ -301,6 +301,20 @@ int disposecmp(buff1, buff2)
     free(buff2);
     return code;
 }
+
+/********************************************
+ * Compare two strings and delete from heap *
+ ********************************************/
+
+int disposeicmp(buff1, buff2)
+    pchar buff1, buff2; {
+
+    int code = strcasecmp(buff1, buff2);
+    free(buff1);
+    free(buff2);
+    return code;
+}
+
 
 /*********************************************
  * Parse the current macro                   *

@@ -495,10 +495,7 @@ void outplain(o, line, language)
     copy = escapevars(line);
 
     if (!language) {
-        if (strchr(copy, '\\'))
-            outf(o, "print \"%s\";", copy);
-        else
-            outf(o, "print qq\"%s\";", copy);
+        outf(o, "print \"%s\";", copy);
     } else {
         STR it = " -nonewline";
         STR ch = copy + strlen(copy) - 2;
@@ -1242,6 +1239,7 @@ HTPL page. Check in dependency database if used */
     if (i) {
         nline = 1;
         outf(o, "# Including: %s", infile);
+	outline(o, thefilename, 1);
         process(i, c, o);
         fclose(i);
         fseek(c, 0, SEEK_SET);
@@ -1269,7 +1267,7 @@ HTPL page. Check in dependency database if used */
 /* Done */
 
     outf(o, "# End %s", inputfile);
-
+    
 /* If we had XSUB code, we have to wait */
 #ifdef __DEBUG__
     if (!runit)
@@ -1291,6 +1289,24 @@ HTPL page. Check in dependency database if used */
         exit(0);
     }
 
+    fclose(i);
+    fclose(c);
+
+    chdir(scriptdir);
+    strcpy(thefilename, "footer.hh");
+    sprintf(infile, "Default include: %s", thefilename);
+    i = fopen(thefilename, "r");
+    if (i) {
+        nline = 1;
+        outf(o, "# Including: %s", infile);
+        outline(o, thefilename, 1);
+        process(i, c, o);
+        fclose(i);
+        outf(o, "# End of %s",
+                infile);
+    }
+    chdir(origdir);
+
 
 /* Add code for exit */
 
@@ -1306,11 +1322,8 @@ HTPL page. Check in dependency database if used */
 
     popbuffer();
 
-    fclose(c);
-
     unlink(xs);
 
-    fclose(i);
     fclose(o);
 
 /* Display errors if croak() was called */
