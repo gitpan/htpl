@@ -266,10 +266,10 @@ sub project ($$;@) {
     &HTML::HTPL::Sys::pushvars($self->{'fields'});
     $self->rewind;
     my $ref = ref($field) =~ /CODE/ ? $field : (
-         !$#fields ? sub {$self->get($field);} :
-         sub {[map {$self->get($_);} @fields];});
+         !$#fields ? sub {my $self = shift; $self->get($field);} :
+         sub {my $self = shift; [map {$self->get($_);} @fields];});
     while ($self->fetch) {
-        push(@r, &$ref);
+        push(@r, &$ref($self));
     }
     $self->access($save);
     &HTML::HTPL::Sys::popvars;
@@ -288,6 +288,18 @@ sub matrix {
     my $self = shift;
     my @fields = $self->cols;
     $self->project(@fields);
+}
+
+sub structured {
+    my $self = shift;
+    my @fields = $self->cols;
+    my $code = sub {
+        my $self = shift;
+        my %hash = ();
+        @hash{@fields} = map {$self->get($_);} @fields;
+        \%hash;
+    };
+    $self->project($code);
 }
 
 1;

@@ -128,6 +128,8 @@ int countlines(STR);
 void replacechar(STR, char, char);
 STR qualify(STR, int);
 void fcopy(STR, STR);
+STR escapevars(STR);
+
 /*
 struct ldapp {
     FILENAME server;

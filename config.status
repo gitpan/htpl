@@ -76,7 +76,7 @@ s%@CPANMAKE@%CPAN-root%g
 s%@MODINS@%install-root%g
 s%@OBJEMBED@%htpl-xsi.c htpl-perl.c%g
 s%@INSTALLDIR@%/usr/local/apache/cgi-bin%g
-s%@EGO@%htpl-author.ego%g
+s%@EGO@%%g
 s%@TEMP@%/tmp%g
 s%@XML@%1%g
 s%@HTDOCS@%/usr/local/apache/htdocs/htpl%g

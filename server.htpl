@@ -64,8 +64,10 @@ if (ref($res)) {
 }
 
 if ($key) {
-    require Crypt::Simple;
-    $res = Crypt::Simple::encrypt($res, $key);
+#    require Crypt::Simple;
+    require Crypt::Blowfish;
+    my $cipher = new Blowfish($key);
+    $res = &HTML::HTPL::encrypt($res, $cipher);
 }
 
 require Compress::Zlib;

@@ -56,8 +56,11 @@ sub get {
     my $htplnet = $head->header($VERSION_HEADER);    
     Carp::croak("Server did not shake hands") unless ($htplnet);
     if ($key) {
-        require Crypt::Simple;
-        $var = Crypt::Simple::encrypt($var, $key);
+#        require Crypt::Simple;
+        my $cipher;
+        require Crypt::Blowfish;
+        $cipher = new Blowfish($key);
+        $var = &HTML::HTPL::encrypt($var, $cipher);
     }
     return $var if ($sub eq "$RESPONSE_PREFIX$RESPONSE_SIMPLE");
     if ($sub eq "$RESPONSE_PREFIX$RESPONSE_FREEZETHAW") {

@@ -283,6 +283,7 @@ sub htpl_startup {
     &setvar('SERVER_PORT' => $port = $ENV{'SERVER_PORT'});
     $port = ($port == 80 ? "" : ":$port");
     &setvar('SELF_URL' => "http://$host$port$scr");
+    require Tie::Func;
     tie ${$htpl_pkg . "::SELF"}, 'Tie::Func',
         sub { &HTML::HTPL::Lib::selfurl(); }, undef, undef;
 

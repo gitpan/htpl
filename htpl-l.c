@@ -987,9 +987,7 @@ void outblock(o, buffer)
             *ch2 = '\0';
             ch2++;
         }
-        top = escapevars(ch);
-        fprintf(o, "%s%s", top, NEWLINE);
-        free(top);
+        fprintf(o, "%s%s", ch, NEWLINE);
         ch = ch2;
         rline++;
     }

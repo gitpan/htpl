@@ -481,19 +481,24 @@ void outplain(o, line, language)
     FILE *o;
     STR line; 
     int language; {
+    STR copy;
 
     if (!*line) return;
+    
+    copy = escapevars(line);
+
     if (!language) {
-        outf(o, "print \"%s\";", line);
+        outf(o, "print \"%s\";", copy);
     } else {
         char *it = " -nonewline";
-        char *ch = line + strlen(line) - 2;
+        char *ch = copy + strlen(copy) - 2;
         if (!strcmp(ch, "\\n")) {
             it = "";
             *ch = '\0';
         }
-        outf(o, "puts%s \"%s\"", it, line);
+        outf(o, "puts%s \"%s\"", it, copy);
     }
+    free(copy);
     rline++;
 }
 

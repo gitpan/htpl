@@ -18,8 +18,8 @@ unitelist intersectlist takelog increasefile lastmodified avg getmdy
 begintransaction endtransaction imagesize finger revmap safemkdir mkfile
 jewishdate getdmy monthname weekdayname foreachdir slash wrap hebrew_wrap
 pusht popt undouble uniq timestep rotate ror rol getcwd hostname core
-selfurl querystring newquerystring takebroadlog subpkg subhash maketime
-html_treeview
+selfurl querystring takebroadlog subpkg subhash maketime
+html_treeview selfsameurl
 elapsed hebrewflip agg sum splitline $STD_BODY @MONTH_NAMES @WEEKDAY_NAMES);
 
 @MONTH_NAMES = qw(January February March April May June July August
@@ -948,14 +948,16 @@ sub hostname {
 }
 
 sub querystring {
-    &newquerystring(&HTML::HTPL::Sys::gethash('form'), @_);
-}
-
-sub newquerystring {
     my %hash = @_;
-    my @vars = map {
-        &urlencode($_) . '=' . &urlencode($hash{$_});
-    } keys %hash;
+    my $result;
+    my ($k, $v, $a);
+    my @vars;
+    while (($k, $v) = each %hash) {
+        $a = (ref($v) =~ /ARRAY/ ? $v : [$v]);
+        foreach (@$a) {
+            push(@vars, &urlencode($k) . '=' &urlencode($_));
+        }
+    }
     join("&", @vars);
 }
 
@@ -963,6 +965,11 @@ sub selfurl {
     my $query = &querystring(@_);
     $query =~ s/^(.)/?$1/;
     &HTML::HTPL::Sys::getvar("SELF_URL") . $query;
+}
+
+sub selfsameurl {
+    my %hash = &HTML::HTPL::Sys::gethash("url");
+    &selfurl(%hash, @_);
 }
 
 sub subhash {
@@ -1018,11 +1025,16 @@ sub subhash {
             $result .= $block if (&$fun(\%hash));
             next;
         }
-        if ($cmd =~ /end/i) {
+        if ($cmd =~ /^end$/i) {
            return $result;
         }
-        if ($cmd =~ /self/i) {
-            $result .= &selfurl();
+        if ($cmd =~ /^self(\s+.*)?$/i) {
+            my $par = &trim($1);
+            my %hash = &HTML::HTPL::Sys::gethash("url");
+            foreach (split(/ /, $par)) {
+                delete $hash{$_};
+            }
+            $result .= &selfurl(%hash);
             next;
         }
         &htdie("Invalid template: $cmd");
@@ -1037,7 +1049,7 @@ sub subpkg {
 
 sub html_treeview {
     my ($tree, $param, $noout) = @_;
-    my %hash = &gethash('url');
+    my %hash = &HTML::HTPL::Sys::gethash('url');
     my $init = $hash{$param};
     my @open = split(/\$/, $init);
     my %open;
@@ -1045,26 +1057,67 @@ sub html_treeview {
     my $result;
     foreach (@$tree) {
         my ($key, $html, $hash, $children) = @$_;
-        my $this = &selfurl(%$hash);
+        my $this;
+        if (ref($hash) =~ SCALAR) {
+            $hash = {$$hash => $key};
+            $html = qq!<A HREF="#SELF#">$html</A>!;
+        }
+        if (ref($hash) =~ /HASH/) {
+            $this = &selfsameurl(%$hash);
+        }            
         $html =~ s/#SELF#/$this/g;
         my $state = $open{$key};
+        if (!@$children) {
+            $result .= qq!<LI> $html\n!;
+            next;
+        }
         unless ($state) {
             my @new = sort (@open, $key);
             my $item = join('$', @new);
-            my $ref = &selfurl($param => $item);
+            my $ref = &selfsameurl($param => $item);
             $result .= qq!<LI> <B><A HREF="$ref">+</A></B> $html\n!;
             next;
         }
         my %new = %open;
         delete $new{$key};
-        my @new = sort keys %open;
+        my @new = sort keys %new;
         my $item = join('$', @new);
-        my $ref = &selfurl($param => $item);
+        my $ref = &selfsameurl($param => $item);
         $result .= qq!<LI> <B><A HREF="$ref">-</A></B> $html\n!;
-        $result .= &htmltreeview($children, $param, 1);
+        $result .= &html_treeview($children, $param, 1);
     }
     $result = "<UL>$result</UL>";
     print $result unless ($noout);
+    $result;
 }
+
+sub encrypt {
+    my ($block, $cipher) = @_;
+    my $len = length($block);
+    my $round = (int($len / 8) + (1 - int((8 - $len % 8) / 8))) * 8;
+    $block = substr($block . ("\0" x 8), 0, $round);
+    my $result;
+    foreach ($block =~ /(.{8})/gs) {
+        $result .= $cipher->encrypt($_);
+    }
+    return pack("w", $len) . $result;
+}
+
+sub decrypt {
+    my ($block, $cipher) = @_;
+    my $len = unpack("w", $block);
+    my $rev = quotemeta(pack("w", $len));
+    return undef unless ($block =~ s/^$rev//);
+    my $round = length($block);
+    return undef if ($round % 8);
+    my $result;
+
+    @chunks = ($block =~ /(.{8})g/s);
+    foreach ($block =~ /(.{8})/gs) {
+        $result .= $cipher->decrypt($_);
+    }
+    return substr($result, 0, $len);
+}
+
 
 1;
