@@ -13,27 +13,27 @@ if ($call =~ /^(.*?)\((.*?)\)$/) {
     &err("Syntax error");
 }
 
-open(C, "server_procs");
+open(C, "server_procs") || &err("Can't open server_procs");
 while(<C>) {
     chop;
-    ($fn, $mod, $sub, $src, $users, $key) = split(/,/);
+    ($fn, $mod, $sub, $src, $users, $key) = split(/ /);
     if (lc($fn) eq $func) {
         $found = 1;
         last;
     }
 }
-&err("Illegal function call") unless ($found);
+&err("Illegal function call: $func") unless ($found);
 &err("Permission denied") unless (!$users ||
                ${__PACKAGE__ . '::REMOTE_USER'} =~ /^$users$/);
 
 if ($src) {
     my ($srcdate, $moddate);
-    $srcdate = (stat($src))[10];
-    $moddate = (stat($mod))[10];
+    $srcdate = &lastmodified($src);
+    $moddate = &lastmodified($mod);
     if ($moddate < $srcdate) {
         $bin = $HTML::HTPL::Config::dbgbin;
-        $code = system("$bin -t -w -o $mod $src");
-        &err("Error when translating module") if ($code);
+        $code = `$bin -t -w -o $mod $src`;
+        &err("Error when translating module: $code") if ($code);
     }
 }
 
@@ -47,9 +47,9 @@ eval qq!require "$mod";!;
 
 my $coderef;
 $@ = undef;
-eval "$^H |= 0x200; \$coderef = \\\&$sub";
+eval "\$^H |= 0x200; \$coderef = \\\&$sub";
 
-&err("Function not found: $sub") if ($@ || !eval("*${sub}{CODE}"));
+&err("Function not found: $sub") if ($@ || !eval("*$sub\{CODE}"));
 
 $@ = undef;
 eval '$res = &$coderef(@params);';
@@ -91,3 +91,4 @@ sub err {
     print shift;
     exit;
 }
+>

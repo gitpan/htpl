@@ -9,7 +9,9 @@ sub TIESCALAR {
 
 sub FETCH {
     my $this = shift;
-    return $this->{'obj'}->{$this->{'field'}};
+    return $this->{'obj'}->{$this->{'field'}} ||
+             $this->{'obj'}->{uc($this->{'field'})} ||
+             $this->{'obj'}->{lc($this->{'field'})};
 }
 
 sub STORE {

@@ -8,7 +8,7 @@ require Exporter;
 
 @EXPORT = qw(call html_table html_table_out evit publish doredirect
 parse_cookies getmailprog proper ch2x safehash parse_tags outhtmltag
-enforce_tags begintransaction endtransaction htpl_startup get_session
+enforce_tags htpl_startup get_session
 revmap ReadParse cleanup exit getvar safetags isheb htdie safetags
 checktaint pushvars popvars pkglist getpkg compileutil);
 
@@ -227,26 +227,6 @@ sub enforce_tags {
     }
 }
 
-sub begintransaction {
-    my $hnd = "HTPL_TR-" . scalar(@htpl_transactions);
-
-    push(@htpl_transactions, {'old' => select, 'hnd' => $hnd});
-    pipe(*{"R$hnd"}, *{"W$hnd"});
-    select *{"W$hnd"};
-    $| = 1;
-}
-
-sub endtransaction {
-    my $item = pop @htpl_transactions;
-    my $hnd = $item->{'hnd'};
-    close *{"W$hnd"};
-    my $rd = *{"R$hnd"};
-    my @lines = <$rd>;
-    close($rd);
-    select *{$item->{'old'}};
-    (wantarray ? @lines : join("", @lines));
-}
-
 sub initrun {
     $have_time_hires = undef;
     eval 'require Time::HiRes; $have_time_hires = 1;';
@@ -296,17 +276,22 @@ sub htpl_startup {
     }
 
     my $dir = &HTML::HTPL::Lib::getcwd;
-    chop $dir;
 
     unshift(@INC, $dir);
     &setvar("ORIGDIR" => $dir);
 
-    $dir = $ENV{'PATH_TRANSLATED'} || $0;
-    if ($dir) {
-        $dir =~ s|/.*?$||;
-        chdir($dir);
+    my $cdir;
+
+    foreach (($0, $ENV{'PATH_TRANSLATED'})) {
+        if ($_) {
+            $cdir = $_;
+            $cdir =~ s|/[^/]*?$||;
+            next unless ($cdir);
+            $dir = $cdir;
+            chdir($dir);
+            unshift(@INC, $dir);
+        }
     }
-    unshift(@INC, $dir);
     &setvar("SCRIPTDIR" => $dir);
 
     &parse_cookies;

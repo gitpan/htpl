@@ -962,7 +962,7 @@ sub ror {
 
 sub getcwd {
     require Cwd;
-    Cwd::cwd;
+    &Cwd::getcwd();
 }
 
 sub hostname {
@@ -976,9 +976,9 @@ sub querystring {
     my ($k, $v, $a);
     my @vars;
     while (($k, $v) = each %hash) {
-        $a = (ref($v) =~ /ARRAY/ ? $v : [$v]);
+        $a = ((ref($v) =~ /ARRAY/) ? $v : [$v]);
         foreach (@$a) {
-            push(@vars, &urlencode($k) . '=' &urlencode($_));
+            push(@vars, &urlencode($k) . '=' . &urlencode($_));
         }
     }
     join("&", @vars);
@@ -1144,6 +1144,26 @@ sub decrypt {
         $result .= $cipher->decrypt($_);
     }
     return substr($result, 0, $len);
+}
+
+sub begintransaction {
+    my $hnd = "HTPL_TR-" . scalar(@htpl_transactions);
+
+    push(@htpl_transactions, {'old' => select, 'hnd' => $hnd});
+    pipe(*{"R$hnd"}, *{"W$hnd"});
+    select *{"W$hnd"};
+    $| = 1;
+}
+
+sub endtransaction {
+    my $item = pop @htpl_transactions;
+    my $hnd = $item->{'hnd'};
+    close *{"W$hnd"};
+    my $rd = *{"R$hnd"};
+    my @lines = <$rd>;
+    close($rd);
+    select *{$item->{'old'}};
+    (wantarray ? @lines : join("", @lines));
 }
 
 

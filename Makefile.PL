@@ -17,6 +17,8 @@ This package should be installed via its Gnu configure script.
 Change directory to $dir and type ./configure
 Before doing it, please read installation instructions 
 in $dir/INSTALL
+
+Now Break....
 EOM
 
 $x = <STDIN>;

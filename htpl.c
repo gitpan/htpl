@@ -680,6 +680,7 @@ void process(f, c, o)
 #endif
 
     finish = before;
+    after = finish;
 
 /* Get a char from input, unless rollback buffer has chars */
     while ((ch=(save && *save ? *save++ : getc(f))) != EOF) {
@@ -1101,7 +1102,6 @@ int main(int argc, char *argv[], char **env) {
 
     finddir(inputfile, scriptdir);
 
-    makecache(inputfile, xs, "htxs");
 
     if (script[0] == '\0') {
 #ifdef __DEBUG__
@@ -1112,6 +1112,8 @@ int main(int argc, char *argv[], char **env) {
         makecache(inputfile, script, "perl");
 
     }
+
+    makecache(script, xs, "htxs");
 
     maketemp(postdata, "post");
     maketemp(output, "out");

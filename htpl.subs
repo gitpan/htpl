@@ -86,6 +86,15 @@ qw(%5*%));</__DO></CUBE>
 
 	<READ MIN="2" MAX="2">$%1% = &amp;readfile("%2%");</READ>
 
+	<TEMPLATE AREA="1" SCOPE="1"><__PRE>use Template;</__PRE>
+	<__FWD MIN="1" MAX="1">my $__htpl_params = \%%%1%;
+	&amp;begintransaction;</__FWD>
+	<__REV>{ my $text = &amp;endtransaction;
+		 my $temp = new Template({ 'INCLUDE_PATH' => $ORIG_DIR,
+			'INTERPOLATE' => 1, 'EVAL_PERL' => 1});
+		$temp->process(\$text, $__htpl_params); }</__REV>
+	</TEMPLATE>
+
 </TEXT>
 
 <LOAD MIN="1">die "Unknown query" unless $HTML::HTPL::Sys::query_pool{'%1%'};

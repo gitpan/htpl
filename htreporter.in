@@ -3,7 +3,7 @@
 use IniConf;
 use Getopt::Std;
 use DBI;
-use Text::SubHash;
+use HTML::HTPL::Lib;
 
 getopts('ahco:u:p:');
 
@@ -52,10 +52,9 @@ if ($opt_h) {
                  . "  </TR>\n";
         $footer = "</TABLE>\n</BODY>\n</HTML>\n";
     }
-
     print "$header\n";
     while ($hash = $sth->fetchrow_hashref) {
-        print Text::SubHash::subst("$template\n", $hash);
+        print HTML::HTPL::Lib::subhash("$template\n", '#', %$hash);
     }
     print "$footer\n";
     select STDOUT;

@@ -920,7 +920,7 @@ STR escapevars(code)
     STR code; {
     pchar ch;
     short flag = 0;
-    STR buff = strdup(code);
+    STR buff = malloc(strlen(code) * 2);
     pchar dst = buff;
     char alt[100];
     pchar save;

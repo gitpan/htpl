@@ -8,7 +8,7 @@ eval 'require Digest::MD5';
 	SQL::Statement Text::CSV_XS DBD::CSV FreezeThaw IniConf
         Data::Dumper GD MLDBM Convert::BER Net::LDAP XML::Parser
         Net::DNS Net::Whois Net::Country Tie::Cache Tie::DBI
-	Filter::Util::Call));
+	Filter::Util::Call Template));
 
 if ($ARGV[0] eq 'NOPREREQ') {
 	@modules = @useful;

@@ -64,7 +64,6 @@ sub add {
          ") VALUES (" . join(", ", @qs) . ")";
     my $sth = $dbh->prepare($sql) || &dbdie(qq!SQL "$sql"!);
     $sth->execute(@values) || &dbdie(qq!SQL "$sql"!);
-
 }
 
 sub update {

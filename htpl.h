@@ -76,11 +76,11 @@ enum scriptcontext {CODE_TAG, CODE_EVAL, CODE_BLOCK, CODE_TCL_TAG};
 
 
 /*typedef enum states DFA;*/typedef long DFA;
-typedef char TOKEN[120];
-typedef char FILENAME[80];
+typedef char TOKEN[260];
+typedef char FILENAME[180];
 typedef char DN[150];
 typedef char *pchar, *STR;
-typedef char COMMAND[253];
+typedef char COMMAND[1253];
 typedef void *PTR;
 
 void generate(STR, STR, STR, STR);

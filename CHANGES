@@ -1,7 +1,9 @@
 Versions:
 
+2.71: Introduced HTGenerator
+2.70: Fixed bugs in HTPLNet and HTReporter
 2.69: Added preprocessor, post processor and inprocessor.
-2.68: LDAP support resumed, perl lines begiining with a hash sign can be
+2.68: LDAP support resumed, perl lines beginning with a hash sign can be
       continued next line if ended with a backslash. (For the sake of
       macros)
 2.66: HTML::HTPL::Select working.

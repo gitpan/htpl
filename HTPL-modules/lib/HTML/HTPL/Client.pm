@@ -40,11 +40,11 @@ sub get {
     my $res = $ua->request($req);
     my $type = $res->content_type;
     my $head = $res->headers;
+    my $var = $res->content;
 
     my ($super, $sub) = split("/", $type);
-    Carp::croak("Wrong content type in response: $type") unless ($super eq "application"
+    Carp::croak("Wrong content type in response: $type\nContent: $var") unless ($super eq "application"
            && $sub =~ /^$RESPONSE_PREFIX/);
-    my $var = $res->content;
     $sub =~ s/^$RESPONSE_PREFIX($RESPONSE_ZLIB)/$RESPONSE_PREFIX/;
     if ($1) {
         require Compress::Zlib;

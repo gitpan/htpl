@@ -26,6 +26,7 @@ RUN = htplrun
 COMP = htplp
 CMP = htplc
 SRVC = htplsrvc
+GEN = htpgen
 SH = /bin/sh
 CONDS = -DTMP_DIR=\"$(TEMP)\" -DPERL_BIN=\"$(PERL_BIN)\" $(DEFEMBED)
 INFO = -DCOMPILATION=`$(PERL) -e "print time;"` @DEPDBDEF@ -DBUILD=`cat build` 
@@ -36,7 +37,7 @@ HS = htpl.h htpl-sh.h
 OBV = Makefile
 DEP = $(CS) $(HS) $(OBV) $(OBJEMBED)
 REP = htreporter
-SCRIPTS = $(RUN) $(CMP) $(COMP) $(REP) $(SRVC)
+SCRIPTS = $(RUN) $(CMP) $(COMP) $(REP) $(SRVC) $(GEN)
 TARGETS = $(BIN) $(DBG) $(PMS) $(SCRIPTS)
 CWD = `pwd`
 DEFEMBED = `test -z "$(OBJEMBED)" || echo -D__PERLEMBED__`
@@ -93,6 +94,9 @@ $(REP) : .phony
 
 $(SRVC) : .phony
 	chmod 755 $(SRVC)
+
+$(GEN) : .phony
+	chmod 755 $(GEN)
 
 install-it : 
 	for f in $(DBG) $(BIN) ; do \

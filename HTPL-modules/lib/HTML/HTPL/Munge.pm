@@ -100,7 +100,7 @@ EOM
     }
 
     my $ref = eval("*$impfunc\{CODE}");
-    Carp::Croak("No method $method in $class") unless (ref($ref) =~ /CODE/);
+    Carp::croak("No method $method in $class") unless (ref($ref) =~ /CODE/);
     eval <<EOM;
 package $class;
 sub $method {
