@@ -16,7 +16,7 @@ AC_DEFUN(AB_PERL_CHECK, [
 AC_DEFUN(AB_PROG_PERL, [
 AC_CACHE_CHECK(for perl, ab_cv_perl, [
     ab_perl_path=$PATH:/usr/bin:/usr/local/bin:/usr/contrib/bin
-    AC_ARG_WITH(perl, --with-perl=PERL	Location of Perl, ab_perl=$withval; ab_with_perl=1, [
+    AC_ARG_WITH(perl, [  --with-perl=PERL	  Location of Perl], ab_perl=$withval; ab_with_perl=1, [
         AC_PATH_PROG(ab_perl, perl, , $ab_perl_path)])
 
 

@@ -1,7 +1,7 @@
-eval {
+eval '
 use Cwd;
 $dir = cwd;
-};
+';
 
 unless ($dir) {
     eval {
@@ -10,17 +10,48 @@ unless ($dir) {
     }
 }
 
-die "COuld not get current dir" unless ($dir);
+die "Could not get current dir" unless ($dir);
 
-print <<EOM;
-This package should be installed via its Gnu configure script.
-Change directory to $dir and type ./configure
-Before doing it, please read installation instructions 
-in $dir/INSTALL
+eval '
+	use Tie::Parent;
+	$loaded = 1;
+';
 
-Now Break....
-EOM
+unless ($loaded) {
+	die "You should first install Tie::Parent from Tie-Tools";
+}
 
-$x = <STDIN>;
+eval '
+	require Apache;
+	$may_apache = 1;
+';
 
-die;
+if ($may_apache) {
+	print "Do you want to run HTPL as a mod_perl extension? ";
+	$apache = quotemeta(scalar(<STDIN>));
+	chop $apache;
+	chop $apache;
+	if ("yes" =~ /^$apache/i) {
+		&doit("--enable-modperl");
+	}
+}
+
+print "Does the webserver run with the UID of the HTPL file owner? ";
+
+$dep = quotemeta(scalar(<STDIN>));
+chop $dep;
+chop $dep;
+if ("no" =~ /^$dep/i) {
+   	print "Enabling dpenedency database, read the README\n";
+	&doit("--with-depdb");
+}
+
+&doit;
+
+sub doit {
+	my $par = shift;
+	print "Running: ./configure $par\n";
+	sleep(2);
+	system "$dir/configure $par";
+	exit(0);
+}

@@ -12,13 +12,13 @@ ac_help=
 ac_default_prefix=/usr/local
 # Any additions from configure.in:
 ac_help="$ac_help
---with-perl=PERL	Location of Perl"
+  --with-perl=PERL	  Location of Perl"
 ac_help="$ac_help
---enable-depdb             Include dependency database"
+  --enable-depdb	  Include dependency database"
 ac_help="$ac_help
---with-temp=TEMP      Temp directory"
+  --with-temp=TEMP	  Temp directory"
 ac_help="$ac_help
---enable-modperl Install ModPerl support"
+  --enable-modperl	  Install ModPerl support"
 
 # Initialize some variables set by options.
 # The variables have the same names as the options, with
