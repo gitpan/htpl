@@ -15,7 +15,7 @@ require Exporter;
 @EXPORT = qw(call html_table html_table_out evit publish doredirect
 parse_cookies getmailprog proper ch2x safehash parse_tags outhtmltag
 enforce_tags htpl_startup get_session gethash
-revmap ReadParse cleanup exit getvar safetags isheb htdie safetags
+revmap ReadParse cleanup exit getvar safetags isheb safetags
 checktaint pushvars popvars pkglist getpkg compileutil
 $htpl_pkg);
 
@@ -539,13 +539,6 @@ sub dieTaint {
     exit;
 }
 
-sub htdie {
-    &HTML::HTPL::Lib::rewind;
-    &HTML::HTPL::Lib::setmimetype("Text/plain");
-    print join("\n", @_, "");
-    exit;
-}
-
 sub isheb {
     shift =~ /[\xE0-\xFA]/;
 }
@@ -642,7 +635,7 @@ sub compileutil {
         ! . join(" ", @trans) . qq!;
     }!;
     my $ref = eval($code);
-    &htdie($@) unless (UNIVERSAL::isa($ref, 'CODE'));
+    &HTML::HTPL::Lib::htdie($@) unless (UNIVERSAL::isa($ref, 'CODE'));
     $ref;
 }
 

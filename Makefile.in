@@ -58,14 +58,13 @@ MODULES = HTPL-modules HTPL-SQL Hebrew Calendar $(MODPERL)
 
 # Rules
 
-.SUFFIXES: .ob .od
+.SUFFIXES: .ob .od .owb .owd
 
 .c.ob:
 	$(CC) $(CCFLAGS) -c -o $@ $< $(PL)
 
 .c.od:
 	$(CC) $(CCFLAGS) -c -D__DEBUG__ -o $@ $< $(PL)
-
 
 all: htpl-parse.c $(TARGETS) $(EGO)
 
@@ -80,7 +79,7 @@ realclean: clean
 	/bin/rm -f core *.perl *.ht.pl perl.sh || true
 
 release: 
-	VERSION=`$(PERL) -e 'require "HTPL-modules/lib/HTML/HTPL.pm"; print sprintf("%4.2f", $$HTML::HTPL::VERSION + 0.01);'`; \
+	VERSION=`$(PERL) -e 'require "HTPL-modules/lib/HTML/HTPL.pm"; print $$HTML::HTPL::VERSION + 0.01;'`; \
 	echo -n "htpl-$$VERSION" > release.name ; \
 	echo $$VERSION | $(PERL) -ne 'chop; print' | $(PERL) -pi -e \
 's/^\s*\$$VERSION\s+=.*;/"    \$$VERSION = ". scalar(<STDIN>) . ";"/e;' \
@@ -224,9 +223,20 @@ CPAN-root:
 CPAN-it:
 	$(PERL) pre-install.pl NOPREREQ $(MODDIR)
 
-win:
-	$(CCPROG) -o htpl.exe htpl.c htpl-l.c htpl-parse.c htpl-sub.c htpl-win.c
-	$(CCPROG) -D__DEBUG__ -o htpldbg.exe htpl.c htpl-l.c htpl-parse.c htpl-sub.c htpl-win.c
 
+.c.owb:
+	gcc -DHAVE_SETENV -c -o $@ $<
 
+.c.owd:
+	gcc -DHAVE_SETENV -c -D__DEBUG__ -o $@ $< 
+
+WINBINOBJ = \
+ htpl.owb htpl-l.owb htpl-sub.owb htpl-parse.owb $(owbJEMBEDBIN) perf.owb \
+ htpl-win.owb
+WINDBGOBJ = \
+ htpl.owd htpl-l.owd htpl-sub.owd htpl-parse.owd $(owbJEMBEDDBG) perf.owd \
+ htpl-win.owd
+win: $(WINBINOBJ) $(WINDBGOBJ)
+	gcc -DHAVE_SETENV -o htpl.exe $(WINBINOBJ) 
+	gcc -DHAVE_SETENV -D__DEBUG__ -o htpldbg.exe $(WINDBGOBJ) 
 

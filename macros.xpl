@@ -457,4 +457,13 @@ $HTML::HTPL::pts_obj = new RPC::PlClient(
 $%$var% = &amp;endtransaction; 
 </__REV>
 </__MACRO>
+<__MACRO NAME="DIE">
+&amp;htdie("%1*%");
+</__MACRO>
+<__MACRO NAME="LISTBOX">
+<__INCLUDE>%1*%</__INCLUDE>
+<__DO>
+&amp;html_selectbox({'name' => '%3%'}, map {@$_;} $%3%->matrix);
+</__DO>
+</__MACRO>
 </HTPL>

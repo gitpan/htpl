@@ -89,6 +89,7 @@ int parse_htpl_mail(STR, int);
 int parse_htpl_mail___fwd(STR, int);
 int parse_htpl_mail___rev(STR, int);
 int parse_htpl_catch(STR, int);
+int parse_htpl_listbox(STR, int);
 int parse_htpl_constructor(STR, int);
 int parse_htpl_constructor___fwd(STR, int);
 int parse_htpl_constructor___rev(STR, int);
@@ -111,6 +112,7 @@ int parse_htpl_destructor___rev(STR, int);
 int parse_htpl_if(STR, int);
 int parse_htpl_if___fwd(STR, int);
 int parse_htpl_if___rev(STR, int);
+int parse_htpl_die(STR, int);
 int parse_htpl_graph(STR, int);
 int parse_htpl_switch(STR, int);
 int parse_htpl_switch_rnd(STR, int);
@@ -183,4 +185,4 @@ extern char *scope_names[];
 extern int scope_ids[];
 #endif
 
-#define NUM_MACROS 145
+#define NUM_MACROS 147

@@ -1,4 +1,5 @@
 package HTML::HTPL::Lib;
+use HTML::HTPL;
 use strict qw(vars subs);
 use vars qw($htpl_pkg $started $htpl_capture @htpl_transactions
 	$text $buff @__htpl_timer $iswin $a $b @DoWs @MoYs @DoW @MoY
@@ -6,7 +7,7 @@ use vars qw($htpl_pkg $started $htpl_capture @htpl_transactions
 	@ISA @EXPORT);
 
 use HTML::HTPL::Sys qw(html_table html_table_out publish doredirect
-getmailprog proper ch2x safetags checktaint htdie compileutil);
+getmailprog proper ch2x safetags checktaint compileutil);
 use HTML::HTPL::Stream;
 
 *htpl_pkg = \$HTML::HTPL::Sys::htpl_pkg;
@@ -28,11 +29,12 @@ unitelist intersectlist takelog increasefile lastmodified avg getmdy
 begintransaction endtransaction imagesize finger revmap safemkdir mkfile
 jewishdate getdmy monthname weekdayname foreachdir slash wrap hebrew_wrap
 pusht popt undouble uniq timestep rotate ror rol getcwd hostname core
-selfurl querystring takebroadlog subpkg subhash maketime power
+selfurl querystring takebroadlog subpkg subhash maketime power findbin
 html_treeview selfsameurl new_template new_select getweekday
 elapsed hebrewflip agg sum splitline $STD_BODY @MONTH_NAMES @WEEKDAY_NAMES
 randstr randrange filedepend capture popreturl pushreturl setreturl
-killnl getreturl @DoW @DoWs @MoY @MoYs echo exiterror);
+killnl getreturl @DoW @DoWs @MoY @MoYs echo exiterror
+htdie);
 
 CONFIG: {
     @MoY = qw(January February March April May June July August
@@ -1290,6 +1292,35 @@ sub killnl {
     my $line = shift;
     $line =~ s/[\r\n\t]/ /;
     $line;
+}
+
+sub findbin {
+    my ($prog, $path) = @_;
+    $path ||= $ENV{'PATH'};
+    &checkwin;
+    my $sep = $iswin ? ";" : ":";
+    foreach (split(/$sep/, $path)) {
+        my $cand = $_ . &slash . $prog;
+        return $cand if (-x $cand);
+    }
+    undef;
+}
+
+sub htdie {
+  &rewind;
+  setmimetype("text/html");
+  my $err = join("<BR>", @_);
+  &html_header("Error", $STD_BODY);
+  print <<EOM;
+<H1>HTPL version $HTML::HTPL::VERSION</H1>
+<H3>Error occurred</H3>
+$err
+<HR>
+Please report to web master
+EOM
+  &html_footer;
+  &takelog(join(", ", @_));
+  exit(0);
 }
 
 1;

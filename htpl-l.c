@@ -208,9 +208,20 @@ void finddir(file, dir)
         getcwd(dir, sizeof(FILENAME));
         chdir(tempdir);
     }
+#ifdef _WIN32
 /* CYGWIN is being nice - no thanks */
     for (ch = dir; *ch; ch++ )
-       if (*ch == '/') *ch = SLASH_CHAR;
+        if (*ch == '/') *ch = SLASH_CHAR;
+    if (ch - dir > 3) {
+        if (dir[0] == SLASH_CHAR && dir[1] == SLASH_CHAR) {
+            STR path = strdup(dir + 3);
+            dir[0] = dir[2];
+            dir[1] = ':';
+            strcpy(dir + 2, path);
+            free(path);
+        }
+    }
+#endif
 /* Append slash */
 /*    strcpy(ch, SLASH_STR);*/
 }
@@ -401,7 +412,7 @@ void SETENV(key, val)
 #else
 
 #ifndef HAVE_PUTENV
-#error You must have either putenv or getenv
+#error You must have either putenv or setenv
 #endif
 
 void SETENV(key, val)
@@ -414,6 +425,19 @@ void SETENV(key, val)
 }
 
 #endif
+
+
+void getready() {
+#ifdef _WIN32
+        TOKEN newlib;
+        STR lib = GETENV("PERL5LIB");
+        if (!lib) lib = "";
+        if (strstr(lib, bindir)) return;
+        sprintf(newlib, "%s\\HTPL-modules\\lib;%s", bindir, lib);
+        SETENV("PERL5LIB", newlib);
+#endif
+}
+
 
 /*******************************************************
  * Spawn a Perl process                                *
@@ -431,6 +455,7 @@ int execperl(argv, output, postdata, error, redir)
 
     if (!redir) {
         if (!(chld=fork())) {
+            getready();
             execv(PERL_BIN, argv);
         }
         waitpid(chld, &code, 0);
@@ -456,6 +481,7 @@ int execperl(argv, output, postdata, error, redir)
         dup(2);
         close(2);
         dup(nerr);
+        getready();
         execv(PERL_BIN, argv);
     } else {
         waitpid(chld, &code, 0);
@@ -944,18 +970,23 @@ STR escapevars(code)
     int len = strlen(code);
     STR buff = malloc(len + 4);
     pchar dst = buff;
-    TOKEN alt;
+    TOKEN alt, bk;
     pchar save;
     STR todel;
     pchar sub, ptr;
-    int n, act, pos;
+    int n, m, act, pos;
+    int bidi;
     char cast;
+
+#define ismetachar(ch) ((ch) == '%' || (ch) == '@' || (ch) == '^')
 
     ch = code;
     while (*ch) {
         if (*ch == '#') {
             switch (flag) {
                 case 0: flag = 1;
+                        bidi = 0;
+                        cast = 0;
                         save = dst;
                         dst = alt;
                         break;
@@ -963,21 +994,36 @@ STR escapevars(code)
                         flag = 0;
                         *dst++ = '#';
                         break;
+                case 4: 
                 case 3: 
                 case 2: *dst = '\0';
                         n = dst-- - alt + 2;
-                        while ((*dst == '%' || *dst == '@'
-                            || *dst == '^') && dst > alt) *dst-- = '\0';
-                        todel = sub = malloc(n + 60);
-                        if (flag == 3) {
+                        while (ismetachar(*dst) && dst > alt) *dst-- = '\0';
+                        todel = sub = malloc(n + 80);
+                        if (flag > 2 || bidi) {
+                            if (bidi) {
+                                strcpy(bk, alt);
+                                sprintf(alt, "hebrewflip($%s)", bk);
+                            } else {
+                                strcpy(bk, alt);
+                                alt[0] = '$';
+                                strcpy(&alt[1], bk);
+                            }
+                            if (flag == 4) n = m;
                             switch (cast) {
+                                case 0   : sprintf(sub, "\" . %s . \"", alt);
+                                           break;
                                 case '%' : sprintf(sub, 
-                                 "\" . substr(killnl($%s) . ' ' x %d, 0, %d) . \"",
+                                 "\" . substr(killnl(%s) . ' ' x %d, 0, %d) . \"",
                                     alt, n, n);
                                            break;
                                 case '@' : sprintf(sub, 
-                                 "\" . substr(' ' x %d . killnl($%s), -%d) . \"",
+                                 "\" . substr(' ' x %d . killnl(%s), -%d) . \"",
                                     n, alt, n);
+                                           break;
+                                case '^' : sprintf(sub, 
+                                 "\" . substr(' ' x (%d / 2) . killnl(%s) . ' ' x (%d / 2),0, %d) . \"",
+                                    n, alt, n, n);
                                            break;
                             }
                         } else {
@@ -1000,12 +1046,18 @@ STR escapevars(code)
         } else if (flag < 3 && (isalnum(*ch) || *ch == '_')) {
             if (flag == 1) flag = 2;
             *dst++ = *ch;
-        } else if (flag == 2 && (*ch == '%' || *ch == '@' || *ch == '^')) {
+        } else if (flag == 1 && *ch == '!' && !bidi) {
+            bidi = 1;
+        } else if (flag == 2 && ismetachar(*ch)) {
             flag = 3;
             cast = *ch;
             *dst++ = *ch;
-        } else if (flag == 3 && cast == *ch) {
+            m = 1;
+        } else if (flag == 3 && *ch == '-') {
+            flag = 4;
+        } else if ((flag == 3 || flag == 4) && cast == *ch) {
             *dst++ = *ch;
+            m++;
         } else {
             if (flag) {
                 *dst = '\0';
@@ -1371,7 +1423,11 @@ STR preprocess(str, cmd)
     }
 
     if (pid < 0) {
+#ifndef _WIN32
         croak("PP: fork failed: %s", sys_errlist[errno]);
+#else
+        croak("PP: fork failed");
+#endif
         close(kid_err);
         close(kid_rdr);
         close(kid_wtr);
@@ -1445,7 +1501,11 @@ FILE* openif(filename, filter)
         sprintf(try, pn, filename);
         if (f = popen(try, "r")) return f;
         puts("Content-type: text/plain\n");
+#ifndef _WIN32
         printf("Could not spawn filter %s: %s", filter, sys_errlist[errno]);
+#else
+        printf("Could not spawn filter %s", filter);
+#endif
         exit(-1);
     }
     return FOPEN(filename, "r");

@@ -2086,6 +2086,34 @@ int parse_htpl_catch(stack, untag)
     RETURN(1)
 }
 
+int parse_htpl_listbox(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    code = 1;
+    buff = (STR)mysprintf("%s", gettokenlist(1, " ", ""));
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    printfcode("&html_selectbox({'name' => '%s'}, map {@$_;} $%s->matrix);\n", gettoken(3), gettoken(3));
+    nesting = 0;
+    RETURN(1)
+}
+
 int parse_htpl_constructor___fwd(stack, untag)
     int untag;
     STR stack; {
@@ -2559,6 +2587,22 @@ int parse_htpl_if(stack, untag)
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_if___fwd(stack, untag))
         else RETURN(parse_htpl_if___rev(stack, untag))
+}
+
+int parse_htpl_die(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    printfcode("&htdie(\"%s\");\n", gettokenlist(1, " ", ""));
+    nesting = 0;
+    RETURN(1)
 }
 
 int parse_htpl_graph(stack, untag)
@@ -3395,6 +3439,7 @@ int parse_htpl(stack, untag)
             "DEFAULT",
             "DEFINE",
             "DESTRUCTOR",
+            "DIE",
             "ELSE",
             "END",
             "ENDIF",
@@ -3412,6 +3457,7 @@ int parse_htpl(stack, untag)
             "IMG",
             "INCLUDE",
             "LDAP",
+            "LISTBOX",
             "LOAD",
             "LOOP",
             "MAIL",
@@ -3431,12 +3477,12 @@ int parse_htpl(stack, untag)
             "THROW",
             "TIME",
             "TRY"};
-        static int htpl_locations[] = { 10, 11, 26, 32, 44, -1, 6, 24, 42, -1, 29, 43, 46, -1, 5, 16, 20, 39, 41, -1, 4, 27, 28, 30, 33, 37, -1, 7, 12, 13, 15, 34, 45, -1, 25, 35, -1, 0, 14, 18, 21, 22, 38, 40, -1, 1, 19, 23, 31, -1, 2, 3, 8, 9, 17, 36, 47, -1 };
-        static int htpl_shortcuts[] = { 0, 6, 10, 14, 20, 27, 34, 37, 45, 50 };
+        static int htpl_locations[] = { 10, 11, 27, 34, 46, -1, 6, 25, 44, -1, 31, 45, 48, -1, 5, 17, 21, 41, 43, -1, 4, 28, 29, 32, 35, 39, -1, 7, 12, 13, 14, 16, 30, 36, 47, -1, 26, 37, -1, 0, 15, 19, 22, 23, 40, 42, -1, 1, 20, 24, 33, -1, 2, 3, 8, 9, 18, 38, 49, -1 };
+        static int htpl_shortcuts[] = { 0, 6, 10, 14, 20, 27, 36, 39, 47, 52 };
         static struct hash_t htpl_hash = {htpl_table,
              htpl_locations, htpl_shortcuts};
 
-        static parser funs[] = { parse_htpl_break, parse_htpl_call, parse_htpl_case, parse_htpl_catch, parse_htpl_class, parse_htpl_clsutils, parse_htpl_constructor, parse_htpl_continue, parse_htpl_counter, parse_htpl_default, parse_htpl_define, parse_htpl_destructor, parse_htpl_else, parse_htpl_end, parse_htpl_endif, parse_htpl_fetch, parse_htpl_fetchcell, parse_htpl_fetchcols, parse_htpl_fetchit, parse_htpl_filter, parse_htpl_for, parse_htpl_foreach, parse_htpl_graph, parse_htpl_if, parse_htpl_ifnotnull, parse_htpl_ifnull, parse_htpl_img, parse_htpl_include, parse_htpl_ldap, parse_htpl_load, parse_htpl_loop, parse_htpl_mail, parse_htpl_mem, parse_htpl_method, parse_htpl_net, parse_htpl_next, parse_htpl_out, parse_htpl_proc, parse_htpl_project, parse_htpl_pts, parse_htpl_publish, parse_htpl_rem, parse_htpl_sql, parse_htpl_switch, parse_htpl_text, parse_htpl_throw, parse_htpl_time, parse_htpl_try };
+        static parser funs[] = { parse_htpl_break, parse_htpl_call, parse_htpl_case, parse_htpl_catch, parse_htpl_class, parse_htpl_clsutils, parse_htpl_constructor, parse_htpl_continue, parse_htpl_counter, parse_htpl_default, parse_htpl_define, parse_htpl_destructor, parse_htpl_die, parse_htpl_else, parse_htpl_end, parse_htpl_endif, parse_htpl_fetch, parse_htpl_fetchcell, parse_htpl_fetchcols, parse_htpl_fetchit, parse_htpl_filter, parse_htpl_for, parse_htpl_foreach, parse_htpl_graph, parse_htpl_if, parse_htpl_ifnotnull, parse_htpl_ifnull, parse_htpl_img, parse_htpl_include, parse_htpl_ldap, parse_htpl_listbox, parse_htpl_load, parse_htpl_loop, parse_htpl_mail, parse_htpl_mem, parse_htpl_method, parse_htpl_net, parse_htpl_next, parse_htpl_out, parse_htpl_proc, parse_htpl_project, parse_htpl_pts, parse_htpl_publish, parse_htpl_rem, parse_htpl_sql, parse_htpl_switch, parse_htpl_text, parse_htpl_throw, parse_htpl_time, parse_htpl_try };
         int n;
         parser fun;
         n = search_hash(&htpl_hash, token, 0);
