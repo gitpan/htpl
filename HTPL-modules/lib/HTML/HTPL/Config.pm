@@ -1,3 +1,3 @@
-require "/usr/local/apache/cgi-bin/htpl-config.pl";
+require "/home/ariel/./cgi-bin/htpl-config.pl";
 
 1;

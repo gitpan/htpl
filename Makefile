@@ -1,22 +1,23 @@
+# Generated automatically from Makefile.in by configure.
 # Makefile for HTPL
 
 # Autoconf output
 
-PERL = @PRERUN@@PERLNAME@
-PERL_BIN = @PERLNAME@
-TEMP = @PRERUN@@TEMP@
-CCPROG = @CC@
-INSBIN = @INSTALL@
-INSTALLDIR = @PRERUN@@INSTALLDIR@
-HTDOCS = @PRERUN@@HTDOCS@
-HTLOGS = @PRERUN@@HTLOGS@
-CONF = @PRERUN@@HTCONF@
-OBJEMBED = @OBJEMBED@
-EGO = @EGO@
-XML = @XML@
-DEPDBDEF = @DEPDBDEF@
-INSTALLBIN = @PRERUN@/usr/local/bin
-MODDIR = @MODDIR@
+PERL = /usr/bin/perl
+PERL_BIN = /usr/bin/perl
+TEMP = /tmp
+CCPROG = gcc
+INSBIN = /usr/bin/install -c
+INSTALLDIR = /home/ariel/./cgi-bin
+HTDOCS = /home/ariel/./htpl
+HTLOGS = /home/ariel/./.htpl.log
+CONF = /home/ariel/./.htaccess
+OBJEMBED = 
+EGO = htpl-author.ego
+XML = 1
+DEPDBDEF = 
+INSTALLBIN = /usr/local/bin
+MODDIR = $(INSTALLDIR)
 
 # Defines
 
@@ -29,7 +30,7 @@ SRVC = htplsrvc
 GEN = htpgen
 SH = /bin/sh
 CONDS = -DTMP_DIR=\"$(TEMP)\" -DPERL_BIN=\"$(PERL_BIN)\" $(DEFEMBED)
-INFO = -DCOMPILATION=`$(PERL) -e "print time;"` @DEPDBDEF@ -DBUILD=`cat build` 
+INFO = -DCOMPILATION=`$(PERL) -e "print time;"`  -DBUILD=`cat build` 
 CCFLAGS = -O3 $(LIBS) $(CONDS) $(INFO)
 CC = $(CCPROG) $(CCFLAGS)
 CS = htpl.c htpl-l.c htpl-sub.c htpl-parse.c $(OBJEMBED)
@@ -43,7 +44,7 @@ CWD = `pwd`
 DEFEMBED = `test -z "$(OBJEMBED)" || echo -D__PERLEMBED__`
 PL = `test -z "$(OBJEMBED)" || $(PERL) -MExtUtils::Embed -e ccopts -e ldopts`
 LIBS = `test -z "$(DEPDBDEF)" || echo -ldb` `test -z "$(OBJEMBED)" || echo -lperl`
-MODPERL = @MODPERL@
+MODPERL = 
 MODULES = HTPL-modules HTPL-SQL Hebrew Calendar $(MODPERL)
 
 # Rules
@@ -135,11 +136,11 @@ install-samples : $(SCRIPTS)
 	ln -s $(INSTALLDIR)/$(DBG) $(INSTALLBIN) ; \
 	fi
 
-build : @MODMAKE@
+build : build-it
 
-install : all @MODINS@
+install : all install-it
 
-pureinstall: @MODINS@
+pureinstall: install-it
 	
 htpl-author.ego :
 	touch htpl-author.ego
@@ -180,7 +181,7 @@ Makefile: Makefile.in config.status
 config.status: configure
 	./config.status --recheck || ./configure
 
-CPAN : @CPANMAKE@
+CPAN : CPAN-it
 
 CPAN-root :
 	$(PERL) pre-install.pl $(NOPREREQ)

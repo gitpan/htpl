@@ -347,8 +347,9 @@ AC_SUBST(HTLOGS)
 AC_SUBST(DEPDBDEF)
 AC_SUBST(MODPERL)
 AC_SUBST(MODDIR)
-AC_OUTPUT(Makefile htpl-config.pl perl.sh HTPL-modules/lib/HTML/HTPL/Config.pm
-              htplp htreporter htplsrvc htpgen)
+AC_OUTPUT([Makefile htpl-config.pl perl.sh HTPL-modules/lib/HTML/HTPL/Config.pm
+              htplp htreporter htplsrvc htpgen],
+[ chmod +x htplp htreporter htplsrvc htpgen ])
 
 clear
 $PERLNAME -e 'print chr(7);'

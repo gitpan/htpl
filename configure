@@ -1876,7 +1876,7 @@ cat >> $CONFIG_STATUS <<EOF
 
 EOF
 cat >> $CONFIG_STATUS <<\EOF
-
+ chmod +x htplp htreporter htplsrvc htpgen 
 exit 0
 EOF
 chmod +x $CONFIG_STATUS
