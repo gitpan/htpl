@@ -343,7 +343,16 @@ SYNC
 	foreach (keys %%hash) {
 		$self->{$_} = $hash{$_};
 	}
-}</__DO>
+}
+
+#CLSUTILS OTHER
+
+sub __shadow__clone {
+	require Clone;
+	Clone::clone($self);
+}
+
+</__DO>
 </__FWD>
 <__REV NOOP="1"/>
 </__MACRO>

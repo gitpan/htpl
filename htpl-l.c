@@ -389,6 +389,21 @@ void *ppop(stack)
  * Simple setenv function            *
  *************************************/
 
+#ifdef HAVE_SETENV
+
+void SETENV(key, val)
+    STR key;
+    STR val; {
+ 
+    setenv(key, val, 1);
+}
+
+#else
+
+#ifndef HAVE_PUTENV
+#error You must have either putenv or getenv
+#endif
+
 void SETENV(key, val)
     STR key;
     STR val; {
@@ -397,6 +412,8 @@ void SETENV(key, val)
     sprintf(s, "%s=%s", key, val);
     putenv(s);
 }
+
+#endif
 
 /*******************************************************
  * Spawn a Perl process                                *
@@ -738,6 +755,10 @@ void tryexts(src, dst, exts)
 #define VECTOR 6
 typedef int dst_t[2][VECTOR];
 
+/*************************************
+ * File checksum                     *
+ *************************************/
+
 int checksum(filename)
     STR filename; {
 
@@ -922,7 +943,7 @@ STR escapevars(code)
     short flag = 0;
     STR buff = malloc(strlen(code) * 2);
     pchar dst = buff;
-    char alt[100];
+    TOKEN alt;
     pchar save;
 
     ch = code;
@@ -1120,6 +1141,7 @@ BTREE *btreescan(tree, proc, level, tag, when)
         SCAN(right)
         DOIT(BTREE_POSTFIX)
 #undef SCAN
+#undef DOIT
     }
     return NULL;
 }

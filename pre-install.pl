@@ -5,13 +5,13 @@ eval 'require Digest::MD5';
 	URI HTML::Parser LWP);
 @useful = (qw(Tie::Cache Tie::Depth
         Storable Time::Timezone Sys::Syslog Net::Daemon
-        RPC::PlServer
+        RPC::PlServer Clone
         DBI DBD::XBase DB_File File::Tools Mail::Tools
 	SQL::Statement Text::CSV_XS DBD::CSV FreezeThaw IniConf
         Data::Dumper GD MLDBM Convert::BER Net::LDAP XML::Parser
         Net::DNS Net::Whois Net::Country Tie::Cache 
 	Filter::Util::Call Template XML::Simple Date::Language
-        XML::Conf));
+        XML::Conf Config::IniFiles));
 
 if ($ARGV[0] eq 'NOPREREQ') {
 	@modules = @useful;

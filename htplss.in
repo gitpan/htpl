@@ -4,6 +4,14 @@ use HTML::HTPL::Config;
 use HTML::HTPL::Lib qw(filedepend);
 use strict;
 
+if ($ARGV[0] ne "--force") {
+	print "htplss does not erase objects yet. If you still want to use it\n";
+	print "type: $0 --force @ARGV\n";
+        die;
+}
+
+shift @ARGV;
+
 die "Usage $0 <file> [<passwd file>]" if (@ARGV < 1 || @ARGV > 2);
 
 my $file = shift @ARGV;
@@ -29,7 +37,8 @@ $srv = join("_", map {ucfirst(lc($_));} @tokens);
 
 my @inc;
 
-open(I, $file);
+open(I, $file) || die "$file not found";
+
 while (<I>) {
     chomp;
     my $f = $_;

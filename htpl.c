@@ -74,9 +74,9 @@ DFA eat_one(ch, status, perlkind, language)
                              case ';': 
                              case '}':
                              case '{':  return PERL_END;
-                             case '%':  if (perlkind == 2) 
-                                  return PERL_UNEXP; 
-                                  else return PERL;
+                             case '%': if (perlkind == CODE_EVAL) 
+                                           return PERL_UNEXP;  
+                                       else return PERL; 
                              case '>':  if (perlkind == CODE_TAG) return HTML; else 
 						return PERL;
                              case '<':  if (perlkind == CODE_BLOCK)
@@ -862,7 +862,7 @@ automaton */
             } else if (after == PERL_TAG) {
 /* If matched <PERL> */
                 ptr -= 5;
-                perlkind = 1;
+                perlkind = CODE_TAG;
                 language = LNG_PERL;
             } else if (after == TCL_TAG) {
                 ptr -= 4;
@@ -960,7 +960,7 @@ nxt:
     }
 
     if (after != finish) {
-        croak("Did not end in correct section");
+        croak("Did not end in correct section %d %d ", finish, after);
     }
 }
 

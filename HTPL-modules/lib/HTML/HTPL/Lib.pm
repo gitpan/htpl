@@ -4,6 +4,8 @@ package HTML::HTPL::Lib;
 use HTML::HTPL::Sys qw(html_table html_table_out publish doredirect
 getmailprog proper ch2x safetags checktaint htdie compileutil);
 
+*htpl_pkg = \$HTML::HTPL::Sys::htpl_pkg;
+
 use Socket; 
 
 
@@ -24,8 +26,8 @@ pusht popt undouble uniq timestep rotate ror rol getcwd hostname core
 selfurl querystring takebroadlog subpkg subhash maketime power
 html_treeview selfsameurl new_template new_select getweekday
 elapsed hebrewflip agg sum splitline $STD_BODY @MONTH_NAMES @WEEKDAY_NAMES
-randstr randrange filedepend
-@DoW @DoWs @MoY @MoYs);
+randstr randrange filedepend capture popreturl pushreturl setreturl
+getreturl @DoW @DoWs @MoY @MoYs echo);
 
 CONFIG: {
     @MoY = qw(January February March April May June July August
@@ -98,6 +100,9 @@ sub jewishdate {
     @d;
 }
 
+sub echo (@) {
+    print join("\n", @_, "");
+}
 
 sub html_hidden {
     my ($key, $value) = @_; # noout deprecated
@@ -1223,6 +1228,43 @@ sub filedepend {
     return 1 unless (-f $file1);
     return undef unless (-f $file2);
     &lastmodified($file1) > &lastmodified($file2);
+}
+
+sub capture(&) {
+    my $sub = shift;
+    my $hnd = select;
+    my $in = "CAP" . ++$htpl_capture;
+    my $out = "CAP" . ++$htpl_capture;
+    pipe($in, $out);    
+    select $out;
+    &$sub;
+    close($out);
+    select $hnd;
+    my $text = <$in>;
+    close($in);
+    $text;
+}
+
+sub pushreturl {
+    ${"${htpl_pkg}::session"}{'url_stack'} ||= [];
+    push(@{${"${htpl_pkg}::session"}{'url_stack'}}, &selfsameurl);
+}
+
+sub popreturl {
+    ${"${htpl_pkg}::session"}{'url_stack'} ||= [];
+    pop(@{${"${htpl_pkg}::session"}{'url_stack'}});
+}
+
+sub setreturl {
+    my $key = shift;
+    ${"${htpl_pkg}::session"}{'url_hash'} ||= {};
+    ${"${htpl_pkg}::session"}{'url_hash'}->{$key} = &selfsameurl;
+}
+
+sub getreturl {
+    my $key = shift;
+    ${"${htpl_pkg}::session"}{'url_hash'} ||= {};
+    ${"${htpl_pkg}::session"}{'url_hash'}->{$key};
 }
 
 1;

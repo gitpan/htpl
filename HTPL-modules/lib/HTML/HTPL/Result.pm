@@ -243,6 +243,14 @@ sub clone {
     $self->filter(sub {1;});    
 }
 
+sub subset {
+    my ($self, $from, $to) = @_;
+    my $cnt = 0;
+    my $ref = sub { $cnt++; $cnt >= $from && (!defined($to) || $cnt
+        <= $to); };
+    $self->filter($ref); 
+}
+
 sub unite {
     my ($self, $friend) = @_;
     my (@a, @b);
@@ -315,7 +323,12 @@ sub astable {
     require HTML::HTPL::Table;
     my $table = new HTML::HTPL::Table('cols' => scalar($self->cols));
     my $flag = shift;
-    $table->add(map {{'data' => $_, 'header' => 1};} $self->cols) if ($flag);
+    if (UNIVERSAL::isa($flag, 'HTML::HTPL::Table')) {
+        $table = $flag;
+    } else {
+        $table->add(map {{'data' => $_, 'header' => 1};} $self->cols) if
+          ($flag);
+    }
     $table->load($self->matrix);
     return $table;
 }

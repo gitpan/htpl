@@ -1,4 +1,4 @@
-pacakge HTML::HTPL::Config;
+package HTML::HTPL::Config;
 
 require "@INSTALLDIR@/htpl-config.pl";
 

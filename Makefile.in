@@ -11,7 +11,6 @@ INSTALLDIR = @PRERUN@@INSTALLDIR@
 HTDOCS = @PRERUN@@HTDOCS@
 HTLOGS = @PRERUN@@HTLOGS@
 CONF = @PRERUN@@HTCONF@
-OBJEMBED = @OBJEMBED@
 DEFEMBED = @DEFEMBED@
 EGO = @EGO@
 XML = @XML@
@@ -20,6 +19,9 @@ INSTALLBIN = @PRERUN@/usr/local/bin
 MODDIR = @MODDIR@
 LIBS = @LIBS@
 MODPERL = @MODPERL@
+OBJEMBEDBIN = @OBJEMBEDBIN@
+OBJEMBEDDBG = @OBJEMBEDDBG@
+FUNCS = @DEFS@
 
 # Defines
 
@@ -38,30 +40,43 @@ COMPILE = -DCOMPILATION=`$(PERL) -e "print time;"`
 BUILD = -DBUILD=`$(PERL) -e "print ((stat('HTPL-modules/lib/HTML/HTPL.pm'))[9]);"`
 VERSION = -DVERSION=`$(PERL) -e 'require "HTPL-modules/lib/HTML/HTPL.pm"; print $$HTML::HTPL::VERSION;'`
 INFO = $(DEPDBDEF) $(BUILD) $(VERSION) $(COMPILE)  
-CCFLAGS = -O3 $(LIBS) $(CONDS) $(INFO) 
-CC = $(CCPROG) $(CCFLAGS)
-CS = htpl.c htpl-l.c htpl-sub.c htpl-parse.c $(OBJEMBED)
+CCFLAGS = -O3 $(CONDS) $(INFO) $(FUNCS)
+CC = $(CCPROG) 
+CS = htpl.c htpl-l.c htpl-sub.c htpl-parse.c 
+BINOBJ = htpl.ob htpl-l.ob htpl-sub.ob htpl-parse.ob $(OBJEMBEDBIN)
+DBGOBJ = htpl.od htpl-l.od htpl-sub.od htpl-parse.od $(OBJEMBEDDBG)
 HS = htpl.h htpl-sh.h
 OBV = Makefile
-DEP = $(CS) $(HS) $(OBV) $(OBJEMBED) 
+DEPBIN = $(BINOBJ) $(HS) $(OBV) 
+DEPDBG = $(DBGOBJ) $(HS) $(OBV) 
 REP = htreporter
 SCRIPTS = $(RUN) $(CMP) $(COMP) $(REP) $(SRVC) $(GEN) $(UPD) $(CON)
 TARGETS = $(BIN) $(DBG) $(PMS) $(SCRIPTS)
 CWD = `pwd`
-PL = `@PL@`
+PL = @PL@
 MODULES = HTPL-modules HTPL-SQL Hebrew Calendar $(MODPERL)
 
 # Rules
 
-all: $(TARGETS) $(EGO)
+.SUFFIXES: .ob .od
+
+.c.ob:
+	$(CC) $(CCFLAGS) -c -o $@ $< $(PL)
+
+.c.od:
+	$(CC) $(CCFLAGS) -c -D__DEBUG__ -o $@ $< $(PL)
+
+
+all: htpl-parse.c $(TARGETS) $(EGO)
+
 
 clean: clean-modules
-	/bin/rm -f $(TARGETS) $(SCRIPTS) || true
+	/bin/rm -f $(TARGETS) $(SCRIPTS) $(BINOBJ) $(DBGOBJ) || true
 	test -n "$(XML)" && /bin/rm -f htpl-sh.h htpl-parse.c htplparse.pm perl.sh htpl-config.pl || true
-	/bin/rm -f Makefile core || true
-	/bin/rm -f config.status config.cache || true
 
 realclean: clean
+	/bin/rm -f Makefile core || true
+	/bin/rm -f config.status config.cache || true
 	/bin/rm -f core *.perl *.ht.pl perl.sh || true
 
 release: 
@@ -69,8 +84,9 @@ release:
 	$(PERL) -np -e 's/^(.)/$$1./; s/:.*$$//;' release.# > release.v
 	echo -n "htpl-"`cat release.v` > release.name
 	$(PERL) -np -e 'chomp' release.v | $(PERL) -pi -e \
-'s/^\$$VERSION\s+=.*;/"\$$VERSION = ". scalar(<STDIN>) . ";"/e;' \
+'s/^\s*\$$VERSION\s+=.*;/"    \$$VERSION = ". scalar(<STDIN>) . ";"/e;' \
 	HTPL-modules/lib/HTML/HTPL.pm 
+	touch htpl.c
 
 dist: clean-modules
 	# $(PERL) -e "print time;" > build
@@ -80,18 +96,18 @@ dist: clean-modules
 	tar zcvf `cat release.name`.tar.gz `cat release.name`
 	/bin/rm -rf `cat release.name`
 
-$(BIN): $(DEP)
-	$(CC) -o $(BIN) $(CS) $(PL)
+$(BIN): $(DEPBIN) $(BINOBJ)
+	$(CC) -o $(BIN) $(BINOBJ) $(PL) $(LIBS)
 
-$(DBG): $(DEP)
-	$(CC) -D__DEBUG__ -o $(DBG) $(CS) $(PL) 
+$(DBG): $(DEPOBJ) $(DBGOBJ)
+	$(CC) -o $(DBG) $(DBGOBJ) $(PL) $(LIBS)
 
 # Cancel this dependency if you fail to compile with no XML
 htpl-parse.c: macros.xpl htpl-crp.pl htplparse.pm
-	test -n "$(XML)" && $(PERL) htpl-crp.pl
+	test -n "$(XML)" && $(PERL) htpl-crp.pl || true
 
 htplparse.pm: htplparse.yp
-	test -n "$(XML)" && yapp htplparse.yp
+	test -n "$(XML)" && yapp htplparse.yp || true
 
 htpl-sh.h: htpl-parse.c
 
@@ -110,7 +126,7 @@ $(CMP): $(OBV)
 
 $(CON): $(OBV)
 	echo "#!/bin/sh" > $@
-	echo "$(INSTALLDIR)/$(DBG) -rbc$(INSTALLDIR) \$$1" >> $@
+	echo "$(INSTALLDIR)/$(DBG) -rcb$(INSTALLDIR) \$$1" >> $@
 	chmod 755 $@
 
 $(UPD): $(OBV)
@@ -122,12 +138,14 @@ install-it:
 	for f in $(DBG) $(BIN) ; do \
 	$(INSBIN) -m 755 $$f $(INSTALLDIR) ; \
 	done
-	for f in htpl.head htpl.offhead htpl-pm.code htpl-xsub.pl ; do \
+	for f in htpl-pm.code htpl-xsub.pl ; do \
 	$(INSBIN) -m 644 $$f $(INSTALLDIR) ; \
 	done
-	if [ ! -f $(INSTALLDIR)/htpl-config.pl ] ; then \
-	$(INSBIN) -m 644 htpl-config.pl $(INSTALLDIR) ; \
-	fi
+	for f in htpl.head htpl.offhead htpl-config.pl ; do \
+	if [ ! -f $(INSTALLDIR)/$$f ] ; then \
+	$(INSBIN) -m 644 $$f $(INSTALLDIR) ; \
+	fi ; \
+	done
 	touch $(HTLOGS)
 
 install-root: install-it install-samples

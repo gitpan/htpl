@@ -619,7 +619,7 @@ EOM
 
 sub outset {
     my ($var, $val) = @_;
-    my $s = expandstr($var);
+    my $s = expandstr($val);
     return <<EOM;
     setvar("$var", $s);
 EOM
@@ -716,7 +716,8 @@ sub operations {
         }
 
         if ($key eq '__SET') {
-            $codet = &outset($that{'VAR'} || $todo, $that{'VALUE'},);
+            $codet = &outset($that{'VAR'} || $todo, $that{'VALUE'}
+			|| $that{'VAL'});
         }
 
         if ($key eq '__IMPORT') {

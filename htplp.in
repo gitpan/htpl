@@ -7,6 +7,9 @@ use DBI;
 foreach $comp (@ARGV) {
     open(I, "$comp.htpc") || die "Can't open $comp.htpc";
     %conf = ();
+    $tiepkg = 'DBI';
+    @thirdp = ();
+    $use = '';
     while (<I>) {
         chop;
         s/^(\#)//;
@@ -14,9 +17,17 @@ foreach $comp (@ARGV) {
         @tokens = Text::ParseWords::shellwords($_);
         $op = uc($tokens[0]);
         last if ($op eq 'BEGIN'); 
+        next if ($op =~ /^;/);
+        if ($op eq 'COMP') {
+            $tiepkg = "DBI::ER";
+            push(@thirdp, "$tokens[1] => \\\%$tokens[2]");
+            $use = "$use\n#USE $tokens[2]";
+            next;
+        }
         $conf{lc($op)} = $tokens[1];
         $conf2{lc($op)} = [@tokens[(1 .. $#tokens)]];
     }
+    $thirdp = @thirdp ? ( ", {" . join(", ", @thirdp) . "}" ) : "";
     foreach (qw(TABLE INDEX DATABASE)) {
         die "No value for $_" unless ($conf{lc($_)});
     }
@@ -53,34 +64,43 @@ foreach $comp (@ARGV) {
 
     @dsn = map {$_ ? "'$_'" : 'undef'} @dsn;
     $conf{'cachesize'} ||= 100;
+
+    @comps = $conf2{'comp'};
+
     open(O, ">$comp.htpm");
-    foreach (qw(Cache DBI Collection Func)) {
+    print O "# Generated from $comp.htpc\n";
+    foreach ($tiepkg, qw(Cache Collection Func)) {
         print O "use Tie::$_;\n";
     }
 
     $autocommit = $conf{'autocommit'} || 2;
     print O <<EOP;
+$use
+use vars qw(\%$comp \%__htpl_db_$comp);
 
 my \$__htpl_tdb_$comp = tied(\%__htpl_db_$comp) ||
-        tie \%__htpl_db_$comp, 'Tie::DBI', 
+        tie \%__htpl_db_$comp, 'Tie::$tiepkg', 
     {'AUTOCOMMIT' => $autocommit,
      'CLOBBER' => 1,
      'db' => $dsn[0],
      'user' => $dsn[1],
      'password' => $dsn[2],
      'table' => '$conf{table}', 
-     'key' => '$conf{index}'};
+     'key' => '$conf{index}'}$thirdp;
 my \$vec_$comp = tied(\%$comp) ||
         tie \%$comp, 'Tie::Collection', \$__htpl_tdb_$comp, 
     {'MaxCount' => $conf{'cachesize'}}, '$comp';
 
 sub select_$comp {
     my \$sql = shift;
-    \$sql ? \$__htpl_tdb_$comp->select_where(\$sql)
+    my \@keys = \$sql ? \$__htpl_tdb_$comp->select_where(\$sql)
          : keys \%__htpl_db_$comp;
+    return \@keys unless (\@_);
+    map {\$${comp}\{\$_};} \@keys;
 }    
 
-*${comp}::select_$comp = \\&select_$comp;
+*${comp}::select_$comp = *${comp}::select = *${comp}::selectObject 
+	= \\&select_$comp;
 *${comp}::$comp = \\\%$comp;
 
 package $comp;
@@ -88,10 +108,6 @@ sub getObject {
     my \$arg = shift;
     \$arg = shift if (UNIVERSAL::isa(\$arg, __PACKAGE__));
     \$${comp}{\$arg};
-}
-
-sub selectObject {
-    &select_$comp(\@_);
 }
 
 EOP

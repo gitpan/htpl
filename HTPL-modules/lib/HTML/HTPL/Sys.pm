@@ -306,15 +306,14 @@ sub makepersist {
     require FreezeThaw;
     require DB_File;
     import DB_File;
-    require Fcntl;
-    import Fcntl;
-    import MLDBM (DB_File, FreezeThaw);
+    use Fcntl; # Never ever change to require + import
+    import MLDBM qw(DB_File FreezeThaw);
     require Tie::Collection;
     return if (tied(%HTML::HTPL::Root::objects));
     my $dbm = (tie %HTML::HTPL::Root::db, 'DB_File', 
         $HTML::HTPL::Config::htpl_db_file, 
 	O_RDWR | O_CREAT,
-                   0644, $DB_HASH) || die "No dbm";
+                   0644, $DB_HASH) || die "No dbm: $!";
     my $htpl_dbm = tie %HTML::HTPL::Root::persist, 'MLDBM' || die "no mldbm";
     $htpl_dbm->UseDB($dbm) || die "No db";
     tie %HTML::HTPL::Root::objects, 'Tie::Collection', $htpl_dbm, {'MaxBytes' => 1024 * ($HTML::HTPL::Config::htpl_persist_cachesize || 4)};
@@ -322,7 +321,7 @@ sub makepersist {
 
 sub get_session {
     my ($quick) = @_;
-    require Tie::Depth;
+    require Tie::DeepTied;
 
     &makepersist;
     $REMOTE_HOST = &getvar('REMOTE_HOST');
@@ -332,6 +331,8 @@ sub get_session {
             \%{$htpl_pkg . "'session"};
         $HTML::HTPL::Root::objects{"app"} =
                         \%{$htpl_pkg . "'application"};
+        untie %HTML::HTPL::Root::objects;
+        untie %HTML::HTPL::Root::persist;
         return;	
     }
     my ($s_id, $session, $x, $y);
@@ -365,10 +366,10 @@ sub get_session {
     }
     $HTML::HTPL::Root::objects{"sessions"}->{$s_id} = time;
     $HTML::HTPL::Root::session = $s_id;
-    tie %{$htpl_pkg . "'session"}, 'Tie::Depth', 
-        \%HTML::HTPL::Root::objects, "sessions\0$s_id";
-    tie %{$htpl_pkg . "'application"}, 'Tie::Depth', 
-        \%HTML::HTPL::Root::objects, 'app';
+    tie %{$htpl_pkg . "'session"}, 'Tie::DeepTied', 
+        tied(%HTML::HTPL::Root::objects), "sessions\0$s_id";
+    tie %{$htpl_pkg . "'application"}, 'Tie::DeepTied', 
+        tied(%HTML::HTPL::Root::objects), 'app';
 }
 
 sub revmap {
@@ -488,6 +489,7 @@ sub checktaint {
 
 sub init_offline {
     my ($i) = 0;
+    return if ($htpl_pkg);
     foreach (@main'ARGV) {
         ${'main::arg' . ++$i} = $_;
     }
@@ -534,9 +536,10 @@ sub isheb {
 }
 
 sub readini {
-    eval "require IniConf";
-    return unless ($IniConf::VERSION);
     return unless (-f 'website.ini');
+
+    eval "require IniConf;";
+    return unless ($IniConf::VERSION);
     my $cfg = new IniConf( -file => 'website.ini', -nocase => 1);
     my (%hash, $s, $p, $v);
     foreach $s ($cfg->Sections) {
