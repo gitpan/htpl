@@ -2,6 +2,12 @@ package HTML::HTPL::Sys;
 use HTML::HTPL::Lib;
 use HTML::HTPL::Config;
 use Carp;
+use strict;
+use vars qw($htpl_pkg $htpl_old_hnd $htpl_app_obj
+	$have_time_hires $started_time $htpl_redirected $on_htpl
+	@cookies $TCL_LOADED $in_mod_htpl @ISA @EXPORT
+	@MONTH_NAMES @WEEKDAY_NAMES $DB_HASH $REMOTE_HOST $REMOTE_USER
+	@__htpl_stack);
 
 require Exporter;
 @ISA = qw(Exporter);
@@ -10,7 +16,8 @@ require Exporter;
 parse_cookies getmailprog proper ch2x safehash parse_tags outhtmltag
 enforce_tags htpl_startup get_session gethash
 revmap ReadParse cleanup exit getvar safetags isheb htdie safetags
-checktaint pushvars popvars pkglist getpkg compileutil);
+checktaint pushvars popvars pkglist getpkg compileutil
+$htpl_pkg);
 
 $in_mod_htpl ||= $HTML::HTPL::Lib::in_mod_htpl;
 
@@ -38,7 +45,7 @@ sub html_table {
     foreach $el (@items) {
         $_ = $i++;
         ($x, $y) = &$expr;
-	$$a[$x][$y] = $el;
+	$a->[$x][$y] = $el;
     }
     delete $tags{'expr'};
     delete $tags{'items'};
@@ -59,7 +66,7 @@ sub html_table_out {
     $s .= (($el = &evit($tags{'tattr'})) ? " $el" : "");
     $s .= ">\n";
     &pushvars(qw(x y mx my));
-    &publish('mx' => $xx, 'my' => $my);
+    &publish('mx' => $xx, 'my' => $yy);
     foreach $y (0 .. $yy) {
         $s .= "<TR";
         $s .= (($el = &evit($tags{'rattr'})) ? " $el" : "");
@@ -86,6 +93,7 @@ sub html_table_out {
         $s .= "</TR>\n";
     }
     $s .= "</TABLE>\n";
+    &popvars;
 
     print $s unless ($tags{'noout'});
     $s;
@@ -104,7 +112,7 @@ sub evit {
 }
 
 sub strong_publish {
-    local (%_hash) = ($#_ ? @_ : %{$_[0]});
+    my %_hash = ($#_ ? @_ : %{$_[0]});
     foreach (keys %_hash) {
         if (UNIVERSAL::isa($_hash{$_}, 'ARRAY')) {
             &setvar($_, $_hash{$_}->[0]);
@@ -236,8 +244,8 @@ sub initrun {
                undef, undef;
     my $filter = $HTML::HTPL::Config::filter;
     if ($filter) {
-        my $old = select;
-	tie *HOUT, HTML::HTPL::Filter, $filter, $old;
+        $htpl_old_hnd = select;
+	tie *HOUT, 'HTML::HTPL::Filter', $filter, $htpl_old_hnd;
 	select HOUT;
     }
 }
@@ -439,6 +447,7 @@ sub ReadParse {
 }
 
 sub cleanup {
+    select $htpl_old_hnd;
     return unless ($on_htpl);
     truncate(STDOUT, tell(STDOUT));
     close(HEADERS);
@@ -489,7 +498,7 @@ sub gethash {
 
 sub checktaint {
     my $val = shift;
-    dieTaint if ($val =~ /[`;(<>|&]/);
+    &dieTaint if ($val =~ /[`;(<>|&]/);
     $val;
 }
 
@@ -523,7 +532,7 @@ sub getcc {
 sub dieTaint {
     &HTML::HTPL::Lib::rewind;
     &HTML::HTPL::Lib::setmimetype("Text/plain");
-    $log = sprintf("Taint attempt from %s on %s", getvar('REMOTE_HOST'),
+    my $log = sprintf("Taint attempt from %s on %s", getvar('REMOTE_HOST'),
           scalar(localtime));
     &HTML::HTPL::Lib::takelog($log, $HTML::HTPL::Config::htpl_system_log);
     print "$log\n";
@@ -613,7 +622,7 @@ sub mytime {
 sub mytimesince {
     my $from = shift;
     my $t = &mytime;
-    $have_time_res ? tv_interval($t, $from) : abs($t - $from);
+    $have_time_hires ? tv_interval($t, $from) : abs($t - $from);
 }
 
 sub compileutil {

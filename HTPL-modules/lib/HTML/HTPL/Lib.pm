@@ -1,5 +1,9 @@
 package HTML::HTPL::Lib;
-
+use strict qw(vars subs);
+use vars qw($htpl_pkg $started $htpl_capture @htpl_transactions
+	$text $buff @__htpl_timer $iswin $a $b @DoWs @MoYs @DoW @MoY
+	%gottenfromweb $generate_temp_filenames $STD_BODY
+	@ISA @EXPORT);
 
 use HTML::HTPL::Sys qw(html_table html_table_out publish doredirect
 getmailprog proper ch2x safetags checktaint htdie compileutil);
@@ -108,7 +112,7 @@ sub echo (@) {
 sub html_hidden {
     my ($key, $value) = @_; # noout deprecated
     $value = &HTML::HTPL::Sys::getvar($key) unless ($value);
-    $code = "<INPUT NAME=\"$key\" VALUE=\"$value\" TYPE=HIDDEN>\n";
+    my $code = "<INPUT NAME=\"$key\" VALUE=\"$value\" TYPE=HIDDEN>\n";
     print $code unless defined wantarray;
     $code;
 }
@@ -205,7 +209,7 @@ sub include {
     my ($fn);
     foreach $fn (@_) {
         my ($expr);
-        opendoc(I, $fn);
+        opendoc(\*I, $fn);
         $expr = "";
         while (<I>) {
             s/[\n\r]+$//;
@@ -215,12 +219,12 @@ sub include {
             $expr .= "print \"$_\\n\";\n";
         }
         eval $expr;
-        closedoc(I);
+        closedoc(\*I);
     }
 }
 
 sub redirect {
-    local($url) = @_;
+    my $url = shift;
     return unless ($HTML::HTPL::Sys::on_htpl);
     &doredirect($url);
     exit(0);
@@ -247,20 +251,18 @@ sub eraseheader {
     return unless($HTML::HTPL::Sys::on_htpl);
     
     seek(HTML::HTPL::Sys::HEADERS, 0, 0);
-    my @lines;
-    while (<HTML::HTPL::Sys::HEADERS>) {
-        chop;
-        push(@lines, $_) if ($_ && !/$re/);
-    }
+    my @lines = <HTML::HTPL::Sys::HEADERS>;
+    chop @lines;
+    @lines = grep {!/$re/} @lines;
     seek(HTML::HTPL::Sys::HEADERS, 0, 0);
-    chomp @lines;
     print HTML::HTPL::Sys::HEADERS join("\n", @lines, "");
     truncate(HTML::HTPL::Sys::HEADERS, 0);
+    @lines;
 }
 
 sub setmimetype {
     my ($type) = @_;
-    &eraseheader(/^Content-type/);
+    my @lines = &eraseheader(/^Content-type/);
     print HTML::HTPL::Sys::HEADERS join("\n", @lines, 
       "Content-type: $type", "");
 }
@@ -406,9 +408,9 @@ sub getcc {
 sub readfile {
     my ($filename) = @_;
     my ($txt) = '';
-    opendoc(I, $filename);
+    opendoc(\*I, $filename);
     $txt = join("", <I>);
-    closedoc(I);
+    closedoc(\*I);
     $txt;
 }
 
@@ -493,7 +495,7 @@ sub validemail {
     return undef if ($user =~ /\s'"/);
     return undef unless ($host =~ /^(\S+\.)+\S+$/);
     return undef if (lc($host) eq 'microsoft.com' && grep {/$user/} qw(bill gates bgates));
-    local(@mx);
+    my @mx;
     require Net::DNS;
     @mx = Net::DNS::mx($host);
     return undef if $#mx < 0;
@@ -533,7 +535,7 @@ sub urldecode {
 }
 
 sub trim {
-    local($str) = @_;
+    my $str = shift;
     $str =~ s/^\s+//;
     $str =~ s/\s+$//;
     $str =~ s/\s{2,}/ /g;
@@ -543,7 +545,7 @@ sub trim {
 sub html_selectbox {
     my ($par) = shift;
     my ($o, $n, $default, %opt) = ();
-    my ($name, $attr, $code);
+    my ($name, $attr, $code, $noout);
     
     unless (UNIVERSAL::isa($par, 'HASH')) {
         $default = $par;
@@ -653,7 +655,7 @@ sub inputlist {
 
 sub rewind {
     return unless ($HTML::HTPL::Sys::on_htpl);
-    $hnd = ($in_mod_htpl ? \*HTPL_MOD_OUT : \*STDOUT);
+    my $hnd = ($HTML::HTPL::Sys::in_mod_htpl ? \*HTPL_MOD_OUT : \*STDOUT);
     seek($hnd, 0, 0);
     truncate($hnd, 0);
 }
@@ -753,7 +755,7 @@ sub imagesize {
     require GD;
     open(GIF_HANDLE, $pic);
     binmode GIF_HANDLE;
-    my $img = newFromGif GD::Image(GIF_HANDLE);
+    my $img = newFromGif GD::Image(\*GIF_HANDLE);
     close(GIF_HANDLE);
     return undef unless ($img);
     return $img->getBounds;
@@ -899,7 +901,7 @@ sub readurl {
     require HTML::LinkExtor;
     require LWP::Simple;
     require LWP::MediaType;
-    my $txt = LWP::Simple::get($txt);
+    my $txt = LWP::Simple::get($url);
     my (@imgs, @links);
     my $p = new HTML::LinkExtor(sub {
         my ($tag, $ref, $link) = @_;
@@ -1016,7 +1018,7 @@ sub getcwd {
 
 sub hostname {
     require Sys::Hostname;
-    Sys::Hostname::hostname;
+    &Sys::Hostname::hostname;
 }
 
 sub querystring {
@@ -1188,7 +1190,6 @@ sub decrypt {
     return undef if ($round % 8);
     my $result;
 
-    @chunks = ($block =~ /(.{8})g/s);
     foreach ($block =~ /(.{8})/gs) {
         $result .= $cipher->decrypt($_);
     }
@@ -1197,7 +1198,7 @@ sub decrypt {
 
 sub begintransaction {
     my $name = eval("\*O" . scalar(@htpl_transactions));
-    my $t = tie $name, HTML::HTPL::Stream;
+    my $t = tie $name, 'HTML::HTPL::Stream';
     push(@htpl_transactions, [select, $t]);
     select $name;
 }
@@ -1239,15 +1240,13 @@ sub filedepend {
 sub capture(&) {
     my $sub = shift;
     my $hnd = select;
-    my $in = "CAP" . ++$htpl_capture;
     my $out = "CAP" . ++$htpl_capture;
-    pipe($in, $out);    
-    select $out;
+    my $new = eval("\*$out");
+    tie $new, 'HTML::HTPL::Stream';
+    select $new;
     &$sub;
-    close($out);
     select $hnd;
-    my $text = <$in>;
-    close($in);
+    my $text = $$new;
     $text;
 }
 
