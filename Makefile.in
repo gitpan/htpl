@@ -56,6 +56,10 @@ clean : clean-modules
 	/bin/rm -f Makefile core || true
 	/bin/rm -f config.status config.cache || true
 
+realclean : clean
+	/bin/rm -f htpl-author.ego core *.perl *.ht.pl perl.sh || true
+	$(PERL) -e "print time;" > build
+
 $(BIN) : $(DEP)
 	$(CC) -o $(BIN) $(CS) $(PL)
 

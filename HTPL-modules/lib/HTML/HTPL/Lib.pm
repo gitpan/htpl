@@ -21,7 +21,7 @@ unitelist intersectlist takelog increasefile lastmodified avg getmdy
 begintransaction endtransaction imagesize finger revmap safemkdir mkfile
 jewishdate getdmy monthname weekdayname foreachdir slash wrap hebrew_wrap
 pusht popt undouble uniq timestep rotate ror rol getcwd hostname core
-selfurl querystring takebroadlog subpkg subhash maketime
+selfurl querystring takebroadlog subpkg subhash maketime power
 html_treeview selfsameurl new_template new_select getweekday
 elapsed hebrewflip agg sum splitline $STD_BODY @MONTH_NAMES @WEEKDAY_NAMES);
 
@@ -1166,5 +1166,9 @@ sub endtransaction {
     (wantarray ? @lines : join("", @lines));
 }
 
+sub power {
+    my ($radix, $level) = @_;
+    exp(log($radix) * $level);
+}
 
 1;
