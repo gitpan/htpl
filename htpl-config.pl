@@ -5,14 +5,14 @@ package HTML::HTPL::Config;
 
 $mailprog = "/usr/sbin/sendmail";
 $ccprog = "/usr/bin/gcc";
-$dbgbin = "/usr/local/apache/cgi-bin/htpldbg";
+$dbgbin = "/home/ariel/./cgi-bin/htpldbg";
 $temp = "/tmp";
 
 ###
 # Uncomment to allow persistency
 
 # $htpl_persistent = 1;
-# $htpl_db_file = "/usr/local/apache/htdocs/htpl/htpl.db";
+# $htpl_db_file = "/home/ariel/./htpl/htpl.db";
 # $htpl_per_session_idle_time = 3600;
 # $htpl_persist_cachesize = 4;
 
@@ -35,7 +35,7 @@ $temp = "/tmp";
 
 ###
 # Security and system logs.
-$htpl_system_log = "/usr/local/apache/logs/htpl_log";
+$htpl_system_log = "/home/ariel/./.htpl.log";
 
 ###
 # Put configuration for directories in htpl-site.pl in directories

@@ -24,4 +24,3 @@ In file included from /usr/lib/perl5/5.00503/i386-linux/CORE/perl.h:318,
 configure: In function `main':
 configure:1283: warning: declaration of `argc' shadows a parameter
 configure:1314: checking if users can write in /tmp
-configure:1382: checking for /etc/rc.d/init.d/httpd

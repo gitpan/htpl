@@ -50,9 +50,10 @@ MODULES = HTPL-modules HTPL-SQL Hebrew Calendar $(MODPERL)
 all : $(TARGETS) $(EGO)
 
 clean : clean-modules
-	rm $(TARGETS) $(SCRIPTS)
-	test -n "$(XML)" && rm htpl-sh.h htpl-parse.c
-	rm Makefile
+	/bin/rm -f $(TARGETS) $(SCRIPTS) || true
+	test -n "$(XML)" && /bin/rm -f htpl-sh.h htpl-parse.c htplparse.pm || true
+	/bin/rm -f Makefile core || true
+	/bin/rm -f config.status config.cache || true
 
 $(BIN) : $(DEP)
 	$(CC) -o $(BIN) $(CS) $(PL)
@@ -61,8 +62,11 @@ $(DBG) : $(DEP)
 	$(CC) -D__DEBUG__ -o $(DBG) $(CS) $(PL) 
 
 # Cancel this dependency if you fail to compile with no XML
-htpl-parse.c : htpl.subs htpl-crp.pl htplparse.yp
-	test -z "$(XML)"  || yapp htplparse.yp  && $(PERL) htpl-crp.pl
+htpl-parse.c : htpl.subs htpl-crp.pl htplparse.pm
+	test -n "$(XML)" && $(PERL) htpl-crp.pl
+
+htplparse.pm: htplparse.yp
+	test -n "$(XML)" && yapp htplparse.yp
 
 htpl-sh.h : htpl-parse.c
 
@@ -163,6 +167,7 @@ clean-modules:
 	make realclean || true; \
 	cd .. ; \
 	done
+	true
 
 Makefile: Makefile.in config.status
 	./config.status
