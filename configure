@@ -2206,7 +2206,7 @@ done
     fi
 fi
 
-ab_cv_httpdroot="HTTPDROOT=${HTTPDROOT} ; MODMAKE=${MODMAKE} ; MODINS=${MODINS} ; CPANMAKE = ${CPANMAKE}"
+ab_cv_httpdroot="HTTPDROOT=${HTTPDROOT} ; MODMAKE=${MODMAKE} ; MODINS=${MODINS} ; CPANMAKE=${CPANMAKE}"
 
 fi
 

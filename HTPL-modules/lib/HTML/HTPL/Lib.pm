@@ -901,13 +901,27 @@ sub readurl {
     require HTML::LinkExtor;
     require LWP::Simple;
     require LWP::MediaType;
+    my $have_tagset;
+    eval { require HTML::Tagset; $have_tagset = 1;};
     my $txt = LWP::Simple::get($url);
     my (@imgs, @links);
     my $p = new HTML::LinkExtor(sub {
-        my ($tag, $ref, $link) = @_;
-        my $type = LWP::MediaTypes::guess_media_type($link);
-        push(@links, $link) if (uc($ref) eq 'HREF' && $type =~ /^text\/.*html$/);
-        push(@imgs, $link) if (uc($ref) eq 'SRC' && $type =~ /^image\//);
+        my ($tag, %att) = @_;
+        unless ($have_tagset) {
+            my ($ref, $link) = %att;
+            my $type = LWP::MediaTypes::guess_media_type($link);
+            push(@links, $link) if (uc($ref) eq 'HREF' && $type =~ /^text\/.*html$/);
+            push(@imgs, $link) if (uc($ref) eq 'SRC' && $type =~ /^image\//);
+        } else {
+	    my @cand = @{$HTML::Tagset::linkElements{lc($tag)}};
+            foreach (@cand) {
+                my $link = $att{$_};
+                next unless ($link);
+                my $type = LWP::MediaTypes::guess_media_type($link);
+                push(@links, $link) if ($type =~ /^text\/.*html$/);
+                push(@imgs, $link) if ($type =~ /^image\//);
+            }
+        }
     }, $url);
     $p->parse($txt);
     return ($txt, [@imgs], [@links]); # Don't return references to arrays
