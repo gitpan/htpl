@@ -1,5 +1,9 @@
 Versions:
 
+2.81: Experimental middle-ware architecture: PTS, with the htplss
+packager.
+2.80: Tie-Tools as a seperate package
+2.79: htreporter can be configured with XML via the XML::Conf module.
 2.77: Result sets can be dumped to an HTML Table (via a Table object) or
 XML.
 2.76: Locale date strings are supported via the Date::Language module.

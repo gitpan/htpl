@@ -1,3 +1,0 @@
-require "@INSTALLDIR@/htpl-config.pl";
-
-1;
