@@ -27,7 +27,7 @@ selfurl querystring takebroadlog subpkg subhash maketime power
 html_treeview selfsameurl new_template new_select getweekday
 elapsed hebrewflip agg sum splitline $STD_BODY @MONTH_NAMES @WEEKDAY_NAMES
 randstr randrange filedepend capture popreturl pushreturl setreturl
-killnl getreturl @DoW @DoWs @MoY @MoYs echo exiterror);
+killnl getreturl @DoW @DoWs @MoY @MoYs echo);
 
 CONFIG: {
     @MoY = qw(January February March April May June July August
@@ -296,16 +296,6 @@ sub setcookie {
 sub erasecookie {
     &setcookie(shift, "");
     1;
-}
-
-sub exiterror {
-    my $code = shift;
-    seek(HTML::HTPL::Sys::HEADERS, 0, 0);
-    print HTML::HTPL::Sys::HEADERS "Status: $code";
-    truncate(HTML::HTPL::Sys::HEADERS, tell(HTML::HTPL::Sys::HEADERS));
-    &rewind;
-
-    exit(0);
 }
 
 sub addheader {
@@ -578,10 +568,10 @@ sub html_selectbox {
 
 sub txt2html {
     my ($txt) = @_;
-    $txt =~ s/\&/&amp;/g;
     $txt =~ s/\</&lt;/g;
     $txt =~ s/\>/&gt;/g;
     $txt =~ s/"/&quot;/g;
+    $txt =~ s/\&/&amp;/g;
     $txt =~ s/\n\r?/<BR>/g;
 
     $txt;
@@ -652,7 +642,7 @@ sub inputlist {
 
 sub rewind {
     return unless ($HTML::HTPL::Sys::on_htpl);
-    $hnd = ($in_mod_htpl ? \*HTPL_MOD_OUT : \*STDOUT);
+    $hnd = ($in_mod_htpl ? HTPL_MOD_OUT : STDOUT);
     seek($hnd, 0, 0);
     truncate($hnd, 0);
 }
@@ -729,14 +719,14 @@ sub core {
 }
 
 sub increasefile {
-    my ($filename, $nevertheless) = @_;
+    my ($filename) = @_;
     my ($l);
 
     require Shell;
     $l = Shell::cat($filename);
     chomp $l;
     my ($cnt, $lasthost) = split(/:/, $l);
-    $cnt++ unless (!$nevertheless && $lasthost && $lasthost eq &HTML::HTPL::Sys::getvar("REMOTE_HOST"));
+    $cnt++ unless ($lasthost && $lasthost eq &HTML::HTPL::Sys::getvar("REMOTE_HOST"));
     &mkfile($filename, "$cnt:" . &HTML::HTPL::Sys::getvar('REMOTE_HOST'));
     return $cnt;
 }

@@ -1461,9 +1461,7 @@ to allow matching of line numbers against error messages */
     fflush(myout);
     fclose(myout);
 
-#ifndef __DEBUG__
     unlink(postdata);
-#endif
     unlink(headers);
     unlink(output);
     unlink(error);
