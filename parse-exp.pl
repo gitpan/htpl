@@ -10,7 +10,7 @@ $o = join("|", map {quotemeta($_);}
 @token = (qw(
   AND \&\&?|\b[Aa][Nn][Dd]\b
   OR \|\|?|\b[Oo][Rr]\b
-  NOT [!~]|\b[Nn][Oo][Tt]
+  NOT [!~]|\b[Nn][Oo][Tt]\b
   EQUAL \=\=?
   NOTEQUAL \!\=|\<\>
   OP [><()]

@@ -71,7 +71,7 @@ AC_ARG_WITH(temp, [  --with-temp=TEMP	  Temp directory], TEMP=$withval, TEMP=/tm
 AB_CHECK_TEMP($TEMP, , exit)
 
 AB_PERL_CHECK(Tie::DeepTied, , [ echo You must get Tie-Tools from CPAN to run this package,
-echo Try \$CPAN/authors/id/S/SC/SCHOP or use CPAN.pm module.
+echo Try \$CPAN/authors/id/S/SC/SCHOP or use CPAN.pm module for Tie::DeepTied.
 exit ]
 )
 

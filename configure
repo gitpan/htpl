@@ -2003,8 +2003,7 @@ echo "configure:1999: checking if your Perl version has Tie::DeepTied" >&5
     else
         echo "$ac_t""no" 1>&6
 	 echo You must get Tie-Tools from CPAN to run this package,
-echo Try \$CPAN/authors/id/S/SC/SCHOP or use CPAN.pm module.
-exit 
+echo Try \$CPAN/authors/id/S/SC/SCHOP or use CPAN.pm module for Tie::DeepTied.
 
     fi
 

@@ -4,6 +4,7 @@
 
 #define __HTPARSE__
 #include "htpl.h"
+#include "perf.h"
 
 #define RETURN(x) {int v = (x); destroypersist(); return v;}
 #define numtokens (persist->tokens->num)
@@ -243,13 +244,26 @@ int parse_htpl_ldap(stack, untag)
         printcode("use HTML::HTPL::LDAP;\n");
     }
     eat(&stack, token);
-    if (!strcasecmp(token, "DELETE")) return parse_htpl_ldap_delete(stack, untag);
-    if (!strcasecmp(token, "INIT")) return parse_htpl_ldap_init(stack, untag);
-    if (!strcasecmp(token, "SEARCH")) return parse_htpl_ldap_search(stack, untag);
-    if (!strcasecmp(token, "MODIFY")) return parse_htpl_ldap_modify(stack, untag);
-    if (!strcasecmp(token, "DOSEARCH")) return parse_htpl_ldap_dosearch(stack, untag);
-    if (!strcasecmp(token, "ADD")) return parse_htpl_ldap_add(stack, untag);
-    return 0;
+    {
+        static char *ldap_table[] = {"ADD",
+            "DELETE",
+            "DOSEARCH",
+            "INIT",
+            "MODIFY",
+            "SEARCH"};
+        static int ldap_locations[] = { 3, -1, 1, -1, 4, -1, 5, -1, 0, -1, 2, -1 };
+        static int ldap_shortcuts[] = { 2, 4, 6, 8, 10, -1, -1, -1, 0, -1 };
+        static struct hash_t ldap_hash = {ldap_table,
+             ldap_locations, ldap_shortcuts};
+
+        static parser funs[] = { parse_htpl_ldap_add, parse_htpl_ldap_delete, parse_htpl_ldap_dosearch, parse_htpl_ldap_init, parse_htpl_ldap_modify, parse_htpl_ldap_search };
+        int n;
+        parser fun;
+        n = search_hash(&ldap_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
 }
 
 int parse_htpl_rem___fwd(stack, untag)
@@ -640,16 +654,29 @@ int parse_htpl_text(stack, untag)
     static int nesting = 0;
 
     eat(&stack, token);
-    if (!strcasecmp(token, "FIXED")) return parse_htpl_text_fixed(stack, untag);
-    if (!strcasecmp(token, "RECORDS")) return parse_htpl_text_records(stack, untag);
-    if (!strcasecmp(token, "PRECSV")) return parse_htpl_text_precsv(stack, untag);
-    if (!strcasecmp(token, "PREFIXED")) return parse_htpl_text_prefixed(stack, untag);
-    if (!strcasecmp(token, "FLAT")) return parse_htpl_text_flat(stack, untag);
-    if (!strcasecmp(token, "TEMPLATE")) return parse_htpl_text_template(stack, untag);
-    if (!strcasecmp(token, "READ")) return parse_htpl_text_read(stack, untag);
-    if (!strcasecmp(token, "CSV")) return parse_htpl_text_csv(stack, untag);
-    if (!strcasecmp(token, "CUBE")) return parse_htpl_text_cube(stack, untag);
-    return 0;
+    {
+        static char *text_table[] = {"CSV",
+            "CUBE",
+            "FIXED",
+            "FLAT",
+            "PRECSV",
+            "PREFIXED",
+            "READ",
+            "RECORDS",
+            "TEMPLATE"};
+        static int text_locations[] = { 6, -1, 5, -1, 1, -1, 0, 7, -1, 3, 8, -1, 2, -1, 4, -1 };
+        static int text_shortcuts[] = { 0, 6, -1, -1, 9, 12, 14, -1, 2, 4 };
+        static struct hash_t text_hash = {text_table,
+             text_locations, text_shortcuts};
+
+        static parser funs[] = { parse_htpl_text_csv, parse_htpl_text_cube, parse_htpl_text_fixed, parse_htpl_text_flat, parse_htpl_text_precsv, parse_htpl_text_prefixed, parse_htpl_text_read, parse_htpl_text_records, parse_htpl_text_template };
+        int n;
+        parser fun;
+        n = search_hash(&text_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
 }
 
 int parse_htpl_endif(stack, untag)
@@ -724,9 +751,22 @@ int parse_htpl_net(stack, untag)
         printcode("use HTML::HTPL::Client;\n");
     }
     eat(&stack, token);
-    if (!strcasecmp(token, "GET")) return parse_htpl_net_get(stack, untag);
-    if (!strcasecmp(token, "SETUP")) return parse_htpl_net_setup(stack, untag);
-    return 0;
+    {
+        static char *net_table[] = {"GET",
+            "SETUP"};
+        static int net_locations[] = { 1, -1, 0, -1 };
+        static int net_shortcuts[] = { -1, -1, -1, -1, -1, 0, -1, 2, -1, -1 };
+        static struct hash_t net_hash = {net_table,
+             net_locations, net_shortcuts};
+
+        static parser funs[] = { parse_htpl_net_get, parse_htpl_net_setup };
+        int n;
+        parser fun;
+        n = search_hash(&net_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
 }
 
 int parse_htpl_for___fwd(stack, untag)
@@ -820,8 +860,21 @@ int parse_htpl_time(stack, untag)
     static int nesting = 0;
 
     eat(&stack, token);
-    if (!strcasecmp(token, "MODIFIED")) return parse_htpl_time_modified(stack, untag);
-    return 0;
+    {
+        static char *time_table[] = {"MODIFIED"};
+        static int time_locations[] = { 0, -1 };
+        static int time_shortcuts[] = { -1, -1, -1, -1, 0, -1, -1, -1, -1, -1 };
+        static struct hash_t time_hash = {time_table,
+             time_locations, time_shortcuts};
+
+        static parser funs[] = { parse_htpl_time_modified };
+        int n;
+        parser fun;
+        n = search_hash(&time_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
 }
 
 int parse_htpl_sql_batch(stack, untag)
@@ -1411,11 +1464,24 @@ int parse_htpl_sql_scope(stack, untag)
     static int nesting = 0;
 
     eat(&stack, token);
-    if (!strcasecmp(token, "CONNECT")) return parse_htpl_sql_scope_connect(stack, untag);
-    if (!strcasecmp(token, "EXEC")) return parse_htpl_sql_scope_exec(stack, untag);
-    if (!strcasecmp(token, "CURSOR")) return parse_htpl_sql_scope_cursor(stack, untag);
-    if (!strcasecmp(token, "RETRIEVE")) return parse_htpl_sql_scope_retrieve(stack, untag);
-    return 0;
+    {
+        static char *scope_table[] = {"CONNECT",
+            "CURSOR",
+            "EXEC",
+            "RETRIEVE"};
+        static int scope_locations[] = { 3, -1, 1, -1, 2, -1, 0, -1 };
+        static int scope_shortcuts[] = { 0, -1, -1, -1, -1, -1, -1, 6, 2, 4 };
+        static struct hash_t scope_hash = {scope_table,
+             scope_locations, scope_shortcuts};
+
+        static parser funs[] = { parse_htpl_sql_scope_connect, parse_htpl_sql_scope_cursor, parse_htpl_sql_scope_exec, parse_htpl_sql_scope_retrieve };
+        int n;
+        parser fun;
+        n = search_hash(&scope_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
 }
 
 int parse_htpl_sql_msql(stack, untag)
@@ -1481,45 +1547,42 @@ int parse_htpl_sql(stack, untag)
         printcode("use HTML::HTPL::Db;\n");
     }
     eat(&stack, token);
-    if (!strcasecmp(token, "BATCH")) return parse_htpl_sql_batch(stack, untag);
-    if (!strcasecmp(token, "UPDATE")) return parse_htpl_sql_update(stack, untag);
-    if (!strcasecmp(token, "EXEC")) return parse_htpl_sql_exec(stack, untag);
-    if (!strcasecmp(token, "MODIFY")) return parse_htpl_sql_modify(stack, untag);
-    if (!strcasecmp(token, "ADD")) return parse_htpl_sql_add(stack, untag);
-    if (!strcasecmp(token, "CONNECT")) return parse_htpl_sql_connect(stack, untag);
-    if (!strcasecmp(token, "IMMEDIATE")) return parse_htpl_sql_immediate(stack, untag);
-    if (!strcasecmp(token, "ERASE")) return parse_htpl_sql_erase(stack, untag);
-    if (!strcasecmp(token, "DECLARE")) return parse_htpl_sql_declare(stack, untag);
-    if (!strcasecmp(token, "DELETE")) return parse_htpl_sql_delete(stack, untag);
-    if (!strcasecmp(token, "XBASE")) return parse_htpl_sql_xbase(stack, untag);
-    if (!strcasecmp(token, "EXECUTE")) return parse_htpl_sql_execute(stack, untag);
-    if (!strcasecmp(token, "POSTGRESQL")) return parse_htpl_sql_postgresql(stack, untag);
-    if (!strcasecmp(token, "INSERT")) return parse_htpl_sql_insert(stack, untag);
-    if (!strcasecmp(token, "QUERY")) return parse_htpl_sql_query(stack, untag);
-    if (!strcasecmp(token, "MYSQL")) return parse_htpl_sql_mysql(stack, untag);
-    if (!strcasecmp(token, "SEARCH")) return parse_htpl_sql_search(stack, untag);
-    if (!strcasecmp(token, "PROJECT")) return parse_htpl_sql_project(stack, untag);
-    if (!strcasecmp(token, "POSTGRES")) return parse_htpl_sql_postgres(stack, untag);
-    if (!strcasecmp(token, "SCOPE")) return parse_htpl_sql_scope(stack, untag);
-    if (!strcasecmp(token, "MSQL")) return parse_htpl_sql_msql(stack, untag);
-    if (!strcasecmp(token, "CURSOR")) return parse_htpl_sql_cursor(stack, untag);
-    return 0;
-}
+    {
+        static char *sql_table[] = {"ADD",
+            "BATCH",
+            "CONNECT",
+            "CURSOR",
+            "DECLARE",
+            "DELETE",
+            "ERASE",
+            "EXEC",
+            "EXECUTE",
+            "IMMEDIATE",
+            "INSERT",
+            "MODIFY",
+            "MSQL",
+            "MYSQL",
+            "POSTGRES",
+            "POSTGRESQL",
+            "PROJECT",
+            "QUERY",
+            "SCOPE",
+            "SEARCH",
+            "UPDATE",
+            "XBASE"};
+        static int sql_locations[] = { 5, 10, 15, -1, 4, 11, 20, -1, 17, 18, 19, -1, 0, -1, 6, -1, 8, -1, 1, 2, 16, 21, -1, 3, 9, 12, 14, -1, 7, 13, -1 };
+        static int sql_shortcuts[] = { 0, 4, 8, 12, 14, -1, 16, 18, 23, 28 };
+        static struct hash_t sql_hash = {sql_table,
+             sql_locations, sql_shortcuts};
 
-int parse_htpl_poof(stack, untag)
-    int untag;
-    STR stack; {
-
-    TOKEN token;
-    static done = 0;
-    STR buff;
-    int code;
-    static int nesting = 0;
-
-    makepersist(stack);
-    printcode("print \"poof\\n\";\n");
-    nesting = 0;
-    RETURN(1)
+        static parser funs[] = { parse_htpl_sql_add, parse_htpl_sql_batch, parse_htpl_sql_connect, parse_htpl_sql_cursor, parse_htpl_sql_declare, parse_htpl_sql_delete, parse_htpl_sql_erase, parse_htpl_sql_exec, parse_htpl_sql_execute, parse_htpl_sql_immediate, parse_htpl_sql_insert, parse_htpl_sql_modify, parse_htpl_sql_msql, parse_htpl_sql_mysql, parse_htpl_sql_postgres, parse_htpl_sql_postgresql, parse_htpl_sql_project, parse_htpl_sql_query, parse_htpl_sql_scope, parse_htpl_sql_search, parse_htpl_sql_update, parse_htpl_sql_xbase };
+        int n;
+        parser fun;
+        n = search_hash(&sql_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
 }
 
 int parse_htpl_proc___fwd(stack, untag)
@@ -1735,8 +1798,21 @@ int parse_htpl_out(stack, untag)
     static int nesting = 0;
 
     eat(&stack, token);
-    if (!strcasecmp(token, "TAG")) return parse_htpl_out_tag(stack, untag);
-    return 0;
+    {
+        static char *out_table[] = {"TAG"};
+        static int out_locations[] = { 0, -1 };
+        static int out_shortcuts[] = { -1, -1, -1, -1, -1, -1, -1, 0, -1, -1 };
+        static struct hash_t out_hash = {out_table,
+             out_locations, out_shortcuts};
+
+        static parser funs[] = { parse_htpl_out_tag };
+        int n;
+        parser fun;
+        n = search_hash(&out_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
 }
 
 int parse_htpl_foreach___fwd(stack, untag)
@@ -2631,9 +2707,22 @@ int parse_htpl_switch(stack, untag)
     static int nesting = 0;
 
     eat(&stack, token);
-    if (!strcasecmp(token, "RND")) return parse_htpl_switch_rnd(stack, untag);
-    if (!strcasecmp(token, "CASE")) return parse_htpl_switch_case(stack, untag);
-    return 0;
+    {
+        static char *switch_table[] = {"CASE",
+            "RND"};
+        static int switch_locations[] = { 0, 1, -1 };
+        static int switch_shortcuts[] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, 0 };
+        static struct hash_t switch_hash = {switch_table,
+             switch_locations, switch_shortcuts};
+
+        static parser funs[] = { parse_htpl_switch_case, parse_htpl_switch_rnd };
+        int n;
+        parser fun;
+        n = search_hash(&switch_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
 }
 
 int parse_htpl_clsutils_other(stack, untag)
@@ -2720,10 +2809,23 @@ int parse_htpl_clsutils(stack, untag)
 
     if (!nest) RETURN(0)
     eat(&stack, token);
-    if (!strcasecmp(token, "OTHER")) return parse_htpl_clsutils_other(stack, untag);
-    if (!strcasecmp(token, "IMP")) return parse_htpl_clsutils_imp(stack, untag);
-    if (!strcasecmp(token, "MINE")) return parse_htpl_clsutils_mine(stack, untag);
-    return 0;
+    {
+        static char *clsutils_table[] = {"IMP",
+            "MINE",
+            "OTHER"};
+        static int clsutils_locations[] = { 0, -1, 2, -1, 1, -1 };
+        static int clsutils_shortcuts[] = { -1, -1, -1, 0, -1, 2, -1, 4, -1, -1 };
+        static struct hash_t clsutils_hash = {clsutils_table,
+             clsutils_locations, clsutils_shortcuts};
+
+        static parser funs[] = { parse_htpl_clsutils_imp, parse_htpl_clsutils_mine, parse_htpl_clsutils_other };
+        int n;
+        parser fun;
+        n = search_hash(&clsutils_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
 }
 
 int parse_htpl_throw(stack, untag)
@@ -2843,11 +2945,24 @@ int parse_htpl_pts(stack, untag)
         printcode("use RPC::PlClient;\n");
     }
     eat(&stack, token);
-    if (!strcasecmp(token, "SET")) return parse_htpl_pts_set(stack, untag);
-    if (!strcasecmp(token, "CREATE")) return parse_htpl_pts_create(stack, untag);
-    if (!strcasecmp(token, "POOL")) return parse_htpl_pts_pool(stack, untag);
-    if (!strcasecmp(token, "CALL")) return parse_htpl_pts_call(stack, untag);
-    return 0;
+    {
+        static char *pts_table[] = {"CALL",
+            "CREATE",
+            "POOL",
+            "SET"};
+        static int pts_locations[] = { 2, -1, 3, -1, 1, -1, 0, -1 };
+        static int pts_shortcuts[] = { -1, -1, -1, -1, 0, 2, -1, 4, 6, -1 };
+        static struct hash_t pts_hash = {pts_table,
+             pts_locations, pts_shortcuts};
+
+        static parser funs[] = { parse_htpl_pts_call, parse_htpl_pts_create, parse_htpl_pts_pool, parse_htpl_pts_set };
+        int n;
+        parser fun;
+        n = search_hash(&pts_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
 }
 
 int parse_htpl_project(stack, untag)
@@ -2948,8 +3063,21 @@ int parse_htpl_img(stack, untag)
     static int nesting = 0;
 
     eat(&stack, token);
-    if (!strcasecmp(token, "RND")) return parse_htpl_img_rnd(stack, untag);
-    return 0;
+    {
+        static char *img_table[] = {"RND"};
+        static int img_locations[] = { 0, -1 };
+        static int img_shortcuts[] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, 0 };
+        static struct hash_t img_hash = {img_table,
+             img_locations, img_shortcuts};
+
+        static parser funs[] = { parse_htpl_img_rnd };
+        int n;
+        parser fun;
+        n = search_hash(&img_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
 }
 
 int parse_htpl_mem_immediate(stack, untag)
@@ -3093,11 +3221,24 @@ int parse_htpl_mem(stack, untag)
         printcode("use HTML::HTPL::Mem;\nuse HTML::HTPL::Db;\n");
     }
     eat(&stack, token);
-    if (!strcasecmp(token, "IMMEDIATE")) return parse_htpl_mem_immediate(stack, untag);
-    if (!strcasecmp(token, "SEARCH")) return parse_htpl_mem_search(stack, untag);
-    if (!strcasecmp(token, "PROJECT")) return parse_htpl_mem_project(stack, untag);
-    if (!strcasecmp(token, "CURSOR")) return parse_htpl_mem_cursor(stack, untag);
-    return 0;
+    {
+        static char *mem_table[] = {"CURSOR",
+            "IMMEDIATE",
+            "PROJECT",
+            "SEARCH"};
+        static int mem_locations[] = { 3, -1, 2, -1, 0, 1, -1 };
+        static int mem_shortcuts[] = { -1, -1, 0, -1, -1, -1, -1, 2, 4, -1 };
+        static struct hash_t mem_hash = {mem_table,
+             mem_locations, mem_shortcuts};
+
+        static parser funs[] = { parse_htpl_mem_cursor, parse_htpl_mem_immediate, parse_htpl_mem_project, parse_htpl_mem_search };
+        int n;
+        parser fun;
+        n = search_hash(&mem_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
 }
 
 int parse_htpl_next(stack, untag)
@@ -3199,55 +3340,67 @@ int parse_htpl(stack, untag)
     static int nesting = 0;
 
     eat(&stack, token);
-    if (!strcasecmp(token, "LOAD")) return parse_htpl_load(stack, untag);
-    if (!strcasecmp(token, "METHOD")) return parse_htpl_method(stack, untag);
-    if (!strcasecmp(token, "LDAP")) return parse_htpl_ldap(stack, untag);
-    if (!strcasecmp(token, "REM")) return parse_htpl_rem(stack, untag);
-    if (!strcasecmp(token, "INCLUDE")) return parse_htpl_include(stack, untag);
-    if (!strcasecmp(token, "DEFAULT")) return parse_htpl_default(stack, untag);
-    if (!strcasecmp(token, "CONTINUE")) return parse_htpl_continue(stack, untag);
-    if (!strcasecmp(token, "BREAK")) return parse_htpl_break(stack, untag);
-    if (!strcasecmp(token, "TEXT")) return parse_htpl_text(stack, untag);
-    if (!strcasecmp(token, "ENDIF")) return parse_htpl_endif(stack, untag);
-    if (!strcasecmp(token, "NET")) return parse_htpl_net(stack, untag);
-    if (!strcasecmp(token, "FOR")) return parse_htpl_for(stack, untag);
-    if (!strcasecmp(token, "TIME")) return parse_htpl_time(stack, untag);
-    if (!strcasecmp(token, "SQL")) return parse_htpl_sql(stack, untag);
-    if (!strcasecmp(token, "POOF")) return parse_htpl_poof(stack, untag);
-    if (!strcasecmp(token, "PROC")) return parse_htpl_proc(stack, untag);
-    if (!strcasecmp(token, "CLASS")) return parse_htpl_class(stack, untag);
-    if (!strcasecmp(token, "PUBLISH")) return parse_htpl_publish(stack, untag);
-    if (!strcasecmp(token, "END")) return parse_htpl_end(stack, untag);
-    if (!strcasecmp(token, "OUT")) return parse_htpl_out(stack, untag);
-    if (!strcasecmp(token, "FOREACH")) return parse_htpl_foreach(stack, untag);
-    if (!strcasecmp(token, "LOOP")) return parse_htpl_loop(stack, untag);
-    if (!strcasecmp(token, "IFNOTNULL")) return parse_htpl_ifnotnull(stack, untag);
-    if (!strcasecmp(token, "CASE")) return parse_htpl_case(stack, untag);
-    if (!strcasecmp(token, "COUNTER")) return parse_htpl_counter(stack, untag);
-    if (!strcasecmp(token, "MAIL")) return parse_htpl_mail(stack, untag);
-    if (!strcasecmp(token, "CATCH")) return parse_htpl_catch(stack, untag);
-    if (!strcasecmp(token, "CONSTRUCTOR")) return parse_htpl_constructor(stack, untag);
-    if (!strcasecmp(token, "FILTER")) return parse_htpl_filter(stack, untag);
-    if (!strcasecmp(token, "FETCHIT")) return parse_htpl_fetchit(stack, untag);
-    if (!strcasecmp(token, "ELSE")) return parse_htpl_else(stack, untag);
-    if (!strcasecmp(token, "FETCH")) return parse_htpl_fetch(stack, untag);
-    if (!strcasecmp(token, "FETCHCELL")) return parse_htpl_fetchcell(stack, untag);
-    if (!strcasecmp(token, "IFNULL")) return parse_htpl_ifnull(stack, untag);
-    if (!strcasecmp(token, "DESTRUCTOR")) return parse_htpl_destructor(stack, untag);
-    if (!strcasecmp(token, "IF")) return parse_htpl_if(stack, untag);
-    if (!strcasecmp(token, "GRAPH")) return parse_htpl_graph(stack, untag);
-    if (!strcasecmp(token, "SWITCH")) return parse_htpl_switch(stack, untag);
-    if (!strcasecmp(token, "CLSUTILS")) return parse_htpl_clsutils(stack, untag);
-    if (!strcasecmp(token, "THROW")) return parse_htpl_throw(stack, untag);
-    if (!strcasecmp(token, "PTS")) return parse_htpl_pts(stack, untag);
-    if (!strcasecmp(token, "PROJECT")) return parse_htpl_project(stack, untag);
-    if (!strcasecmp(token, "FETCHCOLS")) return parse_htpl_fetchcols(stack, untag);
-    if (!strcasecmp(token, "CALL")) return parse_htpl_call(stack, untag);
-    if (!strcasecmp(token, "IMG")) return parse_htpl_img(stack, untag);
-    if (!strcasecmp(token, "MEM")) return parse_htpl_mem(stack, untag);
-    if (!strcasecmp(token, "NEXT")) return parse_htpl_next(stack, untag);
-    if (!strcasecmp(token, "TRY")) return parse_htpl_try(stack, untag);
-    return 0;
+    {
+        static char *htpl_table[] = {"BREAK",
+            "CALL",
+            "CASE",
+            "CATCH",
+            "CLASS",
+            "CLSUTILS",
+            "CONSTRUCTOR",
+            "CONTINUE",
+            "COUNTER",
+            "DEFAULT",
+            "DESTRUCTOR",
+            "ELSE",
+            "END",
+            "ENDIF",
+            "FETCH",
+            "FETCHCELL",
+            "FETCHCOLS",
+            "FETCHIT",
+            "FILTER",
+            "FOR",
+            "FOREACH",
+            "GRAPH",
+            "IF",
+            "IFNOTNULL",
+            "IFNULL",
+            "IMG",
+            "INCLUDE",
+            "LDAP",
+            "LOAD",
+            "LOOP",
+            "MAIL",
+            "MEM",
+            "METHOD",
+            "NET",
+            "NEXT",
+            "OUT",
+            "PROC",
+            "PROJECT",
+            "PTS",
+            "PUBLISH",
+            "REM",
+            "SQL",
+            "SWITCH",
+            "TEXT",
+            "THROW",
+            "TIME",
+            "TRY"};
+        static int htpl_locations[] = { 10, 25, 31, 43, -1, 6, 23, 41, -1, 28, 42, 45, -1, 5, 15, 19, 38, 40, -1, 4, 26, 27, 29, 32, 36, -1, 7, 11, 12, 14, 33, 44, -1, 24, 34, -1, 0, 13, 17, 20, 21, 37, 39, -1, 1, 18, 22, 30, -1, 2, 3, 8, 9, 16, 35, 46, -1 };
+        static int htpl_shortcuts[] = { 0, 5, 9, 13, 19, 26, 33, 36, 44, 49 };
+        static struct hash_t htpl_hash = {htpl_table,
+             htpl_locations, htpl_shortcuts};
+
+        static parser funs[] = { parse_htpl_break, parse_htpl_call, parse_htpl_case, parse_htpl_catch, parse_htpl_class, parse_htpl_clsutils, parse_htpl_constructor, parse_htpl_continue, parse_htpl_counter, parse_htpl_default, parse_htpl_destructor, parse_htpl_else, parse_htpl_end, parse_htpl_endif, parse_htpl_fetch, parse_htpl_fetchcell, parse_htpl_fetchcols, parse_htpl_fetchit, parse_htpl_filter, parse_htpl_for, parse_htpl_foreach, parse_htpl_graph, parse_htpl_if, parse_htpl_ifnotnull, parse_htpl_ifnull, parse_htpl_img, parse_htpl_include, parse_htpl_ldap, parse_htpl_load, parse_htpl_loop, parse_htpl_mail, parse_htpl_mem, parse_htpl_method, parse_htpl_net, parse_htpl_next, parse_htpl_out, parse_htpl_proc, parse_htpl_project, parse_htpl_pts, parse_htpl_publish, parse_htpl_rem, parse_htpl_sql, parse_htpl_switch, parse_htpl_text, parse_htpl_throw, parse_htpl_time, parse_htpl_try };
+        int n;
+        parser fun;
+        n = search_hash(&htpl_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
 }
 
 int parse_(stack, untag)
@@ -3261,7 +3414,20 @@ int parse_(stack, untag)
     static int nesting = 0;
 
     eat(&stack, token);
-    if (!strcasecmp(token, "HTPL")) return parse_htpl(stack, untag);
-    return 0;
+    {
+        static char *htpl_table[] = {"HTPL"};
+        static int htpl_locations[] = { 0, -1 };
+        static int htpl_shortcuts[] = { -1, -1, -1, -1, -1, -1, 0, -1, -1, -1 };
+        static struct hash_t htpl_hash = {htpl_table,
+             htpl_locations, htpl_shortcuts};
+
+        static parser funs[] = { parse_htpl };
+        int n;
+        parser fun;
+        n = search_hash(&htpl_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
 }
 

@@ -43,8 +43,8 @@ INFO = $(DEPDBDEF) $(BUILD) $(VERSION) $(COMPILE)
 CCFLAGS = -O3 $(CONDS) $(INFO) $(FUNCS)
 CC = $(CCPROG) 
 CS = htpl.c htpl-l.c htpl-sub.c htpl-parse.c 
-BINOBJ = htpl.ob htpl-l.ob htpl-sub.ob htpl-parse.ob $(OBJEMBEDBIN)
-DBGOBJ = htpl.od htpl-l.od htpl-sub.od htpl-parse.od $(OBJEMBEDDBG)
+BINOBJ = htpl.ob htpl-l.ob htpl-sub.ob htpl-parse.ob $(OBJEMBEDBIN) perf.ob
+DBGOBJ = htpl.od htpl-l.od htpl-sub.od htpl-parse.od $(OBJEMBEDDBG) perf.od
 HS = htpl.h htpl-sh.h
 OBV = Makefile
 DEPBIN = $(BINOBJ) $(HS) $(OBV) 
@@ -80,10 +80,9 @@ realclean: clean
 	/bin/rm -f core *.perl *.ht.pl perl.sh || true
 
 release: 
-	$(PERL) -MHTML::HTPL::Lib -e 'increasefile("release.#")'
-	$(PERL) -np -e 's/^(.)/$$1./; s/:.*$$//;' release.# > release.v
-	echo -n "htpl-"`cat release.v` > release.name
-	$(PERL) -np -e 'chomp' release.v | $(PERL) -pi -e \
+	VERSION=`$(PERL) -MHTML::HTPL -e 'print $$HTML::HTPL::VERSION + 0.01;'`; \
+	echo -n "htpl-$$VERSION" > release.name ; \
+	echo $VERSION | $(PERL) -pi -e \
 's/^\s*\$$VERSION\s+=.*;/"    \$$VERSION = ". scalar(<STDIN>) . ";"/e;' \
 	HTPL-modules/lib/HTML/HTPL.pm 
 	touch htpl.c

@@ -4,6 +4,7 @@ use strict vars;
 use vars qw($glob_ary $subname);
 
 require "parse-exp.pl";
+require "perf.pl";
 
 use XML::Parser;
 my $parser = new XML::Parser(Style => 'Tree');
@@ -44,6 +45,7 @@ print <<EOM;
 
 #define __HTPARSE__
 #include "htpl.h"
+#include "perf.h"
 
 #define RETURN(x) {int v = (x); destroypersist(); return v;}
 #define numtokens (persist->tokens->num)
@@ -63,6 +65,7 @@ close(OP);
 my $nmacs = $#subs + 1;
 
 open(O, ">htpl-sh.h");
+print O "typedef int (*parser)(STR, int);\n";
 foreach (@subs) {
     next unless ($_);
     print O "int parse_$_(STR, int);\n";
@@ -279,18 +282,22 @@ sub recur {
 
 # Check all children
 
+    my @subs;
     foreach $key (@ks) {
         next if ($key =~ /^__/ || $key eq '0');
-        $code .= &outtoken(lc($key), @stack);
+#        $code .= &outtoken(lc($key), @stack);
+        push(@subs, lc($key));
         $ref = $hash{$key};
         my @ary = @$ref;
 #        shift @ary;
         &recur(\@ary, (@stack, lc($key)));
     }
+    @subs = sort @subs;
+    $code .= &outhash(\@subs, @stack);
 
 # Add a check for unification failure
 
-    $code .= outendsub(0);
+#    $code .= outendsub(0);
 done:
     print &outheader($sub) . $precode . $code . $postcode . &outfooter($sub);
     print "\n";
@@ -752,5 +759,28 @@ sub operations {
             $code .= &outcond($codet, @params, $sub);
         }
     }
+    return $code;
+}
+
+sub outhash {
+    my ($words, @stack) = @_;
+    my $sub2 = join("_", "parse", @stack);
+    my $pre = $stack[-1] || "htpl";
+    my $hash = &makehash($pre, "        static", map {uc($_);} @$words);
+    $hash =~ s/\t/            /g;
+    my @subs = map { "${sub2}_$_" } @$words;
+    my $subs = join(", ", @subs);
+    my $code = <<EOM;
+    {
+$hash
+        static parser funs[] = { $subs };
+        int n;
+        parser fun;
+        n = search_hash(&${pre}_hash, token, 0);
+        if (n < 0) return 0;
+        fun = funs[n];
+        return fun(stack, untag);
+    }
+EOM
     return $code;
 }

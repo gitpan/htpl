@@ -1,7 +1,8 @@
 package HTML::HTPL;
 
 BEGIN{
-    $VERSION = 2.93;
+    $VERSION = ERSION
+;
 }
 
 sub import {

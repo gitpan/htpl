@@ -1,3 +1,4 @@
+typedef int (*parser)(STR, int);
 int parse_htpl(STR, int);
 int parse_htpl_load(STR, int);
 int parse_htpl_method(STR, int);
@@ -65,7 +66,6 @@ int parse_htpl_sql_scope_cursor(STR, int);
 int parse_htpl_sql_scope_retrieve(STR, int);
 int parse_htpl_sql_msql(STR, int);
 int parse_htpl_sql_cursor(STR, int);
-int parse_htpl_poof(STR, int);
 int parse_htpl_proc(STR, int);
 int parse_htpl_proc___fwd(STR, int);
 int parse_htpl_proc___rev(STR, int);
@@ -180,4 +180,4 @@ extern char *scope_names[];
 extern int scope_ids[];
 #endif
 
-#define NUM_MACROS 143
+#define NUM_MACROS 142

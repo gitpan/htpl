@@ -1,7 +1,7 @@
 ###
 # Created by configure
 
-$mailprog = "@SENDMAIL@";
+#$mailprog = "@SENDMAIL@";
 $ccprog = "@CCPROG@";
 $dbgbin = "@INSTALLDIR@/htpldbg";
 $pcbin = "@INSTALLDIR@/htplp";
