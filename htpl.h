@@ -39,7 +39,6 @@
 #include <dirent.h>
 #include <limits.h>
 #include <errno.h>
-#include "lister.h"
 
 #ifdef FOPEN
 #undef FOPEN
@@ -121,6 +120,7 @@ void htencode(STR, STR);
 void htmldecode(STR, STR);
 int disposetrue(pchar);
 int disposecmp(pchar, pchar);
+STR repeat(int, char);
 void outperlline(FILE *, STR);
 /*STR populate(STR, STR);*/
 int copyhtmltag(STR);
@@ -260,7 +260,7 @@ HTE short hasxs;
 
 HTE short fatal HTZ;
 HTE STR errstr;
-HTE TOKEN errloc;
+HTE STR errloc;
 
 HTE DFA cstate HTZ;
 
@@ -298,9 +298,6 @@ HTE int internal_flags[32];
 
 extern int optind;
 extern char *optarg;
-
-#include "htpl-sh.h"
-
 
 #ifndef __PERLEMBED__
 #define EXECPERL(argc, argv, output, postdata, error, redir) execperl(argv, output, postdata, error, redir)

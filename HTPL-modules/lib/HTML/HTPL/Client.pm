@@ -27,15 +27,19 @@ $RESPONSE_ZLIB = 'z-';
 
 sub new {
     my $class = shift;
-    my ($url, $user, $passwd) = @_;
-    my $self = {'url' => $url, 'user' => $user, 'passwd' => $passwd};
+    my ($url, $user, $passwd, $key) = @_;
+    unless ($url =~ m|://|) {
+        $url = "http://$url/htpl/server.htpl";
+    }
+    my $self = {'url' => $url, 'user' => $user, 'passwd' => $passwd,
+		'key' => $key};
     bless $self, $class;
 }
 
 sub get {
     my ($self, $call, $key) = @_;
     my $url = new URI::URL($self->{'url'});
-    my $req = new LWP::UserAgent(POST  $url, ['call' => $call]);
+    my $req = POST  $url, ['call' => $call];
     my $ua = new HTML::HTPL::Client::FooBar;
     $ua->initup($self->{'user'}, $self->{'passwd'});
     my $res = $ua->request($req);
@@ -56,10 +60,15 @@ sub get {
 
     my $htplnet = $head->header($VERSION_HEADER);    
     Carp::croak("Server did not shake hands") unless ($htplnet);
+    $key ||= $self->{'key'};
     if ($key) {
         die $@ if $@;
-        my $cipher = &HTML::HTPL::Lib::makecipher($key) || die $@;
-        $var = &HTML::HTPL::Lib::encrypt($var, $cipher);
+        unless ($key =~ /^(\w+?):(.*)$/) {
+            die "Old cipher format obsolete. Must be: Algorithm:Key";
+        }
+        require Crypt::CBC;
+        my $cipher = new Crypt::CBC($2, $1);
+        $var = $cipher->decrypt($var);
     }
     return $var if ($sub eq "$RESPONSE_PREFIX$RESPONSE_SIMPLE");
     if ($sub eq "$RESPONSE_PREFIX$RESPONSE_FREEZETHAW") {

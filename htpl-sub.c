@@ -10,6 +10,9 @@
  **************************************/
 
 #include "htpl.h"
+#include "htpl-sh.h"
+#include <stdarg.h>
+
 SCOPE searchback(STR);
 
 /*************************************
@@ -375,6 +378,19 @@ STR gettoken(which)
     return result;
 }
 
+STR repeat(times, what)
+    int times;
+    char what; {
+
+    STR result;	    
+    STR buff = malloc(times + 1);
+    memset(buff, what, times);
+    buff[times] = '\0';
+    result = setworktoken(buff);
+    free(buff);
+    return result;
+}
+
 /**************************************************
  * Get a unique identifier for the current scope  *
  **************************************************/
@@ -506,9 +522,17 @@ int retval(val)
  * Format output to buffer                 *
  *******************************************/
 
-LISTER(printfcode, int, )
-    printcode(r);
-ENDLISTER
+void printfcode(char *fmt, ...) {
+    va_list ap;
+    char *msg;
+
+    va_start(ap, fmt);
+    vasprintf(&msg, fmt, ap);
+    va_end(ap);
+    
+    printcode(msg);
+    free(msg);
+}
 
 /*********************************************
  * Add code to the buffer                    *

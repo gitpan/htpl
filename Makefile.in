@@ -19,8 +19,7 @@ INSTALLBIN = @PRERUN@/usr/local/bin
 MODDIR = @MODDIR@
 LIBS = @LIBS@
 MODPERL = @MODPERL@
-OBJEMBEDBIN = @OBJEMBEDBIN@
-OBJEMBEDDBG = @OBJEMBEDDBG@
+OBJEMBED = @OBJEMBED@
 FUNCS = @DEFS@
 
 # Defines
@@ -42,9 +41,11 @@ VERSION = -DVERSION=`$(PERL) -e 'require "HTPL-modules/lib/HTML/HTPL.pm"; print 
 INFO = $(DEPDBDEF) $(BUILD) $(VERSION) $(COMPILE)  
 CCFLAGS = -O3 $(CONDS) $(INFO) $(FUNCS)
 CC = $(CCPROG) 
-CS = htpl.c htpl-l.c htpl-sub.c htpl-parse.c 
-BINOBJ = htpl.ob htpl-l.ob htpl-sub.ob htpl-parse.ob $(OBJEMBEDBIN) perf.ob
-DBGOBJ = htpl.od htpl-l.od htpl-sub.od htpl-parse.od $(OBJEMBEDDBG) perf.od
+#CS = htpl.c htpl-l.c htpl-sub.c htpl-parse.c perf.c vasprintf.c asprintf.c $(OBJEMBED)
+CS = htpl.c htpl-l.c htpl-sub.c htpl-parse.c perf.c $(OBJEMBED)
+BINOBJ = $(CS:.c=.ob)
+DBGOBJ = $(CS:.c=.od)
+PREDEP = $(CS:.c=.d)
 HS = htpl.h htpl-sh.h
 OBV = Makefile
 DEPBIN = $(BINOBJ) $(HS) $(OBV) 
@@ -58,9 +59,12 @@ MODULES = HTPL-modules HTPL-SQL $(MODPERL)
 
 # Rules
 
-.SUFFIXES: .ob .od .owb .owd
+.SUFFIXES: .ob .od .owb .owd .d
 
-.c.ob:
+.c.d:
+	$(CC) $(CCFLAGS) -MM $< | sed -e 's/^$*.o/$*.ob $*.od $@/' > $@
+
+.c.ob: 
 	$(CC) $(CCFLAGS) -c -o $@ $< $(PL)
 
 .c.od:
@@ -162,9 +166,11 @@ install-samples: $(SCRIPTS)
 	$(PERL) config-mod.pl $(CONF) ; \
 	fi
 	test -d $(HTDOCS) || mkdir $(HTDOCS)
-	test -d $(HTDOCS)/htpl-cache || mkdir $(HTDOCS)/htpl-cache 
-	install -m 755 procs.htpm $(HTDOCS)
-	if [ ! -f $(HTDOCS)/server_procs ; then \
+	test -d $(HTDOCS)/htpl-cache || mkdir $(HTDOCS)/htpl-cache && chmod 777 $(HTDOCS)/htpl-cache 
+	if [ ! -f $(HTDOCS)/procs.htpm ] ; then \
+		install -m 755 procs.htpm $(HTDOCS) ; \
+	fi
+	if [ ! -f $(HTDOCS)/server_procs ] ; then \
 		install -m 755 server_procs $(HTDOCS) ; \
 	fi
 	install -m 755 server.htpl $(HTDOCS)
@@ -249,3 +255,4 @@ win: $(WINBINOBJ) $(WINDBGOBJ)
 	gcc -DHAVE_SETENV -o htpl.exe $(WINBINOBJ) 
 	gcc -DHAVE_SETENV -D__DEBUG__ -o htpldbg.exe $(WINDBGOBJ) 
 
+include $(PREDEP)

@@ -5,14 +5,15 @@ eval 'require Digest::MD5';
 	URI HTML::Parser LWP);
 @useful = (qw(Locale::Hebrew Tie::Cache Tie::Depth File::FTS
         Storable Time::Timezone Sys::Syslog Net::Daemon
-        RPC::PlServer Clone HTML::Tagset
+        RPC::PlServer Clone Crypt::CBC
         DBI DBD::XBase DB_File File::Tools Mail::Tools
 	SQL::Statement Text::CSV_XS DBD::CSV FreezeThaw 
-        Data::Dumper GD MLDBM Convert::BER IO::Socket::SSL
+        Data::Dumper Image::Size MLDBM Convert::BER IO::Socket::SSL
 	Convert::ASN1 Net::LDAP XML::Parser
         Net::DNS Net::Whois Net::Country 
 	Filter::Util::Call Text::Autoformat Template XML::Simple
-	Date::Language XML::Conf Config::IniFiles IniConf));
+	Date::Language XML::Conf Config::IniFiles IniConf
+	Date::Manip));
 
 %answers = ('Template', 'n');
 

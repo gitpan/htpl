@@ -4,6 +4,7 @@
 
 #define __HTPARSE__
 #include "htpl.h"
+#include "htpl-sh.h"
 #include "perf.h"
 
 #define RETURN(x) {int v = (x); destroypersist(); return v;}
@@ -24,7 +25,7 @@ int parse_htpl_proc___fwd(stack, untag)
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sPROC called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     pushscope(scope_procedure, 0);
-    printfcode("sub %s {\n", gettoken(1));
+    printfcode("sub %s (%s) {\n", gettoken(1), repeat(numtokens - 1, '$'));
     if (numtokens >= 2)  {
         printfcode("my (%s) = @_;\n", gettokenlist(2, ", ", "$"));
     }
@@ -239,7 +240,7 @@ int parse_htpl_img_rnd(stack, untag)
     printcode("my @ims = split(/,\\s*/, $tags{'SRC'}); my $f = $ims[int(rand() * ($#ims + 1))];\n");
     printcode("		$tags{'SRC'} = $f; \n");
     code = 1;
-    buff = (STR)mysprintf("OUT TAG IMG %%tags");
+    asprintf(&buff, "OUT TAG IMG %%tags");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -301,7 +302,7 @@ int parse_htpl_mem_project(stack, untag)
     makepersist(stack);
     printcode("{ my $imm;\n");
     code = 1;
-    buff = (STR)mysprintf("MEM CURSOR imm %s", gettokenlist(2, " ", ""));
+    asprintf(&buff, "MEM CURSOR imm %s", gettokenlist(2, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -313,7 +314,7 @@ int parse_htpl_mem_project(stack, untag)
     free(buff);
 
     code = 1;
-    buff = (STR)mysprintf("PROJECT imm %s %s", gettoken(1), gettoken(1));
+    asprintf(&buff, "PROJECT imm %s %s", gettoken(1), gettoken(1));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -344,7 +345,7 @@ int parse_htpl_mem_search(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in MEM SEARCH"))
-    buff = (STR)mysprintf("MEM CURSOR %s", gettokenlist(1, " ", ""));
+    asprintf(&buff, "MEM CURSOR %s", gettokenlist(1, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -392,7 +393,7 @@ int parse_htpl_mem_immediate(stack, untag)
     makepersist(stack);
     printcode("{ my $imm;\n");
     code = 1;
-    buff = (STR)mysprintf("MEM CURSOR imm %s", gettokenlist(1, " ", ""));
+    asprintf(&buff, "MEM CURSOR imm %s", gettokenlist(1, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -404,7 +405,7 @@ int parse_htpl_mem_immediate(stack, untag)
     free(buff);
 
     code = 1;
-    buff = (STR)mysprintf("FETCHIT imm");
+    asprintf(&buff, "FETCHIT imm");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -492,7 +493,7 @@ int parse_htpl_listbox(stack, untag)
     makepersist(stack);
     printcode("{\n");
     code = 1;
-    buff = (STR)mysprintf("%s", gettokenlist(1, " ", ""));
+    asprintf(&buff, "%s", gettokenlist(1, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -549,7 +550,7 @@ int parse_htpl_class___fwd(stack, untag)
     printcode("		$self->{$_} = $hash{$_};\n");
     printcode("	}\n");
     printcode("}\n");
-    buff = (STR)mysprintf("#CLSUTILS OTHER\n");
+    asprintf(&buff, "#CLSUTILS OTHER\n");
     nest++;
     code = parse_htpl(strchr(buff, '#') + 1, 0);
     nest--;
@@ -887,7 +888,7 @@ int parse_htpl_text_fixed(stack, untag)
     makepersist(stack);
     if (numtokens < 3) RETURN(croak("%sTEXT FIXED called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     code = 1;
-    buff = (STR)mysprintf("TEXT PREFIXED");
+    asprintf(&buff, "TEXT PREFIXED");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -960,7 +961,7 @@ int parse_htpl_text_records(stack, untag)
     makepersist(stack);
     if (numtokens < 3) RETURN(croak("%sTEXT RECORDS called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     code = 1;
-    buff = (STR)mysprintf("TEXT PREFIXED");
+    asprintf(&buff, "TEXT PREFIXED");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -1014,7 +1015,7 @@ int parse_htpl_text_csv(stack, untag)
     makepersist(stack);
     if (numtokens < 3) RETURN(croak("%sTEXT CSV called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     code = 1;
-    buff = (STR)mysprintf("TEXT PRECSV");
+    asprintf(&buff, "TEXT PRECSV");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -1045,7 +1046,7 @@ int parse_htpl_text_cube(stack, untag)
     makepersist(stack);
     if (numtokens < 4) RETURN(croak("%sTEXT CUBE called with %d arguments, minimum needed is 4", (untag ? "/" : ""), numtokens))
     code = 1;
-    buff = (STR)mysprintf("TEXT PRECSV");
+    asprintf(&buff, "TEXT PRECSV");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -1137,7 +1138,7 @@ int parse_htpl_ifnotnull___rev(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in IFNOTNULL"))
-    buff = (STR)mysprintf("ENDIF");
+    asprintf(&buff, "ENDIF");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -1187,7 +1188,7 @@ int parse_htpl_connection(stack, untag)
     printcode("        \n");
     if (numtokens >= 3)  {
         code = 1;
-        buff = (STR)mysprintf("SQL %s", gettokenlist(2, " ", ""));
+        asprintf(&buff, "SQL %s", gettokenlist(2, " ", ""));
         nest++;
         code = parse_htpl(buff, untag);
         nest--;
@@ -1306,7 +1307,7 @@ int parse_htpl_end(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in END"))
-    buff = (STR)mysprintf("%s", gettokenlist(1, " ", ""));
+    asprintf(&buff, "%s", gettokenlist(1, " ", ""));
     nest++;
     code = parse_htpl(buff, 1);
     nest--;
@@ -1317,28 +1318,6 @@ int parse_htpl_end(stack, untag)
     }
     free(buff);
 
-    nesting = 0;
-    RETURN(1)
-}
-
-int parse_htpl_dir_pre(stack, untag)
-    int untag;
-    STR stack; {
-
-    TOKEN token;
-    static done = 0;
-    STR buff;
-    int code;
-    static int nesting = 0;
-    static int refcount = 0;
-
-    refcount++;
-    makepersist(stack);
-    if (!nest) RETURN(0)
-    if (!done) {
-        done = 1;
-        printcode("use HTML::HTPL::Glob;\n");
-    }
     nesting = 0;
     RETURN(1)
 }
@@ -1358,18 +1337,6 @@ int parse_htpl_dir_subs(stack, untag)
     makepersist(stack);
     if (numtokens < 3) RETURN(croak("%sDIR SUBS called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     if (numtokens > 3) RETURN(croak("%sDIR SUBS called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
-    code = 1;
-    buff = (STR)mysprintf("DIR PRE");
-    nest++;
-    code = parse_htpl(buff, untag);
-    nest--;
-    if (!code) {
-        croak("Unification of '%s' failed", buff);
-        free(buff);
-        RETURN(0)
-    }
-    free(buff);
-
     printfcode("$%s = &HTML::HTPL::Glob'dirs(\"%s\", \"%s\");\n", gettoken(1), gettoken(2), gettoken(3));
     nesting = 0;
     RETURN(1)
@@ -1390,18 +1357,6 @@ int parse_htpl_dir_tree(stack, untag)
     makepersist(stack);
     if (numtokens < 3) RETURN(croak("%sDIR TREE called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     if (numtokens > 3) RETURN(croak("%sDIR TREE called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
-    code = 1;
-    buff = (STR)mysprintf("DIR PRE");
-    nest++;
-    code = parse_htpl(buff, untag);
-    nest--;
-    if (!code) {
-        croak("Unification of '%s' failed", buff);
-        free(buff);
-        RETURN(0)
-    }
-    free(buff);
-
     printfcode("$%s = &HTML::HTPL::Glob'tree(\"%s\", \"%s\");\n", gettoken(1), gettoken(2), gettoken(3));
     nesting = 0;
     RETURN(1)
@@ -1422,18 +1377,6 @@ int parse_htpl_dir_files(stack, untag)
     makepersist(stack);
     if (numtokens < 3) RETURN(croak("%sDIR FILES called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     if (numtokens > 3) RETURN(croak("%sDIR FILES called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
-    code = 1;
-    buff = (STR)mysprintf("DIR PRE");
-    nest++;
-    code = parse_htpl(buff, untag);
-    nest--;
-    if (!code) {
-        croak("Unification of '%s' failed", buff);
-        free(buff);
-        RETURN(0)
-    }
-    free(buff);
-
     printfcode("$%s = &HTML::HTPL::Glob'files(\"%s\", \"%s\");\n", gettoken(1), gettoken(2), gettoken(3));
     nesting = 0;
     RETURN(1)
@@ -1452,18 +1395,21 @@ int parse_htpl_dir(stack, untag)
 
     refcount++;
     makepersist(stack);
+    if (!done) {
+        done = 1;
+        printcode("use HTML::HTPL::Glob;\n");
+    }
     eat(&stack, token);
     {
         static char *dir_table[] = {"FILES",
-            "PRE",
             "SUBS",
             "TREE"};
-        static int dir_locations[] = { 3, -1, 1, 2, -1, 0, -1 };
-        static int dir_shortcuts[] = { -1, -1, 0, 2, -1, 5, -1, -1, -1, -1 };
+        static int dir_locations[] = { 2, -1, 1, -1, 0, -1 };
+        static int dir_shortcuts[] = { -1, -1, 0, 2, -1, 4, -1, -1, -1, -1 };
         static struct hash_t dir_hash = {dir_table,
              dir_locations, dir_shortcuts};
 
-        static parser funs[] = { parse_htpl_dir_files, parse_htpl_dir_pre, parse_htpl_dir_subs, parse_htpl_dir_tree };
+        static parser funs[] = { parse_htpl_dir_files, parse_htpl_dir_subs, parse_htpl_dir_tree };
         int n;
         parser fun;
         n = search_hash(&dir_hash, token, 0);
@@ -1607,7 +1553,7 @@ int parse_htpl_auth_iflogin(stack, untag)
     if (numtokens < 2) RETURN(croak("%sAUTH IFLOGIN called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     if (numtokens > 2) RETURN(croak("%sAUTH IFLOGIN called with %d arguments, maximum needed is 2", (untag ? "/" : ""), numtokens))
     code = 1;
-    buff = (STR)mysprintf("AUTH LOGIN %s", gettokenlist(1, " ", ""));
+    asprintf(&buff, "AUTH LOGIN %s", gettokenlist(1, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -1619,7 +1565,7 @@ int parse_htpl_auth_iflogin(stack, untag)
     free(buff);
 
     code = 1;
-    buff = (STR)mysprintf("AUTH IFLOGGED");
+    asprintf(&buff, "AUTH IFLOGGED");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -1695,7 +1641,7 @@ int parse_htpl_auth_ifunauthorized___rev(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in AUTH IFUNAUTHORIZED"))
-    buff = (STR)mysprintf("ENDIF");
+    asprintf(&buff, "ENDIF");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -1762,7 +1708,7 @@ int parse_htpl_auth_iflogged___rev(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in AUTH IFLOGGED"))
-    buff = (STR)mysprintf("ENDIF");
+    asprintf(&buff, "ENDIF");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -1878,7 +1824,7 @@ int parse_htpl_auth_ifnotlogged___rev(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in AUTH IFNOTLOGGED"))
-    buff = (STR)mysprintf("ENDIF");
+    asprintf(&buff, "ENDIF");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -1945,7 +1891,7 @@ int parse_htpl_auth_ifauthorized___rev(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in AUTH IFAUTHORIZED"))
-    buff = (STR)mysprintf("ENDIF");
+    asprintf(&buff, "ENDIF");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -2211,7 +2157,7 @@ int parse_htpl_constructor___fwd(stack, untag)
     }
     setvar("constructor", (STR)mysprintf("%d", nline));
     if (!exportvar("constructor", "class")) RETURN(croak("Scope class not found in stack"));
-    buff = (STR)mysprintf("#CLSUTILS MINE\n");
+    asprintf(&buff, "#CLSUTILS MINE\n");
     nest++;
     code = parse_htpl(strchr(buff, '#') + 1, 0);
     nest--;
@@ -2224,7 +2170,7 @@ int parse_htpl_constructor___fwd(stack, untag)
     printcode("sub new {\n");
     printfcode(" %s::__shadow__::new(@_);\n", getvar("cls"));
     printcode("}\n");
-    buff = (STR)mysprintf("#CLSUTILS OTHER\n");
+    asprintf(&buff, "#CLSUTILS OTHER\n");
     nest++;
     code = parse_htpl(strchr(buff, '#') + 1, 0);
     nest--;
@@ -2389,7 +2335,7 @@ int parse_htpl_switch_rnd___fwd(stack, untag)
     pushscope(scope_random_switch, 0);
     printcode("{\n");
     code = 1;
-    buff = (STR)mysprintf("SWITCH CASE");
+    asprintf(&buff, "SWITCH CASE");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -2421,7 +2367,7 @@ int parse_htpl_switch_rnd___rev(stack, untag)
     printcode("        my $__htpl_rcase = int(rand(@__htpl_case_keys));\n");
     printcode("	$__htpl_cases_choose = $__htpl_case_keys[$__htpl_rcase]; {\n");
     code = 1;
-    buff = (STR)mysprintf("SWITCH CASE");
+    asprintf(&buff, "SWITCH CASE");
     nest++;
     code = parse_htpl(buff, 1);
     nest--;
@@ -2526,7 +2472,7 @@ int parse_htpl_fetch___rev(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in FETCH"))
-    buff = (STR)mysprintf("LOOP");
+    asprintf(&buff, "LOOP");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -2738,7 +2684,7 @@ int parse_htpl_sql_search(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL SEARCH"))
-    buff = (STR)mysprintf("SQL CURSOR %s", gettokenlist(1, " ", ""));
+    asprintf(&buff, "SQL CURSOR %s", gettokenlist(1, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -2786,7 +2732,7 @@ int parse_htpl_sql_postgres(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL POSTGRES"))
-    buff = (STR)mysprintf("SQL POSTGRESQL %s", gettokenlist(1, " ", ""));
+    asprintf(&buff, "SQL POSTGRESQL %s", gettokenlist(1, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -2817,7 +2763,7 @@ int parse_htpl_sql_postgresql(stack, untag)
     if (numtokens < 1) RETURN(croak("%sSQL POSTGRESQL called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL POSTGRESQL"))
-    buff = (STR)mysprintf("SQL CONNECT DBI:Pg:dbname=%s", gettoken(1));
+    asprintf(&buff, "SQL CONNECT DBI:Pg:dbname=%s", gettoken(1));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -2869,7 +2815,7 @@ int parse_htpl_sql_msql(stack, untag)
     if (numtokens > 1) RETURN(croak("%sSQL MSQL called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL MSQL"))
-    buff = (STR)mysprintf("SQL CONNECT DBI:mSQL:%s", gettoken(1));
+    asprintf(&buff, "SQL CONNECT DBI:mSQL:%s", gettoken(1));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -2920,7 +2866,7 @@ int parse_htpl_sql_project(stack, untag)
     if (numtokens < 2) RETURN(croak("%sSQL PROJECT called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printcode("{ my $imm;\n");
     code = 1;
-    buff = (STR)mysprintf("SQL CURSOR imm %s", gettokenlist(2, " ", ""));
+    asprintf(&buff, "SQL CURSOR imm %s", gettokenlist(2, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -2932,7 +2878,7 @@ int parse_htpl_sql_project(stack, untag)
     free(buff);
 
     code = 1;
-    buff = (STR)mysprintf("PROJECT imm %s %s", gettoken(1), gettoken(1));
+    asprintf(&buff, "PROJECT imm %s %s", gettoken(1), gettoken(1));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -2963,7 +2909,7 @@ int parse_htpl_sql_scope_exec(stack, untag)
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sSQL SCOPE EXEC called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     code = 1;
-    buff = (STR)mysprintf("SQL SCOPE RETRIEVE");
+    asprintf(&buff, "SQL SCOPE RETRIEVE");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -2994,7 +2940,7 @@ int parse_htpl_sql_scope_cursor(stack, untag)
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sSQL SCOPE CURSOR called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     code = 1;
-    buff = (STR)mysprintf("SQL SCOPE RETRIEVE");
+    asprintf(&buff, "SQL SCOPE RETRIEVE");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -3121,7 +3067,7 @@ int parse_htpl_sql_immediate(stack, untag)
     makepersist(stack);
     printcode("{ my $imm;\n");
     code = 1;
-    buff = (STR)mysprintf("SQL CURSOR imm %s", gettokenlist(1, " ", ""));
+    asprintf(&buff, "SQL CURSOR imm %s", gettokenlist(1, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -3133,7 +3079,7 @@ int parse_htpl_sql_immediate(stack, untag)
     free(buff);
 
     code = 1;
-    buff = (STR)mysprintf("FETCHIT imm");
+    asprintf(&buff, "FETCHIT imm");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -3183,7 +3129,7 @@ int parse_htpl_sql_execute(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL EXECUTE"))
-    buff = (STR)mysprintf("SQL EXEC %s", gettokenlist(1, " ", ""));
+    asprintf(&buff, "SQL EXEC %s", gettokenlist(1, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -3231,7 +3177,7 @@ int parse_htpl_sql_add(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL ADD"))
-    buff = (STR)mysprintf("SQL INSERT %s", gettokenlist(1, " ", ""));
+    asprintf(&buff, "SQL INSERT %s", gettokenlist(1, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -3261,7 +3207,7 @@ int parse_htpl_sql_modify(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL MODIFY"))
-    buff = (STR)mysprintf("SQL UPDATE %s", gettokenlist(1, " ", ""));
+    asprintf(&buff, "SQL UPDATE %s", gettokenlist(1, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -3293,7 +3239,7 @@ int parse_htpl_sql_mysql(stack, untag)
     if (numtokens > 3) RETURN(croak("%sSQL MYSQL called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL MYSQL"))
-    buff = (STR)mysprintf("SQL CONNECT DBI:mysql:%s %s", gettoken(1), gettokenlist(2, " ", ""));
+    asprintf(&buff, "SQL CONNECT DBI:mysql:%s %s", gettoken(1), gettokenlist(2, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -3325,7 +3271,7 @@ int parse_htpl_sql_xbase(stack, untag)
     if (numtokens > 1) RETURN(croak("%sSQL XBASE called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL XBASE"))
-    buff = (STR)mysprintf("SQL CONNECT DBI:XBase:%s", gettoken(1));
+    asprintf(&buff, "SQL CONNECT DBI:XBase:%s", gettoken(1));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -3355,7 +3301,7 @@ int parse_htpl_sql_erase(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL ERASE"))
-    buff = (STR)mysprintf("SQL ERASE %s", gettokenlist(1, " ", ""));
+    asprintf(&buff, "SQL ERASE %s", gettokenlist(1, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -3515,7 +3461,8 @@ int parse_htpl_net_get(stack, untag)
     refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sNET GET called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
-    printfcode("$%s = $htpl_net_obj->get(\"%s\", qw(%s));\n", gettoken(1), gettoken(2), gettokenlist(3, " ", ""));
+    if (numtokens > 3) RETURN(croak("%sNET GET called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
+    printfcode("$%s = $htpl_net_obj->get(\"%s\", \"%s\");\n", gettoken(1), gettoken(2), gettoken(3));
     nesting = 0;
     RETURN(1)
 }
@@ -3588,7 +3535,7 @@ int parse_htpl_clsutils_mine(stack, untag)
     refcount++;
     makepersist(stack);
     code = 1;
-    buff = (STR)mysprintf("CLSUTILS IMP");
+    asprintf(&buff, "CLSUTILS IMP");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -3618,7 +3565,7 @@ int parse_htpl_clsutils_other(stack, untag)
     refcount++;
     makepersist(stack);
     code = 1;
-    buff = (STR)mysprintf("CLSUTILS IMP");
+    asprintf(&buff, "CLSUTILS IMP");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -4070,7 +4017,7 @@ int parse_htpl_ldap_search(stack, untag)
     printcode("{\n");
     if (numtokens < 1) RETURN(croak("%sLDAP SEARCH called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     code = 1;
-    buff = (STR)mysprintf("LDAP DOSEARCH %s", gettokenlist(1, " ", ""));
+    asprintf(&buff, "LDAP DOSEARCH %s", gettokenlist(1, " ", ""));
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -4290,7 +4237,7 @@ int parse_htpl_if___rev(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in IF"))
-    buff = (STR)mysprintf("ENDIF");
+    asprintf(&buff, "ENDIF");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -4358,7 +4305,7 @@ int parse_htpl_ifnull___rev(stack, untag)
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in IFNULL"))
-    buff = (STR)mysprintf("ENDIF");
+    asprintf(&buff, "ENDIF");
     nest++;
     code = parse_htpl(buff, untag);
     nest--;
@@ -4412,7 +4359,7 @@ int parse_htpl_destructor___fwd(stack, untag)
     }
     setvar("destructor", (STR)mysprintf("%d", nline));
     if (!exportvar("destructor", "class")) RETURN(croak("Scope class not found in stack"));
-    buff = (STR)mysprintf("#CLSUTILS MINE \n");
+    asprintf(&buff, "#CLSUTILS MINE \n");
     nest++;
     code = parse_htpl(strchr(buff, '#') + 1, 0);
     nest--;
@@ -4486,7 +4433,7 @@ int parse_htpl_method___fwd(stack, untag)
     if (currscope->scope != scope_class) RETURN(croak("Now in scope %s from %d and met METHOD, expecting: class", scope_names[currscope->scope], currscope->nline))
     if (numtokens < 1) RETURN(croak("%sMETHOD called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     pushscope(scope_method, 0);
-    buff = (STR)mysprintf("#CLSUTILS OTHER\n");
+    asprintf(&buff, "#CLSUTILS OTHER\n");
     nest++;
     code = parse_htpl(strchr(buff, '#') + 1, 0);
     nest--;

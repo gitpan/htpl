@@ -1,3 +1,29 @@
+if ($^O =~ /Win/) {
+	die "Check the documentation for building under Windows";
+}
+use Cwd;
+my $wd = getcwd;
+my $to = $0;
+my @tokens = split(/\//, $to);
+pop @tokens;
+$to = join("/", @tokens);
+chdir $to if $to;
+my $me = getcwd;
+chdir $wd;
+print <<HTML;
+
+
+This is not an ExtUtils package.
+To install HTPL, chdir into $me
+and type ./configure.
+Please read INSTALL before, as you might need some configuration switches.
+
+Press ENTER...
+HTML
+my $x = <STDIN>;
+die;
+
+__END__
 eval '
 use Cwd;
 $dir = cwd;

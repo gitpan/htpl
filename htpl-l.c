@@ -10,6 +10,8 @@
  *********************************************/
 
 #include "htpl.h"
+#include "htpl-sh.h"
+#include <stdarg.h>
 
 /*********************************************
  * Read one token from a string              *
@@ -292,6 +294,37 @@ void flpt(i, o)
     }
 }
 
+/***************************************************
+* Format a string into temporary storage          *
+***************************************************/
+
+char *mysprintf(char *fmt, ...) {
+    va_list ap;
+    char *msg;
+
+    va_start(ap, fmt);
+    vasprintf(&msg, fmt, ap);
+    va_end(ap);
+
+    return msg;
+}
+
+/*************************************
+ * Write a formatted output line     *
+ *************************************/
+
+void outf(FILE *o, char *fmt, ...) {
+    va_list ap;
+    char *msg;
+
+    va_start(ap, fmt);
+    vasprintf(&msg, fmt, ap);
+    va_end(ap);
+
+    outblock(o, msg);
+    free(msg);
+}
+
 /**********************************************
  * Output debug information                   *
  **********************************************/
@@ -302,14 +335,6 @@ void outdbg(o, line)
     outf(o, "# Line: %d File: %s >> %s", nline, infile, line);
 /*    outline(o, thescript, rline + 1 + 1);*/
 }
-
-/***************************************************
- * Format a string into temporary storage          *
- ***************************************************/
-LISTER(mysprintf, STR, )
-    RETVAL = r;
-    r = NULL;
-ENDLISTER
 
 /****************************
  * Dump scope stack         *
@@ -944,24 +969,17 @@ void vectorkill(vec)
  * Report compile time error                       *
  ***************************************************/
 
-LISTER(croak, int, )
+void croak(char *fmt, ...) {
+    va_list ap;
+    
     if (fatal) return;
-    errstr = r;
-    r = NULL;
+    va_start(ap, fmt);
+    vasprintf(&errstr, fmt, ap);
+    va_end(ap);
+    
     fatal = 1;
-    sprintf(errloc, "File %s, Line %d", infile, nline);
-    RETVAL = 0;
-ENDLISTER
-
-/*************************************
- * Write a formatted output line     *
- *************************************/
-
-LISTER(outf, int, LISTERADDVAR(o, FILE *))
-    outblock(o, r);
-ENDLISTER
-
-
+    asprintf(&errloc, "File %s, Line %d", infile, nline);
+}
 /**********************************************************
  * Escape variables Cold Fusion Style                     *
  **********************************************************/

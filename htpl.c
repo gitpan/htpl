@@ -11,6 +11,7 @@
 
 #define __HTMAIN__
 #include "htpl.h"
+#include "htpl-sh.h"
 
 /**********************************************
  * Determinist Finite Automaton               *
@@ -1460,6 +1461,8 @@ HTPL page. Check in dependency database if used */
         printf("Content-type: text/plain\n\n");
 #endif
         printf("Error while parsing: %s: %s%s", errloc, errstr, NEWLINE);
+	free(errloc);
+	free(errstr);
         dumpscopes();
         free(errstr);
         unlink(script);

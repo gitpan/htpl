@@ -22,15 +22,13 @@ AC_PROG_AWK
 
 AB_PROG_PERL(5.005, , exit)
 AB_CHECK_EMBEDDED_PERL([ 
-OBJEMBEDBIN="htpl-xsi.ob htpl-perl.ob"
-OBJEMBEDDBG="htpl-xsi.od htpl-perl.od"
+OBJEMBED="htpl-xsi.c htpl-perl.c"
 DEFEMBED=-D__PERLEMBED__
 [
 PL="$CCFLAGS `$PERL -MExtUtils::Embed -e ccopts`"
 LIBS="$LIBS `$PERL -MExtUtils::Embed -e ldopts`"
 ]
-], [OBJEMBEDBIN=
-OBJEMBEDDBG=
+], [OBJEMBED=
 DEFEMBED=
 PL=
 ])
@@ -241,7 +239,13 @@ ab_cv_cgibin=$INSTALLDIR
 INSTALLDIR=$ab_cv_cgibin
 [
 if [ -n "$HTTPDROOT" ]; then
-    DEFAULT=$HTTPDROOT"/conf/httpd.conf"
+    DEFAULT=
+    for candidate in /etc/httpd/conf/httpd.conf $HTTPDROOT"/conf/httpd.conf" ; do
+        if [ -f $candidate ]; then
+            DEFAULT=$candidate
+            break
+        fi
+    done
 else
     DEFAULT=$NEXTDEF"/.htaccess"
 fi
@@ -264,7 +268,13 @@ HTCONF=$ab_cv_conf
 
 [
 if [ -n "$HTTPDROOT" ]; then
-    DEFAULT=$HTTPDROOT"/logs/htpl_log"
+    DEFAULT=
+    for candidate in $HTTPDROOT"/logs" /var/log ; do
+        if [ -d "$candidate" ] ; then
+            DEFAULT=$candidate"/htpl_log"
+            break
+        fi
+    done
 else
     DEFAULT=$NEXTDEF"/.htpl.log"
 fi
@@ -313,8 +323,7 @@ AC_SUBST(MODMAKE)
 AC_SUBST(CPANMAKE)
 AC_SUBST(MODINS)
 AC_SUBST(PL)
-AC_SUBST(OBJEMBEDBIN)
-AC_SUBST(OBJEMBEDDBG)
+AC_SUBST(OBJEMBED)
 AC_SUBST(DEFEMBED)
 AC_SUBST(INSTALLDIR)
 AC_SUBST(EGO)

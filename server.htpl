@@ -16,7 +16,13 @@ if ($call =~ /^(.*?)\((.*?)\)$/) {
 open(C, "server_procs") || &err("Can't open server_procs");
 while(<C>) {
     chop;
-    ($fn, $mod, $sub, $src, $users, $key) = split(/ /);
+    my @fields;
+    if (/,/) {
+        @fields = splitline($_);
+    } else {
+        @fields = split(/\s+/);
+    }
+    ($fn, $mod, $sub, $src, $users, $key) = @fields;
     if (lc($fn) eq $func) {
         $found = 1;
         last;
@@ -46,14 +52,14 @@ eval qq!require "$mod";!;
 
 &err("Taint subname: $sub") if ($sub =~ /[^a-zA-Z0-9_]/);
 
-my $coderef;
-$@ = undef;
-eval "\$^H |= 0x200; \$coderef = \\\&$sub";
+my $coderef= UNIVERSAL::can(__PACKAGE__, $sub);
 
-&err("Function not found: $sub") if ($@ || !eval("*$sub\{CODE}"));
+&err("Function not found: $sub") unless $coderef;
 
 $@ = undef;
-eval '$res = &$coderef(@params);';
+# Support prototyped functions
+my $p = join(", ", map {"'" . quotemeta($_) . "'";} @params);
+eval "\$res = $sub($p);";
 
 &err("Runtime error: $@") if ($@);
 
@@ -66,8 +72,13 @@ if (ref($res)) {
 }
 
 if ($key) {
-    my $cipher = &HTML::HTPL::Lib::makecipher($key) || &err("Cipher: $@");
-    $res = &HTML::HTPL::Lib::encrypt($res, $cipher);
+    unless ($key =~ /^(\w+?):(.*)$/) {
+        die "Old cipher format obsolete. Must be: Algorithm:Key";
+    }
+    require Crypt::CBC;
+    my $cipher = new Crypt::CBC($2, $1);
+
+    $res = $cipher->encrypt($res);
 }
 
 require Compress::Zlib;

@@ -45,6 +45,7 @@ print <<EOM;
 
 #define __HTPARSE__
 #include "htpl.h"
+#include "htpl-sh.h"
 #include "perf.h"
 
 #define RETURN(x) {int v = (x); destroypersist(); return v;}
@@ -370,7 +371,7 @@ sub outunify {
     $dn = "1" if ($dir eq 'REV');
     my $alias_parsed = &wrapcode(&assemble($alias));
     return <<EOM;
-    buff = (STR)mysprintf($alias_parsed);
+    asprintf(&buff, $alias_parsed);
     nest++;
     code = parse_htpl(buff, $dn);
     nest--;
@@ -435,7 +436,7 @@ sub outcode {
         $scode = &wrapcode(&assemble($tcode));
         if ($l =~ /^\s*\#\w/) {
             $ret .= <<EOM;
-    buff = (STR)mysprintf($scode);
+    asprintf(&buff, $scode);
     nest++;
     code = parse_htpl(strchr(buff, '#') + 1, 0);
     nest--;

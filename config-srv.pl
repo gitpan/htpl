@@ -1,15 +1,23 @@
-($fn, $cgi, $sysdir) = @ARGV;
+use strict;
+
+my ($fn, $cgi, $sysdir) = @ARGV;
 
 if ( -f $fn ) {
-open(I, $fn);
-while (<I>) {
-    exit if (/application\/x-htpl/);
-}
-close(I);
+    open(I, $fn) || die $!;
+    while (<I>) {
+        if (/^#\s*BEGIN HTPL/) {
+            close(I);
+            &diet;
+            last;
+        }
+        exit if (/application\/x-htpl/);
+    }
+    close(I);
 } 
 
 open(O, ">>$fn");
 print O <<EOC;
+# BEGIN HTPL
 
 AddType application/x-htpl .htpl
 Action application/x-htpl /htpl-code-exec/
@@ -24,21 +32,38 @@ AuthGroupFile /dev/null
 <Limit GET POST>
 require valid-user
 </Limit>
+<Files ~ ^.passwd\$>
+  order deny,allow
+  deny from all
+</Files>
 </Directory>
 
+# END HTPL
 EOC
 close(O);
 
-eval 'mkdir $sysdir, 0777;';
-open(O, ">>$sysdir/.passwd");
-print O "admin:" . crypt("admin", "admin");
-close(O);
+mkdir 0777, $sysdir;
+my $pfile = "$sysdir/.passwd";
+my $flag;
+if (-f $pfile) {
+    open(I, $pfile) || die $!;
+    while (<I>) {
+        $flag ||= (/^admin:/);
+    }
+    close(I);
+}
+unless ($flag) {
+    open(O, ">>$pfile") || die $!;
+    print O "admin:" . crypt("admin", pack("CC", rand(26) + 65, rand(26) + 65)), "\n";
+    close(O);
+}
 
-@ps = `ps -ax`;
-@pps = grep /httpd/, @ps;
+my @ps = `ps -ax`;
+my @pps = grep /httpd/, @ps;
+my @pids;
 foreach (@pps) {
     s/^\s+//;
-    @items = split(/\s/);
+    my @items = split(/\s/);
     push(@pids, $items[0]);
 }
 
@@ -60,3 +85,15 @@ you chose) with the user admin and password admin
 
 
 EOM
+
+sub diet {
+    open(I, $fn) || die $!;
+    my $text = join("", <I>);
+    close(I);
+    unless ($text =~ s/\n\s*#\s*BEGIN HTPL.*?\n\s*#\s*END HTPL.*?\n/\n/s) {
+        die "Failed";
+    }
+    open(O, ">$fn") || die $!;
+    print O $text;
+    close(O);
+}

@@ -754,14 +754,10 @@ sub lastmodified {
 }
 
 sub imagesize {
-    my ($pic, $ashtml) = @_;
-    require GD;
-    open(GIF_HANDLE, $pic);
-    binmode GIF_HANDLE;
-    my $img = newFromGif GD::Image(\*GIF_HANDLE);
-    close(GIF_HANDLE);
-    return undef unless ($img);
-    return $img->getBounds;
+    my ($pic) = @_;
+    require Image::Size;
+    my ($w, $h) =  Image::Size::imgsize($pic);
+    wantarray ? ($w, $h) : "WIDTH=$w HEIGHT=$h";
 }
 
 sub finger {

@@ -95,14 +95,14 @@ use HTML::HTPL::Db;</__PRE>
 </__MACRO>
 
 <__MACRO NAME="DIR">
-	<__MACRO NOOP="1" PRIVATE="1" NAME="PRE"><__PRE>use HTML::HTPL::Glob;</__PRE></__MACRO>
-	<__MACRO MIN="3" MAX="3" NAME="FILES"><__INCLUDE>DIR PRE</__INCLUDE>
+	<__PRE>use HTML::HTPL::Glob;</__PRE>
+	<__MACRO MIN="3" MAX="3" NAME="FILES">
 		<__DO>$%1% = &amp;HTML::HTPL::Glob'files("%2%", "%3%");</__DO>
 	</__MACRO>
-	<__MACRO MIN="3" MAX="3" NAME="SUBS"><__INCLUDE>DIR PRE</__INCLUDE>
+	<__MACRO MIN="3" MAX="3" NAME="SUBS">
 		<__DO>$%1% = &amp;HTML::HTPL::Glob'dirs("%2%", "%3%");</__DO>
 	</__MACRO>
-	<__MACRO MIN="3" MAX="3" NAME="TREE"><__INCLUDE>DIR PRE</__INCLUDE>
+	<__MACRO MIN="3" MAX="3" NAME="TREE">
 		<__DO>$%1% = &amp;HTML::HTPL::Glob'tree("%2%", "%3%");</__DO>
 	</__MACRO>
 </__MACRO>
@@ -310,10 +310,10 @@ die "%1*%";
 <__MACRO NAME="NET">
 	<__PRE>use HTML::HTPL::Client;</__PRE>
 	<__MACRO MIN="1" MAX="3" NAME="SETUP">$htpl_net_obj = HTML::HTPL::Client->setup("%1%", "%2%", "%3%");</__MACRO>
-	<__MACRO MIN="2" NAME="GET">$%1% = $htpl_net_obj->get("%2%", qw(%3*%));</__MACRO>
+	<__MACRO MIN="2" MAX="3" NAME="GET">$%1% = $htpl_net_obj->get("%2%", "%3%");</__MACRO>
 </__MACRO>
 <__MACRO BLOCK="procedure" AREA="1" NAME="PROC">
-	<__FWD MIN="1"><__DO>sub %1% {</__DO>
+	<__FWD MIN="1"><__DO>sub %1% (%?$-1%) {</__DO>
 		<__DO MIN="2">my (%2!%) = @_;</__DO>
        </__FWD>
 	<__REV>

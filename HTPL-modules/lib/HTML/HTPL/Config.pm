@@ -1,7 +1,7 @@
 package HTML::HTPL::Config;
 
 eval <<'EOM';
-	require "/home/httpd/cgi-bin/htpl-config.pl";
+	require "/var/www/cgi-bin/htpl-config.pl";
 
         my $reg = "./htpl-site.pl";
         my $alt = "../htpl-site.pl";

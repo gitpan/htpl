@@ -106,9 +106,16 @@ sub proctoken {
         push(@$aryref, qq!gettokenlist($1, "$2", "")!);
     } elsif ($token =~ /^(-?\d+)(.)(\d+)$/) {
         push(@$aryref, "getsubtoken($1, '$2', $3)");
-    } elsif ($token eq "?") {
-        push(@$aryref, "numtokens");
-        return "%d";
+    } elsif ($token =~ /^\?(.?)((?:[+-]\d+)?)$/) {
+	my $extra = $2 ? (" " . substr($2, 0, 1) . " " . substr($2, 1)) : "";
+	my $count = "numtokens$extra";
+	unless ($1) {
+	        push(@$aryref, $count);
+        	return "%d";
+	} else {
+		push(@$aryref, "repeat($count, '$1')");
+		return "%s";
+	}
     } elsif ($token =~ /^\$(.*)$/) {
         push(@$aryref, qq!getvar("$1")!);
     } elsif ($token eq 'id') {
