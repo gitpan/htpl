@@ -1,7 +1,7 @@
 #include "htpl.h"
 #include <EXTERN.h>
 #include <perl.h>
-static void xs_init _((void));
+void xs_init _((void));
 static PerlInterpreter *my_perl;
 
            int perlrun(argc, argv)

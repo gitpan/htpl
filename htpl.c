@@ -659,7 +659,7 @@ void process(f, c, o)
     save = NULL;
     bzero(internal_flags, sizeof(internal_flags));
 #ifdef __DEBUG__
-    if (noweb || noemb) {
+    if (noweb) {
         before = PERL_END;
         perlkind = CODE_TAG;
     }
@@ -945,7 +945,7 @@ int main(int argc, char *argv[], char **env) {
 #ifdef __DEBUG__
 
 /* Parse command line parameters */
-    while ((c=getopt(argc, argv, "etcrwdb:o:")) != EOF) {
+    while ((c=getopt(argc, argv, "tcrwdb:o:")) != EOF) {
         switch(c) {
             case 'd': perldb = 1;
                       runit = 1;
@@ -953,8 +953,6 @@ int main(int argc, char *argv[], char **env) {
             case 'r': runit = 1;
                       break;
             case 'w': noweb = 1;
-                      break;
-            case 'e': noemb = 1;
                       break;
             case 'c': inputcgi = 1;
                       runit = 1;

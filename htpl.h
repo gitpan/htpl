@@ -246,7 +246,6 @@ HTE DFA cstate HTZ;
 
 HTE short runit HTZ;
 HTE short noweb HTZ;
-HTE short noemb HTZ;
 HTE short inputcgi HTZ;
 HTE short noout HTZ;
 HTE short perldb HTZ;

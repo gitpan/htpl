@@ -464,7 +464,7 @@ sub exit {
     if ($in_mod_htpl) {
         require Apache;
         import Apache('exit');
-        Apache::exit;
+        goto htpl_lblend;
     } else {
         CORE::exit($_[0]);
     }

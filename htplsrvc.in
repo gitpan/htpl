@@ -1,7 +1,8 @@
 #!@PERLNAME@
 
 use HTML::HTPL::Config;
-$dbg = HTML::HTPL::Config::dbg_bin;
+use HTML::HTPL::Lib;
+$dbg = $HTML::HTPL::Config::dbgbin;
 
 foreach $app (@ARGV) {
     $pkg = "Apache::HTPL::ServApp::$app";
@@ -17,9 +18,9 @@ foreach $app (@ARGV) {
     while (<I>) {
         chop;
         next unless (/^[a-z]/i);
-        die "Can't open $_.htpm" unless (-f "$_.htps");
-        $fn = HTML::HTPL::Lib::tempfilename;
-        $out = `$dbg_bin -e -o $fn $_.htps`;
+        die "Can't open $_.htps" unless (-f "$_.htps");
+        $fn = &HTML::HTPL::Lib::tempfilename;
+        $out = `$dbg -t -o $fn $_.htps`;
         die $out if ($out);
         open(PC, $fn);
         print O <<EOM;
@@ -42,6 +43,7 @@ EOM
     }
     close(O);
     close(I);
+    unlink $fn;
     chdir $dir;
     system "$^X Makefile.PL";
     system "make";
@@ -74,14 +76,15 @@ sub handler {
         $filename .= "/index.htpl";
     }
 
-    $filename =~ s/\.htpl$/;
+    $filename =~ s/\.htpl$//;
+    $filename =~ s|^.*/||;
 
     my $package = "@ME@";
     my $func = "$package\::$filename";
     my $code;
 
     unless ($code = eval("\*$func\{CODE}")) {
-        return Apache::CONSTANTS::not_found;
+        return Apache::Constants::DECLINED;
     }
 
     %ENV = $r->cgi_env;
@@ -96,14 +99,24 @@ sub handler {
         eval "undef \@$val";
         eval "undef \%$val";
     }
-
     %{"$package\::ENV"} = %ENV;
+ 
+    $ENV{'TEMP'} = '/tmp';
+    my $out = &HTML::HTPL::Lib'tempfilename;
+    my $head = &HTML::HTPL::Lib'tempfilename;
+    $ENV{'HTTP_HEADERS'} = $head;
+    open(O, ">$head");
+    print O "Content-type: text/html\n";
+    close(O);
+
+    open(HTPL_MOD_OUT, ">$out");
+    my $previous = select;
+    select(HTPL_MOD_OUT);
+ 
 
     $ecode = eval("\&\$code; 1;");
 
-
-    select(STDOUT);
-    close(HTPL_MOD_OUT);
+    select $previous;
 
     unless ($ecode) {
         $r->content_type("text/plain");
