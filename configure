@@ -1239,11 +1239,11 @@ else
   TEMP=/tmp
 fi
 
-echo $ac_n "checking if you have an XML parser""... $ac_c" 1>&6
-echo "configure:1244: checking if you have an XML parser" >&5
+echo $ac_n "checking if you have an XML parser as well as Lex and Yapp parsers""... $ac_c" 1>&6
+echo "configure:1244: checking if you have an XML parser as well as Lex and Yapp parsers" >&5
 
-XML=1
-$PERLNAME -e 'use XML::Parser' 2> /dev/null || XML=
+XML=
+$PERLNAME -MXML::Parser -MParse::Lex -MParse::Yapp -e "" 2> /dev/null && XML=1
 if [ -z "$XML" ]; then
     echo "no"
 else

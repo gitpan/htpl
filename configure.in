@@ -85,10 +85,10 @@ exit
     ]), DEPDBDEF= )
 AC_ARG_WITH(temp, --with-temp=TEMP	Temp directory, TEMP=$withval,
 TEMP=/tmp)
-AC_MSG_CHECKING(if you have an XML parser)
+AC_MSG_CHECKING(if you have an XML parser as well as Lex and Yapp parsers)
 [
-XML=1
-$PERLNAME -e 'use XML::Parser' 2> /dev/null || XML=
+XML=
+$PERLNAME -MXML::Parser -MParse::Lex -MParse::Yapp -e "" 2> /dev/null && XML=1
 if [ -z "$XML" ]; then
     echo "no"
 else

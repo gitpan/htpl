@@ -44,7 +44,7 @@ DEFEMBED = `test -z "$(OBJEMBED)" || echo -D__PERLEMBED__`
 PL = `test -z "$(OBJEMBED)" || $(PERL) -MExtUtils::Embed -e ccopts -e ldopts`
 LIBS = `test -z "$(DEPDBDEF)" || echo -ldb` `test -z "$(OBJEMBED)" || echo -lperl`
 MODPERL = 
-MODULES = HTPL-modules HTPL-SQL Hebrew Calendar $(MODPERL)
+MODULES = HTPL-modules HTPL-SQL Hebrew Calendar Crypt SubHash $(MODPERL)
 
 # Rules
 
@@ -162,7 +162,7 @@ build-root :
 clean-modules:
 	for pk in $(MODULES); do \
 	cd $$pk; \
-	make realclean || true; \
+	make realclean ; \
 	cd .. ; \
 	done
 

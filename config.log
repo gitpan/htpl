@@ -12,7 +12,7 @@ configure:860: checking for gawk
 configure:918: checking for perl
 configure:957: checking if your Perl version is sufficient
 configure:1031: checking for sendmail
-configure:1244: checking if you have an XML parser
+configure:1244: checking if you have an XML parser as well as Lex and Yapp parsers
 configure:1256: checking if you are running as superuser
 configure:1270: checking for embedded Perl
 configure:1301: gcc -o conftest -rdynamic  -L/usr/local/lib /usr/lib/perl5/5.00503/i386-linux/auto/DynaLoader/DynaLoader.a -L/usr/lib/perl5/5.00503/i386-linux/CORE -lperl -lnsl -lndbm -lgdbm -ldb -ldl -lm -lc -lposix -lcrypt
