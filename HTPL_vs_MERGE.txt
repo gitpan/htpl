@@ -1,0 +1,46 @@
+HTPL as compared to Merge
+
+Since summer 2001 I have been involved in developing another embedded
+HTML/Perl/SQL product called Merge. Merge is a proprietary system
+of Raz Information Systems (http://www.raz.co.il) and is in use by
+its customers. Raz Information Systems also offers HTPL solutions upon
+demand. The two products have been complementing each others, and here
+is a quick comparison:
+
+Both HTPL and Merge act by compiling the page to pure perl, caching the
+compiled perl script and running it. Therefore both are as fast as a CGI
+solutions. Both support mod_perl. Merge pages load much faster as they require
+much less working envelope, but HTPL compiles much faster, as it is written
+in C and not Perl. Therefore, albeit HTPL is compliant with win-cgi you will
+have to compile it yourself for Windows, while Merge is pure Perl and was 
+testes to work on Windows without modifications.
+
+HTPL interprets pages, while Merge interprets templates. Merge is always
+refered to as the same CGI script with the template as a parameter.
+
+HTPL is aimed mainly at perl programmers. The powerful macro processor
+uses XML, and you have to recompile HTPL upon adding macros. Macros
+are best used as embedded perl pragmas, but can be used as tags.
+All extensions are used machine-wide.
+Merge uses a true perl API for writing extended tags, and the tags can be
+different per sites if not running under mod_perl. Extension tags are
+written as perl segments that create strings of perl code, as opposed
+to the cryptic syntax of XPL. (The macro processor language used by
+HTPL, which is based on XML and variable substitution). Upon adding
+custom tags in Merge, they can be used immediately. Merge solutions
+are best written solely with tags and extension tags, and embedded perl
+is only a second choice, while HTPL assumes knowledge of Perl.
+
+HTPL has a polymorphic result set class for browsing results of database
+queries and other data sources. Merge only separates query from its loop
+in SQL queries, while other kinds of queries just use iterators - automatic
+loops that bind variables according to the definition.
+
+HTPL infects the main namespace with the page variables, while Merge keeps
+them behind an API.
+HTPL massively uses its run-time libraries, while Merge compiles most
+of the logic into the cached script.
+
+Merge will be released for public use by Winter 2002. Commercial support
+for both HTPL and Merge can be ordered from Raz Information Systems,
+raz@raz.co.il.

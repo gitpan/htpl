@@ -50,6 +50,11 @@ int parse_htpl_time_modified(STR, int);
 int parse_htpl_auth_create(STR, int);
 int parse_htpl_loop(STR, int);
 int parse_htpl_end(STR, int);
+int parse_htpl_dir(STR, int);
+int parse_htpl_dir_pre(STR, int);
+int parse_htpl_dir_subs(STR, int);
+int parse_htpl_dir_tree(STR, int);
+int parse_htpl_dir_files(STR, int);
 int parse_htpl_default(STR, int);
 int parse_htpl_counter(STR, int);
 int parse_htpl_redirect(STR, int);
@@ -219,4 +224,4 @@ extern char *scope_names[];
 extern int scope_ids[];
 #endif
 
-#define NUM_MACROS 177
+#define NUM_MACROS 182

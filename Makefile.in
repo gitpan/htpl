@@ -79,16 +79,17 @@ realclean: clean
 	/bin/rm -f core *.perl *.ht.pl perl.sh || true
 
 release: 
-	VERSION=`$(PERL) -e 'require "HTPL-modules/lib/HTML/HTPL.pm"; print $$HTML::HTPL::VERSION + 0.01;'`; \
+	VERSION=`$(PERL) -e 'require "HTPL-modules/lib/HTML/HTPL.pm"; printf "%.2f", $$HTML::HTPL::VERSION + 0.01;'`; \
 	echo -n "htpl-$$VERSION" > release.name ; \
 	echo $$VERSION | $(PERL) -ne 'chop; print' | $(PERL) -pi -e \
-'s/^\s*\$$VERSION\s+=.*;/"    \$$VERSION = ". scalar(<STDIN>) . ";"/e;' \
+'s/^\s*\$$VERSION\s+=.*;/"    \$$VERSION = q!". scalar(<STDIN>) . "!;"/e;' \
 	HTPL-modules/lib/HTML/HTPL.pm 
 	touch htpl.c
 
 dist: clean-modules
 	# $(PERL) -e "print time;" > build
 	touch HTPL-modules/lib/HTML/HTPL.pm
+	/bin/rm -rf `cat release.name` 2> /dev/null || true
 	mkdir `cat release.name`
 	cp -r `cat MANIFEST` `cat release.name`
 	tar zcvf `cat release.name`.tar.gz `cat release.name`

@@ -3,7 +3,7 @@ eval 'require Digest::MD5';
 
 @prereq = qw(IO Net::FTP Compress::Zlib Digest::MD5 MIME::Base64
 	URI HTML::Parser LWP);
-@useful = (qw(Locale::Hebrew Tie::Cache Tie::Depth
+@useful = (qw(Locale::Hebrew Tie::Cache Tie::Depth File::FTS
         Storable Time::Timezone Sys::Syslog Net::Daemon
         RPC::PlServer Clone HTML::Tagset
         DBI DBD::XBase DB_File File::Tools Mail::Tools

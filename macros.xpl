@@ -94,6 +94,19 @@ use HTML::HTPL::Db;</__PRE>
 	</__MACRO>
 </__MACRO>
 
+<__MACRO NAME="DIR">
+	<__MACRO NOOP="1" PRIVATE="1" NAME="PRE"><__PRE>use HTML::HTPL::Glob;</__PRE></__MACRO>
+	<__MACRO MIN="3" MAX="3" NAME="FILES"><__INCLUDE>DIR PRE</__INCLUDE>
+		<__DO>$%1% = &amp;HTML::HTPL::Glob'files("%2%", "%3%");</__DO>
+	</__MACRO>
+	<__MACRO MIN="3" MAX="3" NAME="SUBS"><__INCLUDE>DIR PRE</__INCLUDE>
+		<__DO>$%1% = &amp;HTML::HTPL::Glob'dirs("%2%", "%3%");</__DO>
+	</__MACRO>
+	<__MACRO MIN="3" MAX="3" NAME="TREE"><__INCLUDE>DIR PRE</__INCLUDE>
+		<__DO>$%1% = &amp;HTML::HTPL::Glob'tree("%2%", "%3%");</__DO>
+	</__MACRO>
+</__MACRO>
+
 <__MACRO NAME="TEXT">
         <__MACRO NOOP="1" PRIVATE="1" NAME="PRECSV"><__PRE>use HTML::HTPL::CSV;</__PRE></__MACRO>
 	<__MACRO MIN="3" NAME="CSV"><__INCLUDE>TEXT PRECSV</__INCLUDE>

@@ -1321,6 +1321,158 @@ int parse_htpl_end(stack, untag)
     RETURN(1)
 }
 
+int parse_htpl_dir_pre(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    if (!nest) RETURN(0)
+    if (!done) {
+        done = 1;
+        printcode("use HTML::HTPL::Glob;\n");
+    }
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_dir_subs(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    if (numtokens < 3) RETURN(croak("%sDIR SUBS called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
+    if (numtokens > 3) RETURN(croak("%sDIR SUBS called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
+    code = 1;
+    buff = (STR)mysprintf("DIR PRE");
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    printfcode("$%s = &HTML::HTPL::Glob'dirs(\"%s\", \"%s\");\n", gettoken(1), gettoken(2), gettoken(3));
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_dir_tree(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    if (numtokens < 3) RETURN(croak("%sDIR TREE called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
+    if (numtokens > 3) RETURN(croak("%sDIR TREE called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
+    code = 1;
+    buff = (STR)mysprintf("DIR PRE");
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    printfcode("$%s = &HTML::HTPL::Glob'tree(\"%s\", \"%s\");\n", gettoken(1), gettoken(2), gettoken(3));
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_dir_files(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    if (numtokens < 3) RETURN(croak("%sDIR FILES called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
+    if (numtokens > 3) RETURN(croak("%sDIR FILES called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
+    code = 1;
+    buff = (STR)mysprintf("DIR PRE");
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    printfcode("$%s = &HTML::HTPL::Glob'files(\"%s\", \"%s\");\n", gettoken(1), gettoken(2), gettoken(3));
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_dir(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    eat(&stack, token);
+    {
+        static char *dir_table[] = {"FILES",
+            "PRE",
+            "SUBS",
+            "TREE"};
+        static int dir_locations[] = { 3, -1, 1, 2, -1, 0, -1 };
+        static int dir_shortcuts[] = { -1, -1, 0, 2, -1, 5, -1, -1, -1, -1 };
+        static struct hash_t dir_hash = {dir_table,
+             dir_locations, dir_shortcuts};
+
+        static parser funs[] = { parse_htpl_dir_files, parse_htpl_dir_pre, parse_htpl_dir_subs, parse_htpl_dir_tree };
+        int n;
+        parser fun;
+        n = search_hash(&dir_hash, token, 0);
+        if (n < 0) RETURN(0)
+        fun = funs[n];
+        RETURN(fun(stack, untag))
+    }
+}
+
 int parse_htpl_default(stack, untag)
     int untag;
     STR stack; {
@@ -4427,6 +4579,7 @@ int parse_htpl(stack, untag)
             "DEFINE",
             "DESTRUCTOR",
             "DIE",
+            "DIR",
             "ELSE",
             "END",
             "ENDIF",
@@ -4468,12 +4621,12 @@ int parse_htpl(stack, untag)
             "THROW",
             "TIME",
             "TRY"};
-        static int htpl_locations[] = { 16, 17, 27, 35, 42, 51, 56, -1, 11, 33, 54, -1, 22, 39, 53, 55, 58, -1, 9, 24, 29, 49, 52, -1, 1, 2, 7, 37, 40, 43, 47, -1, 12, 18, 19, 20, 23, 38, 44, 57, -1, 10, 34, 45, -1, 3, 8, 13, 21, 26, 30, 31, 48, 50, -1, 0, 4, 28, 32, 36, 41, -1, 5, 6, 14, 15, 25, 46, 59, -1 };
+        static int htpl_locations[] = { 16, 17, 28, 36, 43, 52, 57, -1, 11, 34, 55, -1, 23, 40, 54, 56, 59, -1, 9, 25, 30, 50, 53, -1, 1, 2, 7, 38, 41, 44, 48, -1, 12, 18, 20, 21, 24, 39, 45, 58, -1, 10, 35, 46, -1, 3, 8, 13, 22, 27, 31, 32, 49, 51, -1, 0, 4, 29, 33, 37, 42, -1, 5, 6, 14, 15, 19, 26, 47, 60, -1 };
         static int htpl_shortcuts[] = { 0, 8, 12, 18, 24, 32, 41, 45, 55, 62 };
         static struct hash_t htpl_hash = {htpl_table,
              htpl_locations, htpl_shortcuts};
 
-        static parser funs[] = { parse_htpl_assert, parse_htpl_auth, parse_htpl_auth_create, parse_htpl_break, parse_htpl_call, parse_htpl_case, parse_htpl_catch, parse_htpl_class, parse_htpl_cleanup, parse_htpl_clsutils, parse_htpl_connection, parse_htpl_constructor, parse_htpl_continue, parse_htpl_copy, parse_htpl_counter, parse_htpl_default, parse_htpl_define, parse_htpl_destructor, parse_htpl_die, parse_htpl_else, parse_htpl_end, parse_htpl_endif, parse_htpl_exit, parse_htpl_fetch, parse_htpl_fetchcell, parse_htpl_fetchcols, parse_htpl_fetchit, parse_htpl_fetchitorbreak, parse_htpl_filter, parse_htpl_for, parse_htpl_foreach, parse_htpl_graph, parse_htpl_if, parse_htpl_ifnotnull, parse_htpl_ifnull, parse_htpl_img, parse_htpl_init, parse_htpl_ldap, parse_htpl_listbox, parse_htpl_load, parse_htpl_loop, parse_htpl_mail, parse_htpl_mem, parse_htpl_method, parse_htpl_net, parse_htpl_next, parse_htpl_out, parse_htpl_proc, parse_htpl_project, parse_htpl_pts, parse_htpl_publish, parse_htpl_redirect, parse_htpl_rem, parse_htpl_rewind, parse_htpl_sql, parse_htpl_switch, parse_htpl_text, parse_htpl_throw, parse_htpl_time, parse_htpl_try };
+        static parser funs[] = { parse_htpl_assert, parse_htpl_auth, parse_htpl_auth_create, parse_htpl_break, parse_htpl_call, parse_htpl_case, parse_htpl_catch, parse_htpl_class, parse_htpl_cleanup, parse_htpl_clsutils, parse_htpl_connection, parse_htpl_constructor, parse_htpl_continue, parse_htpl_copy, parse_htpl_counter, parse_htpl_default, parse_htpl_define, parse_htpl_destructor, parse_htpl_die, parse_htpl_dir, parse_htpl_else, parse_htpl_end, parse_htpl_endif, parse_htpl_exit, parse_htpl_fetch, parse_htpl_fetchcell, parse_htpl_fetchcols, parse_htpl_fetchit, parse_htpl_fetchitorbreak, parse_htpl_filter, parse_htpl_for, parse_htpl_foreach, parse_htpl_graph, parse_htpl_if, parse_htpl_ifnotnull, parse_htpl_ifnull, parse_htpl_img, parse_htpl_init, parse_htpl_ldap, parse_htpl_listbox, parse_htpl_load, parse_htpl_loop, parse_htpl_mail, parse_htpl_mem, parse_htpl_method, parse_htpl_net, parse_htpl_next, parse_htpl_out, parse_htpl_proc, parse_htpl_project, parse_htpl_pts, parse_htpl_publish, parse_htpl_redirect, parse_htpl_rem, parse_htpl_rewind, parse_htpl_sql, parse_htpl_switch, parse_htpl_text, parse_htpl_throw, parse_htpl_time, parse_htpl_try };
         int n;
         parser fun;
         n = search_hash(&htpl_hash, token, 0);
