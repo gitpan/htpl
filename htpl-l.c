@@ -941,10 +941,15 @@ STR escapevars(code)
     STR code; {
     pchar ch;
     short flag = 0;
-    STR buff = malloc(strlen(code) * 2);
+    int len = strlen(code);
+    STR buff = malloc(len + 4);
     pchar dst = buff;
     TOKEN alt;
     pchar save;
+    STR todel;
+    pchar sub, ptr;
+    int n, act, pos;
+    char cast;
 
     ch = code;
     while (*ch) {
@@ -958,17 +963,48 @@ STR escapevars(code)
                         flag = 0;
                         *dst++ = '#';
                         break;
+                case 3: 
                 case 2: *dst = '\0';
-                        *save++ = '$';
-                        *save++ = '{';
-                        strcpy(save, alt);
-                        dst = save + strlen(save);
-                        *dst++ = '}';
+                        n = dst-- - alt + 2;
+                        while ((*dst == '%' || *dst == '@'
+                            || *dst == '^') && dst > alt) *dst-- = '\0';
+                        todel = sub = malloc(n + 60);
+                        if (flag == 3) {
+                            switch (cast) {
+                                case '%' : sprintf(sub, 
+                                 "\" . substr(killnl($%s) . ' ' x %d, 0, %d) . \"",
+                                    alt, n, n);
+                                           break;
+                                case '@' : sprintf(sub, 
+                                 "\" . substr(' ' x %d . killnl($%s), -%d) . \"",
+                                    n, alt, n);
+                                           break;
+                            }
+                        } else {
+                            *sub++ = '$';
+                            *sub++ = '{';
+                            *++dst = '}';
+                            *++dst = '\0';
+                            strcpy(sub, alt);
+                        }
+                        act = strlen(todel);
+                        pos = save - buff;
+                        buff = realloc(buff, len + act + 4);
+                        save = buff + pos;
+                        strcpy(save, todel);
+                        free(todel);
+                        dst = save + act;
                         flag = 0;
                         break;
             } 
-        } else if (isalnum(*ch) || *ch == '_') {
+        } else if (flag < 3 && (isalnum(*ch) || *ch == '_')) {
             if (flag == 1) flag = 2;
+            *dst++ = *ch;
+        } else if (flag == 2 && (*ch == '%' || *ch == '@' || *ch == '^')) {
+            flag = 3;
+            cast = *ch;
+            *dst++ = *ch;
+        } else if (flag == 3 && cast == *ch) {
             *dst++ = *ch;
         } else {
             if (flag) {
@@ -982,7 +1018,7 @@ STR escapevars(code)
         }
         ch++;
     }
-    *dst = 0;
+    *dst = '\0';
     return buff;
 }
 

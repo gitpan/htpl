@@ -27,7 +27,7 @@ selfurl querystring takebroadlog subpkg subhash maketime power
 html_treeview selfsameurl new_template new_select getweekday
 elapsed hebrewflip agg sum splitline $STD_BODY @MONTH_NAMES @WEEKDAY_NAMES
 randstr randrange filedepend capture popreturl pushreturl setreturl
-getreturl @DoW @DoWs @MoY @MoYs echo);
+killnl getreturl @DoW @DoWs @MoY @MoYs echo);
 
 CONFIG: {
     @MoY = qw(January February March April May June July August
@@ -1265,6 +1265,12 @@ sub getreturl {
     my $key = shift;
     ${"${htpl_pkg}::session"}{'url_hash'} ||= {};
     ${"${htpl_pkg}::session"}{'url_hash'}->{$key};
+}
+
+sub killnl {
+    my $line = shift;
+    $line =~ s/[\r\n\t]/ /;
+    $line;
 }
 
 1;

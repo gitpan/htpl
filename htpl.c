@@ -960,7 +960,7 @@ nxt:
     }
 
     if (after != finish) {
-        croak("Did not end in correct section %d %d ", finish, after);
+        croak("Did not end in correct section");
     }
 }
 
