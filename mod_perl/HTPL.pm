@@ -174,3 +174,69 @@ htpl_lblend:
 
 1;
 
+__END__
+
+=head1 NAME
+
+Apache::HTPL - Apache mod_perl driver for HTPL.
+
+=head1 SYNOPSIS
+
+After installed, this module will boost the performance of HTPL by having
+pages compiled in memory and run again and again.
+It utilizes the Apache mod_perl extension, and can't be otherwise used.
+
+The HTPL page translator is compiled into this module as an XSUB
+extension. (I could not execute the page translator as a child process -
+any advices?)
+
+=head1 INSTALLATION
+
+The easiest way to install HTPL under mod_perl is to ask for it when
+running the configure script:
+
+./configure --enable-modperl
+
+Suppose installation was done as root (which is highly recommended),
+configuration file will be initialized.
+
+Otherwise, add the following lines to httpd.conf:
+
+PerlModule Apache::HTPL
+
+<Files ~ "*.htpl">
+SetHandler perl-script
+PerlHandler Apache::HTPL
+</Files>
+
+=head1 FEATURES
+
+=item Local variables
+
+Apache::HTPL works similarly to Apache::Registry - it creates a namespace
+and a subroutine for every page. It will attempt to clear the namespace
+between page calls, to allow "dirty" scripting by assuming empty
+variables. It does so by consulting the stash of a package.
+
+=item Global variables
+
+Consistent value can be stored on different namespaces - recommended is
+Apache::HTPL::Vars or the alike. Do not use it for stateful sessions, as
+Apache spawns several processes on a server. Use the internal persistent
+objects to keep stateful sessions, via the %application and %session
+hashes. Global variables can be used to initialized tables, for example.
+
+=item Persistent database connections
+
+The Database module will cache database connections and reuse them.
+Since this uses up one database connection per Apache process, you can
+disable this feature by editing you configuration file and changing the
+value of $htpl_db_save.
+
+=head1 Configuration
+
+The htpl-config.pl file will still be stored on the cgi-bin directory
+while using HTPL on mod_perl mode, as will be the htpldbg page translator.
+The installation will always create htpl.cgi.
+
+=cut

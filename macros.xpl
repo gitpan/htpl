@@ -12,7 +12,7 @@
 
         <EXEC MIN="1">$HTML::HTPL::htpl_db_obj->execsql(&amp;HTML::HTPL::Db'parse_sql("%1*%"));</EXEC>
 	<EXECUTE><__ALIAS>SQL EXEC %1*%</__ALIAS></EXECUTE>
-	<DECLARE>$HTML::HTPL::Sys::query_pool('%1%'} ||= $HTML::HTPL::htpl_db_obj->prepare("%2*");</DECLARE>
+	<DECLARE>$HTML::HTPL::Sys::query_pool{'%1%'} ||= $HTML::HTPL::htpl_db_obj->prepare("%2*%");</DECLARE>
 	<CURSOR MIN="2">$%1% = $HTML::HTPL::htpl_db_obj->cursor(&amp;HTML::HTPL::Db'parse_sql("%2*%"));</CURSOR>
 	<SEARCH><__ALIAS>SQL CURSOR %1*%</__ALIAS></SEARCH>
 	<IMMEDIATE><__DO>{ my $imm;</__DO>
@@ -33,6 +33,7 @@
 	<MODIFY><__ALIAS>SQL UPDATE %1*%</__ALIAS></MODIFY>
 	<DELETE>$HTML::HTPL::htpl_db_obj->delete("%1%, qw(%2*%));</DELETE>
 	<ERASE><__ALIAS>SQL ERASE %1*%</__ALIAS></ERASE>
+	<BATCH MIN="2" MAX="2">$HTML::HTPL::htpl_db_obj->batch_insert('%1%', $%2%);</BATCH>
 
 	<QUERY>$%1% = $HTML::HTPL::htpl_db_obj->query("%2%", qw(%3*%));</QUERY>
 </SQL>
@@ -116,7 +117,7 @@ while ($%1% &amp;&amp; !$%1%->eof &amp;&amp; $%1%->fetch) {</__FWD>
 <FETCHIT MIN="1" MAX="1">$%1%->fetch;</FETCHIT>
 <FETCHCOLS MIN="2" MAX="2">foreach %2% (%1%->cols) {</FETCHCOLS>
 <FETCHCELL MIN="3" MAX="3">$%3% = $%1%->get("%2%");</FETCHCELL>
-<PROJECT MIN="3">@%3% = $%1%->project(qw(%2*%));</PROJECT>
+<PROJECT MIN="3">@%2% = $%1%->project(qw(%3*%));</PROJECT>
 <FILTER>$%2% = $%1%->filter(sub {%2*%});</FILTER>
 
 <IFNULL AREA="1"><__FWD MIN="1" MAX="1" PUSH="if-then">if (!$%1% || $%1%->none) {</__FWD>

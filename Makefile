@@ -8,16 +8,16 @@ PERL_BIN = /usr/bin/perl
 TEMP = /tmp
 CCPROG = gcc
 INSBIN = /usr/bin/install -c
-INSTALLDIR = /home/ariel/./cgi-bin
-HTDOCS = /home/ariel/./htpl
-HTLOGS = /home/ariel/./.htpl.log
-CONF = /home/ariel/./.htaccess
+INSTALLDIR = /usr/local/apache/cgi-bin
+HTDOCS = /usr/local/apache/htdocs/htpl
+HTLOGS = /usr/local/apache/logs/htpl_log
+CONF = /usr/local/apache/conf/httpd.conf
 OBJEMBED = 
 EGO = htpl-author.ego
 XML = 1
 DEPDBDEF = 
 INSTALLBIN = /usr/local/bin
-MODDIR = $(INSTALLDIR)
+MODDIR = 
 
 # Defines
 
@@ -136,11 +136,11 @@ install-samples : $(SCRIPTS)
 	ln -s $(INSTALLDIR)/$(DBG) $(INSTALLBIN) ; \
 	fi
 
-build : build-it
+build : build-root
 
-install : all install-it
+install : all install-root
 
-pureinstall: install-it
+pureinstall: install-root
 	
 htpl-author.ego :
 	touch htpl-author.ego
@@ -181,7 +181,7 @@ Makefile: Makefile.in config.status
 config.status: configure
 	./config.status --recheck || ./configure
 
-CPAN : CPAN-it
+CPAN : CPAN-root
 
 CPAN-root :
 	$(PERL) pre-install.pl $(NOPREREQ)
