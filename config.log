@@ -1,0 +1,27 @@
+This file contains any messages produced by compilers while
+running configure, to aid debugging if configure makes a mistake.
+
+configure:553: checking for gcc
+configure:666: checking whether the C compiler (gcc  ) works
+configure:682: gcc -o conftest    conftest.c  1>&5
+configure:708: checking whether the C compiler (gcc  ) is a cross-compiler
+configure:713: checking whether we are using GNU C
+configure:741: checking whether gcc accepts -g
+configure:803: checking for a BSD compatible install
+configure:860: checking for gawk
+configure:918: checking for perl
+configure:957: checking if your Perl version is sufficient
+configure:1031: checking for sendmail
+configure:1244: checking if you have an XML parser
+configure:1256: checking if you are running as superuser
+configure:1270: checking for embedded Perl
+configure:1301: gcc -o conftest -rdynamic  -L/usr/local/lib /usr/lib/perl5/5.00503/i386-linux/auto/DynaLoader/DynaLoader.a -L/usr/lib/perl5/5.00503/i386-linux/CORE -lperl -lnsl -lndbm -lgdbm -ldb -ldl -lm -lc -lposix -lcrypt
+ -Dbool=char -DHAS_BOOL -I/usr/local/include  -I/usr/lib/perl5/5.00503/i386-linux/CORE    conftest.c -lperl 1>&5
+In file included from /usr/lib/perl5/5.00503/i386-linux/CORE/perl.h:318,
+                 from configure:1279:
+/usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/stdarg.h:90: warning: `va_start' redefined
+/usr/lib/gcc-lib/i386-redhat-linux/egcs-2.91.66/include/varargs.h:106: warning: this is the location of the previous definition
+configure: In function `main':
+configure:1283: warning: declaration of `argc' shadows a parameter
+configure:1314: checking if users can write in /tmp
+configure:1382: checking for /etc/rc.d/init.d/httpd

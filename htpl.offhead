@@ -1,0 +1,4 @@
+use HTML::HTPL::Lib;
+use HTML::HTPL::Sys;
+
+&HTML::HTPL::Sys::init_offline;

@@ -1,0 +1,129 @@
+#!@PERLNAME@
+
+use HTML::HTPL::Config;
+$dbg = HTML::HTPL::Config::dbg_bin;
+
+foreach $app (@ARGV) {
+    $pkg = "Apache::HTPL::ServApp::$app";
+    system "h2xs -OPAX -n $pkg";
+    $dir = $pkg;
+    $dir =~ s/::/\//g;
+    open(O, ">$dir/$app.pm") || die "Cannot open $dir/$app.pm";;
+    while (<DATA>) {
+        s/\@ME\@/$pkg/g;
+        print O;
+    }
+    open(I, "$app.app") || die "Cannot open $app.app";
+    while (<I>) {
+        chop;
+        next unless (/^[a-z]/i);
+        die "Can't open $_.htpm" unless (-f "$_.htps");
+        $fn = HTML::HTPL::Lib::tempfilename;
+        $out = `$dbg_bin -e -o $fn $_.htps`;
+        die $out if ($out);
+        open(PC, $fn);
+        print O <<EOM;
+sub $_ {
+use HTML::HTPL::Lib;
+use HTML::HTPL::Sys;
+\$HTML::HTPL::Lib'in_mod_htpl = 1;
+\$HTML::HTPL::Lib'htpl_pkg = '$pkg';
+import Apache::HTPL::Lib qw(exit);
+*0 = \'$filename';
+EOM
+        while (<PC>) {
+            print O;
+        }
+        print O <<EOM;
+htpl_lblend:
+}
+EOM
+        close(PC);
+    }
+    close(O);
+    close(I);
+    chdir $dir;
+    system "$^X Makefile.PL";
+    system "make";
+    system "make install";
+    chdir "../../../..";
+}
+
+
+__DATA__
+package @ME@;
+
+no strict;
+
+
+use Shell;
+
+sub handler {
+    my ($self, $r) = @_;
+    $r = Apache->request unless (ref($r) =~ /Apache/);
+
+    $| = 1;
+
+    my $in_mod_htpl = 1;
+    require HTML::HTPL::Lib;
+
+    my $filename = $r->filename;
+
+    if (-d $filename) {
+        $filename =~ s|/$||;
+        $filename .= "/index.htpl";
+    }
+
+    $filename =~ s/\.htpl$/;
+
+    my $package = "@ME@";
+    my $func = "$package\::$filename";
+    my $code;
+
+    unless ($code = eval("\*$func\{CODE}")) {
+        return Apache::CONSTANTS::not_found;
+    }
+
+    %ENV = $r->cgi_env;
+
+    my %symbol = eval '%' . "${package}::";
+
+    foreach (keys %symbol) {
+        next if ($_ eq 'import');
+        my $val = $symbol{$_};
+        $val =~ s/^\*//;
+        eval "undef \$$val";
+        eval "undef \@$val";
+        eval "undef \%$val";
+    }
+
+    %{"$package\::ENV"} = %ENV;
+
+    $ecode = eval("\&\$code; 1;");
+
+
+    select(STDOUT);
+    close(HTPL_MOD_OUT);
+
+    unless ($ecode) {
+        $r->content_type("text/plain");
+        $r->send_http_header;
+        $r->print("Error: $@");
+        return 0;
+    }
+
+    my $hthd = Shell::cat($head) . "\n";
+    my $txt = Shell::cat($out);
+    unlink $head;
+    unlink $out;
+    $r->send_cgi_header("$hthd\n");
+    if ($HTML::HTPL::Lib'htpl_redirected) {
+        return $Apache::Constants::MOVED;
+    }
+    $r->print($txt);
+
+    return 0;
+}
+
+1;
+

@@ -1,0 +1,4 @@
+use HTML::HTPL::Lib;
+use HTML::HTPL::Sys qw(exit);
+
+&HTML::HTPL::Sys::htpl_startup;
