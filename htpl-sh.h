@@ -102,6 +102,9 @@ int parse_htpl_fetchcell(STR, int);
 int parse_htpl_ifnull(STR, int);
 int parse_htpl_ifnull___fwd(STR, int);
 int parse_htpl_ifnull___rev(STR, int);
+int parse_htpl_define(STR, int);
+int parse_htpl_define___fwd(STR, int);
+int parse_htpl_define___rev(STR, int);
 int parse_htpl_destructor(STR, int);
 int parse_htpl_destructor___fwd(STR, int);
 int parse_htpl_destructor___rev(STR, int);
@@ -180,4 +183,4 @@ extern char *scope_names[];
 extern int scope_ids[];
 #endif
 
-#define NUM_MACROS 142
+#define NUM_MACROS 145

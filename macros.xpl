@@ -449,4 +449,12 @@ $HTML::HTPL::pts_obj = new RPC::PlClient(
 <__MACRO AREA="1" NAME="REM"><__FWD>&amp;begintransaction;</__FWD>
 <__REV>&amp;endtransaction;</__REV></__MACRO>
 
+<__MACRO NAME="DEFINE" AREA="1">
+<__FWD MIN="1" MAX="1">
+<__SET VALUE="%1%" VAR="var"/>
+<__DO>&amp;begintransaction;</__DO></__FWD>
+<__REV>
+$%$var% = &amp;endtransaction; 
+</__REV>
+</__MACRO>
 </HTPL>

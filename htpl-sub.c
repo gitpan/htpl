@@ -526,8 +526,9 @@ SCOPE thisscope() {
 
 void setvar(name, value)
     STR name, value; {
-    SCOPE this = thisscope();
-    btreeadd(&currscope->vars, name, (PTR)value);
+    SCOPE this;
+    this = thisscope();
+    btreeadd(&this->vars, name, (PTR)value);
 }
 
 void unsetvar(name)

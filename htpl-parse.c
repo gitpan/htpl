@@ -92,8 +92,9 @@ int parse_htpl_method(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_method___fwd(stack, untag);
-        else return parse_htpl_method___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_method___fwd(stack, untag))
+        else RETURN(parse_htpl_method___rev(stack, untag))
 }
 
 int parse_htpl_ldap_delete(stack, untag)
@@ -239,6 +240,7 @@ int parse_htpl_ldap(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     if (!done) {
         done = 1;
         printcode("use HTML::HTPL::LDAP;\n");
@@ -260,9 +262,9 @@ int parse_htpl_ldap(stack, untag)
         int n;
         parser fun;
         n = search_hash(&ldap_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 }
 
@@ -308,8 +310,9 @@ int parse_htpl_rem(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_rem___fwd(stack, untag);
-        else return parse_htpl_rem___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_rem___fwd(stack, untag))
+        else RETURN(parse_htpl_rem___rev(stack, untag))
 }
 
 int parse_htpl_include(stack, untag)
@@ -557,12 +560,13 @@ int parse_htpl_text_template(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     if (!done) {
         done = 1;
         printcode("use Template;\n");
     }
-    if (!untag) return parse_htpl_text_template___fwd(stack, untag);
-        else return parse_htpl_text_template___rev(stack, untag);
+    if (!untag) RETURN(parse_htpl_text_template___fwd(stack, untag))
+        else RETURN(parse_htpl_text_template___rev(stack, untag))
 }
 
 int parse_htpl_text_read(stack, untag)
@@ -653,6 +657,7 @@ int parse_htpl_text(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     eat(&stack, token);
     {
         static char *text_table[] = {"CSV",
@@ -673,9 +678,9 @@ int parse_htpl_text(stack, untag)
         int n;
         parser fun;
         n = search_hash(&text_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 }
 
@@ -746,6 +751,7 @@ int parse_htpl_net(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     if (!done) {
         done = 1;
         printcode("use HTML::HTPL::Client;\n");
@@ -763,9 +769,9 @@ int parse_htpl_net(stack, untag)
         int n;
         parser fun;
         n = search_hash(&net_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 }
 
@@ -829,8 +835,9 @@ int parse_htpl_for(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_for___fwd(stack, untag);
-        else return parse_htpl_for___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_for___fwd(stack, untag))
+        else RETURN(parse_htpl_for___rev(stack, untag))
 }
 
 int parse_htpl_time_modified(stack, untag)
@@ -859,6 +866,7 @@ int parse_htpl_time(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     eat(&stack, token);
     {
         static char *time_table[] = {"MODIFIED"};
@@ -871,9 +879,9 @@ int parse_htpl_time(stack, untag)
         int n;
         parser fun;
         n = search_hash(&time_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 }
 
@@ -1463,6 +1471,7 @@ int parse_htpl_sql_scope(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     eat(&stack, token);
     {
         static char *scope_table[] = {"CONNECT",
@@ -1478,9 +1487,9 @@ int parse_htpl_sql_scope(stack, untag)
         int n;
         parser fun;
         n = search_hash(&scope_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 }
 
@@ -1542,6 +1551,7 @@ int parse_htpl_sql(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     if (!done) {
         done = 1;
         printcode("use HTML::HTPL::Db;\n");
@@ -1579,9 +1589,9 @@ int parse_htpl_sql(stack, untag)
         int n;
         parser fun;
         n = search_hash(&sql_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 }
 
@@ -1636,8 +1646,9 @@ int parse_htpl_proc(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_proc___fwd(stack, untag);
-        else return parse_htpl_proc___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_proc___fwd(stack, untag))
+        else RETURN(parse_htpl_proc___rev(stack, untag))
 }
 
 int parse_htpl_class___fwd(stack, untag)
@@ -1722,8 +1733,9 @@ int parse_htpl_class(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_class___fwd(stack, untag);
-        else return parse_htpl_class___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_class___fwd(stack, untag))
+        else RETURN(parse_htpl_class___rev(stack, untag))
 }
 
 int parse_htpl_publish(stack, untag)
@@ -1797,6 +1809,7 @@ int parse_htpl_out(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     eat(&stack, token);
     {
         static char *out_table[] = {"TAG"};
@@ -1809,9 +1822,9 @@ int parse_htpl_out(stack, untag)
         int n;
         parser fun;
         n = search_hash(&out_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 }
 
@@ -1862,8 +1875,9 @@ int parse_htpl_foreach(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_foreach___fwd(stack, untag);
-        else return parse_htpl_foreach___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_foreach___fwd(stack, untag))
+        else RETURN(parse_htpl_foreach___rev(stack, untag))
 }
 
 int parse_htpl_loop(stack, untag)
@@ -1947,8 +1961,9 @@ int parse_htpl_ifnotnull(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_ifnotnull___fwd(stack, untag);
-        else return parse_htpl_ifnotnull___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_ifnotnull___fwd(stack, untag))
+        else RETURN(parse_htpl_ifnotnull___rev(stack, untag))
 }
 
 int parse_htpl_case(stack, untag)
@@ -2061,8 +2076,9 @@ int parse_htpl_mail(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_mail___fwd(stack, untag);
-        else return parse_htpl_mail___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_mail___fwd(stack, untag))
+        else RETURN(parse_htpl_mail___rev(stack, untag))
 }
 
 int parse_htpl_catch(stack, untag)
@@ -2180,8 +2196,9 @@ int parse_htpl_constructor(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_constructor___fwd(stack, untag);
-        else return parse_htpl_constructor___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_constructor___fwd(stack, untag))
+        else RETURN(parse_htpl_constructor___rev(stack, untag))
 }
 
 int parse_htpl_filter(stack, untag)
@@ -2302,8 +2319,9 @@ int parse_htpl_fetch(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_fetch___fwd(stack, untag);
-        else return parse_htpl_fetch___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_fetch___fwd(stack, untag))
+        else RETURN(parse_htpl_fetch___rev(stack, untag))
 }
 
 int parse_htpl_fetchcell(stack, untag)
@@ -2385,8 +2403,60 @@ int parse_htpl_ifnull(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_ifnull___fwd(stack, untag);
-        else return parse_htpl_ifnull___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_ifnull___fwd(stack, untag))
+        else RETURN(parse_htpl_ifnull___rev(stack, untag))
+}
+
+int parse_htpl_define___fwd(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (numtokens < 1) RETURN(croak("DEFINE called with %d arguments, minimum needed is 1", numtokens))
+    if (numtokens > 1) RETURN(croak("DEFINE called with %d arguments, maximum needed is 1", numtokens))
+
+    setvar("var", (STR)mysprintf("%s", gettoken(1)));
+    printcode("&begintransaction;\n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_define___rev(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    printfcode("$%s = &endtransaction; \n", getvar("var"));
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_define(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_define___fwd(stack, untag))
+        else RETURN(parse_htpl_define___rev(stack, untag))
 }
 
 int parse_htpl_destructor___fwd(stack, untag)
@@ -2459,8 +2529,9 @@ int parse_htpl_destructor(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_destructor___fwd(stack, untag);
-        else return parse_htpl_destructor___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_destructor___fwd(stack, untag))
+        else RETURN(parse_htpl_destructor___rev(stack, untag))
 }
 
 int parse_htpl_if___fwd(stack, untag)
@@ -2521,8 +2592,9 @@ int parse_htpl_if(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_if___fwd(stack, untag);
-        else return parse_htpl_if___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_if___fwd(stack, untag))
+        else RETURN(parse_htpl_if___rev(stack, untag))
 }
 
 int parse_htpl_graph(stack, untag)
@@ -2633,8 +2705,9 @@ int parse_htpl_switch_rnd(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_switch_rnd___fwd(stack, untag);
-        else return parse_htpl_switch_rnd___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_switch_rnd___fwd(stack, untag))
+        else RETURN(parse_htpl_switch_rnd___rev(stack, untag))
 }
 
 int parse_htpl_switch_case___fwd(stack, untag)
@@ -2692,8 +2765,9 @@ int parse_htpl_switch_case(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_switch_case___fwd(stack, untag);
-        else return parse_htpl_switch_case___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_switch_case___fwd(stack, untag))
+        else RETURN(parse_htpl_switch_case___rev(stack, untag))
 }
 
 int parse_htpl_switch(stack, untag)
@@ -2706,6 +2780,7 @@ int parse_htpl_switch(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     eat(&stack, token);
     {
         static char *switch_table[] = {"CASE",
@@ -2719,9 +2794,9 @@ int parse_htpl_switch(stack, untag)
         int n;
         parser fun;
         n = search_hash(&switch_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 }
 
@@ -2807,6 +2882,7 @@ int parse_htpl_clsutils(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     if (!nest) RETURN(0)
     eat(&stack, token);
     {
@@ -2822,9 +2898,9 @@ int parse_htpl_clsutils(stack, untag)
         int n;
         parser fun;
         n = search_hash(&clsutils_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 }
 
@@ -2940,6 +3016,7 @@ int parse_htpl_pts(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     if (!done) {
         done = 1;
         printcode("use RPC::PlClient;\n");
@@ -2959,9 +3036,9 @@ int parse_htpl_pts(stack, untag)
         int n;
         parser fun;
         n = search_hash(&pts_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 }
 
@@ -3062,6 +3139,7 @@ int parse_htpl_img(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     eat(&stack, token);
     {
         static char *img_table[] = {"RND"};
@@ -3074,9 +3152,9 @@ int parse_htpl_img(stack, untag)
         int n;
         parser fun;
         n = search_hash(&img_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 }
 
@@ -3216,6 +3294,7 @@ int parse_htpl_mem(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     if (!done) {
         done = 1;
         printcode("use HTML::HTPL::Mem;\nuse HTML::HTPL::Db;\n");
@@ -3235,9 +3314,9 @@ int parse_htpl_mem(stack, untag)
         int n;
         parser fun;
         n = search_hash(&mem_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 }
 
@@ -3325,8 +3404,9 @@ int parse_htpl_try(stack, untag)
     int code;
     static int nesting = 0;
 
-    if (!untag) return parse_htpl_try___fwd(stack, untag);
-        else return parse_htpl_try___rev(stack, untag);
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_try___fwd(stack, untag))
+        else RETURN(parse_htpl_try___rev(stack, untag))
 }
 
 int parse_htpl(stack, untag)
@@ -3339,6 +3419,7 @@ int parse_htpl(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     eat(&stack, token);
     {
         static char *htpl_table[] = {"BREAK",
@@ -3351,6 +3432,7 @@ int parse_htpl(stack, untag)
             "CONTINUE",
             "COUNTER",
             "DEFAULT",
+            "DEFINE",
             "DESTRUCTOR",
             "ELSE",
             "END",
@@ -3388,18 +3470,18 @@ int parse_htpl(stack, untag)
             "THROW",
             "TIME",
             "TRY"};
-        static int htpl_locations[] = { 10, 25, 31, 43, -1, 6, 23, 41, -1, 28, 42, 45, -1, 5, 15, 19, 38, 40, -1, 4, 26, 27, 29, 32, 36, -1, 7, 11, 12, 14, 33, 44, -1, 24, 34, -1, 0, 13, 17, 20, 21, 37, 39, -1, 1, 18, 22, 30, -1, 2, 3, 8, 9, 16, 35, 46, -1 };
-        static int htpl_shortcuts[] = { 0, 5, 9, 13, 19, 26, 33, 36, 44, 49 };
+        static int htpl_locations[] = { 10, 11, 26, 32, 44, -1, 6, 24, 42, -1, 29, 43, 46, -1, 5, 16, 20, 39, 41, -1, 4, 27, 28, 30, 33, 37, -1, 7, 12, 13, 15, 34, 45, -1, 25, 35, -1, 0, 14, 18, 21, 22, 38, 40, -1, 1, 19, 23, 31, -1, 2, 3, 8, 9, 17, 36, 47, -1 };
+        static int htpl_shortcuts[] = { 0, 6, 10, 14, 20, 27, 34, 37, 45, 50 };
         static struct hash_t htpl_hash = {htpl_table,
              htpl_locations, htpl_shortcuts};
 
-        static parser funs[] = { parse_htpl_break, parse_htpl_call, parse_htpl_case, parse_htpl_catch, parse_htpl_class, parse_htpl_clsutils, parse_htpl_constructor, parse_htpl_continue, parse_htpl_counter, parse_htpl_default, parse_htpl_destructor, parse_htpl_else, parse_htpl_end, parse_htpl_endif, parse_htpl_fetch, parse_htpl_fetchcell, parse_htpl_fetchcols, parse_htpl_fetchit, parse_htpl_filter, parse_htpl_for, parse_htpl_foreach, parse_htpl_graph, parse_htpl_if, parse_htpl_ifnotnull, parse_htpl_ifnull, parse_htpl_img, parse_htpl_include, parse_htpl_ldap, parse_htpl_load, parse_htpl_loop, parse_htpl_mail, parse_htpl_mem, parse_htpl_method, parse_htpl_net, parse_htpl_next, parse_htpl_out, parse_htpl_proc, parse_htpl_project, parse_htpl_pts, parse_htpl_publish, parse_htpl_rem, parse_htpl_sql, parse_htpl_switch, parse_htpl_text, parse_htpl_throw, parse_htpl_time, parse_htpl_try };
+        static parser funs[] = { parse_htpl_break, parse_htpl_call, parse_htpl_case, parse_htpl_catch, parse_htpl_class, parse_htpl_clsutils, parse_htpl_constructor, parse_htpl_continue, parse_htpl_counter, parse_htpl_default, parse_htpl_define, parse_htpl_destructor, parse_htpl_else, parse_htpl_end, parse_htpl_endif, parse_htpl_fetch, parse_htpl_fetchcell, parse_htpl_fetchcols, parse_htpl_fetchit, parse_htpl_filter, parse_htpl_for, parse_htpl_foreach, parse_htpl_graph, parse_htpl_if, parse_htpl_ifnotnull, parse_htpl_ifnull, parse_htpl_img, parse_htpl_include, parse_htpl_ldap, parse_htpl_load, parse_htpl_loop, parse_htpl_mail, parse_htpl_mem, parse_htpl_method, parse_htpl_net, parse_htpl_next, parse_htpl_out, parse_htpl_proc, parse_htpl_project, parse_htpl_pts, parse_htpl_publish, parse_htpl_rem, parse_htpl_sql, parse_htpl_switch, parse_htpl_text, parse_htpl_throw, parse_htpl_time, parse_htpl_try };
         int n;
         parser fun;
         n = search_hash(&htpl_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 }
 
@@ -3413,6 +3495,7 @@ int parse_(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
     eat(&stack, token);
     {
         static char *htpl_table[] = {"HTPL"};
@@ -3425,9 +3508,9 @@ int parse_(stack, untag)
         int n;
         parser fun;
         n = search_hash(&htpl_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 }
 

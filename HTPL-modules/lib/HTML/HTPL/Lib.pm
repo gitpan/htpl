@@ -3,6 +3,7 @@ package HTML::HTPL::Lib;
 
 use HTML::HTPL::Sys qw(html_table html_table_out publish doredirect
 getmailprog proper ch2x safetags checktaint htdie compileutil);
+use HTML::HTPL::Stream;
 
 *htpl_pkg = \$HTML::HTPL::Sys::htpl_pkg;
 
@@ -1195,23 +1196,18 @@ sub decrypt {
 }
 
 sub begintransaction {
-    my $hnd = "HTPL_TR-" . scalar(@htpl_transactions);
-
-    push(@htpl_transactions, {'old' => select, 'hnd' => $hnd});
-    pipe(*{"R$hnd"}, *{"W$hnd"});
-    select *{"W$hnd"};
-    $| = 1;
+    my $name = eval("\*O" . scalar(@htpl_transactions));
+    my $t = tie $name, HTML::HTPL::Stream;
+    push(@htpl_transactions, [select, $t]);
+    select $name;
 }
 
 sub endtransaction {
     my $item = pop @htpl_transactions;
-    my $hnd = $item->{'hnd'};
-    close *{"W$hnd"};
-    my $rd = *{"R$hnd"};
-    my @lines = <$rd>;
-    close($rd);
-    select *{$item->{'old'}};
-    (wantarray ? @lines : join("", @lines));
+    my ($hnd, $obj) = @$item;
+    select $hnd;
+    my $text = $$obj;
+    (wantarray ? split(/\n/, $text) : $text);
 }
 
 sub power {

@@ -316,6 +316,7 @@ int parse_$sub(stack, untag)
     int code;
     static int nesting = 0;
 
+    makepersist(stack);
 EOM
 }
 
@@ -461,7 +462,7 @@ sub outtoken {
     my $sub2 = join("_", (@stack, $this));
     $sub2 =~ s/-/_/g;
     return <<EOM;
-    if (!strcasecmp(token, "$uthis")) return parse_$sub2(stack, untag);
+    if (!strcasecmp(token, "$uthis")) RETURN(parse_$sub2(stack, untag));
 EOM
 }
 
@@ -512,8 +513,8 @@ sub outgettags {
 sub outarea {
     my $sub = shift;
     return <<EOM;
-    if (!untag) return parse_${sub}___fwd(stack, untag);
-        else return parse_${sub}___rev(stack, untag);
+    if (!untag) RETURN(parse_${sub}___fwd(stack, untag))
+        else RETURN(parse_${sub}___rev(stack, untag))
 EOM
 }
 
@@ -603,6 +604,7 @@ EOM
 }
 
 sub outpersist {
+return "";
 "    makepersist(stack);\n";
 }
 
@@ -777,9 +779,9 @@ $hash
         int n;
         parser fun;
         n = search_hash(&${pre}_hash, token, 0);
-        if (n < 0) return 0;
+        if (n < 0) RETURN(0)
         fun = funs[n];
-        return fun(stack, untag);
+        RETURN(fun(stack, untag))
     }
 EOM
     return $code;

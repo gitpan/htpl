@@ -80,9 +80,9 @@ realclean: clean
 	/bin/rm -f core *.perl *.ht.pl perl.sh || true
 
 release: 
-	VERSION=`$(PERL) -MHTML::HTPL -e 'print $$HTML::HTPL::VERSION + 0.01;'`; \
+	VERSION=`$(PERL) -e 'require "HTPL-modules/lib/HTML/HTPL.pm"; print $$HTML::HTPL::VERSION + 0.01;'`; \
 	echo -n "htpl-$$VERSION" > release.name ; \
-	echo $VERSION | $(PERL) -pi -e \
+	echo $$VERSION | $(PERL) -ne 'chop; print' | $(PERL) -pi -e \
 's/^\s*\$$VERSION\s+=.*;/"    \$$VERSION = ". scalar(<STDIN>) . ";"/e;' \
 	HTPL-modules/lib/HTML/HTPL.pm 
 	touch htpl.c
@@ -103,10 +103,10 @@ $(DBG): $(DEPOBJ) $(DBGOBJ)
 
 # Cancel this dependency if you fail to compile with no XML
 htpl-parse.c: macros.xpl htpl-crp.pl htplparse.pm
-	test -n "$(XML)" && $(PERL) htpl-crp.pl || true
+	(test -n "$(XML)" && $(PERL) htpl-crp.pl) || true
 
 htplparse.pm: htplparse.yp
-	test -n "$(XML)" && yapp htplparse.yp || true
+	(test -n "$(XML)" && yapp htplparse.yp) || true
 
 htpl-sh.h: htpl-parse.c
 
