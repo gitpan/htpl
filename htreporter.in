@@ -1,36 +1,47 @@
-#!@PERLNAME@
+#!@PERL@
 
-use IniConf;
 use Getopt::Std;
 use DBI;
 use HTML::HTPL::Lib;
+use strict;
 
-getopts('ahco:u:p:');
+use vars qw($opt_x $opt_h $opt_a $opt_p $opt_u $opt_o $opt_c $dbh);
 
-$filename = $ARGV[0];
-$query = $ARGV[1] || 'default';
+my $cfg;
+
+getopts('xahco:u:p:');
+
+my $filename = $ARGV[0];
+my $query = $ARGV[1] || 'default';
 
 die "No input file" unless ($filename);
 
-$! = undef;
+die "Input file not found" unless (-f $filename);
 
-$cfg = new IniConf(-file => $filename, -nocase => 1);
-die "Input file not found" if $!;
+unless ($opt_x) {
+    require IniConf;
+    import IniConf;
+    $cfg = new IniConf(-file => $filename, -nocase => 1) || die "Could not parse $filename";
+} else {
+    require XML::Conf;
+    import XML::Conf;
+    $cfg = new XML::Conf($filename, 'case' => 'lc') || die "Could not parse $filename";
+}
 
-$sql = $cfg->val('sql', $query);
-$dsn = $cfg->val('sql', 'dsn');
+my $sql = $cfg->val('sql', $query);
+my $dsn = $cfg->val('sql', 'dsn');
 $opt_h ||= $cfg->val('report', 'html');
-$auto = $opt_a || $cfg->val('report','auto');
-$header = $cfg->val('report', 'header');
-$footer = $cfg->val('report', 'footer');
-$template = $cfg->val('report', 'template');
+my $auto = $opt_a || $cfg->val('report','auto');
+my $header = $cfg->val('report', 'header');
+my $footer = $cfg->val('report', 'footer');
+my $template = $cfg->val('report', 'template');
 $opt_p ||= $cfg->val('sql', 'password');
 $opt_u ||= $cfg->val('sql', 'user');
 
-$sth = &getsql($dsn, $sql);
-@cols = @{$sth->{NAME}} if ($sth);
+my $sth = &getsql($dsn, $sql);
+my @cols = @{$sth->{NAME}} if ($sth);
 
-$out = $opt_o || "&STDOUT";
+my $out = $opt_o || "&STDOUT";
 open(REP, ">$out");
 
 select REP;
@@ -53,16 +64,18 @@ if ($opt_h) {
         $footer = "</TABLE>\n</BODY>\n</HTML>\n";
     }
     print "$header\n";
-    while ($hash = $sth->fetchrow_hashref) {
+    while (my $hash = $sth->fetchrow_hashref) {
         print HTML::HTPL::Lib::subhash("$template\n", '#', %$hash);
     }
     print "$footer\n";
     select STDOUT;
     close(REP);
+    $sth->finish;
+    $dbh->disconnect;
     exit;
 }
 
-$page = $cfg->val('report', 'page');
+my $page = $cfg->val('report', 'page');
 
 if ($auto) {}
 
@@ -78,22 +91,25 @@ format NEWLINE=
 .
 
 
-$fetch = join("", map {"local (\$$_) = \$hash->{'$_'};\n"} @cols);
-$code = eval "sub {$fetch write REP;}";
+my $hash;
+my $fetch = join("", map {"local (\$$_) = \$hash->{'$_'};\n"} @cols);
+my $code = eval "sub {$fetch write REP;}";
 $= = $page;
 
 while ($hash = $sth->fetchrow_hashref) {
     &$code;
 }
 
-write REP, REP_BOTTOM;
+eval "write REP, REP_BOTTOM;";
 
 select STDOUT;
 close(REP);
 
+$sth->finish;
+$dbh->disconnect;
+ 
 sub getsql {
     my ($dsn, $sql) = @_;
-    my $dbh;
     eval { $dbh = DBI->connect($dsn, $opt_u, $opt_p);};
     return undef unless ($dbh && !$@ && !$DBI::err);
     my $sth = $dbh->prepare($sql);

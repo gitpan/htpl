@@ -398,4 +398,24 @@ SYNC
 
 <INCLUDE MIN="1">&amp;include(qw(%1*%));</INCLUDE>
 
+<PTS><__PRE>use RPC::PlClient;</__PRE>
+<SET MIN="2" MAX="3" SCOPE="1">
+my @t = split(/:/, "%1%");
+push(@t, $HTML::HTPL::Config::htpl_pts_port);
+
+$HTML::HTPL::pts_obj = new RPC::PlClient(
+             peeraddr => $t[0],
+             peerport => $t[1],
+             user => "%2%",
+             password => "%3%",
+             application => "pts",
+             version => 1.0);
+</SET>
+<CALL MIN="2">$%1% = $HTML::HTPL::pts_obj->Call("%1%", qw(%3*%));</CALL>
+<CREATE MIN="2">$%1% = $HTML::HTPL::pts_obj->ClientObject("%2%", "new",
+                      qw(%3*%));</CREATE>
+<POOL MIN="3" MAX="3">$%1% = $HTML::HTPL::pts_obj->ClientObject("%2%", 
+	"getObject", "%3%");</POOL>
+</PTS>
+
 </HTPL>

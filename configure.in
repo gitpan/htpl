@@ -12,62 +12,8 @@ AC_LANG_C
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_AWK
-DONE=
-PERLS=perl
-AC_ARG_ENABLE(vserver, --with-vserver		Compile for a virtual server,
-PRERUN=$HOME, PRERUN=)
-ALTPERLPATH=$PRERUN/usr/bin:$PRERUN/usr/local/bin
-[
-if [ -z "$PRERUN" ]; then
-    PERLPATH=$PATH:$ALTPERLPATH
-    PREDISP=
-else
-    PERLPATH=$ALTPERLPATH
-    PREDISP="(virtual)"
-fi
-]
-AC_ARG_WITH(perl, --with-perl=PERL	Location of Perl, PERLNAME=$withval; WITHPERL=1, [
-    AC_PATH_PROG(PERLNAME, perl, , $PERLPATH)])
 
-[
-checkperl() {
-]
-AC_MSG_CHECKING(if your Perl version is sufficient)
-[
-    TOOOLD=
-    $PERLNAME -e 'require 5.004;' 2> /dev/null && echo "yes" || TOOOLD=1
-    test -n "$TOOOLD" && echo "no"
-}
-
-perltooold() {
-    echo Your perl version is too old. HTPL requires Perl 5.004
-    exit
-}
-
-if [ -n "$PERLNAME" ]; then
-    checkperl
-    if [ -n "$TOOOLD" ] && [ -z "$WITHPERL" ]; then
-]
-
-        AC_PATH_PROG(PERL5NAME, perl5, , $PERLPATH)
-        PERLNAME=$PERL5NAME
-[
-        if [ -n "$PERLNAME" ]; then
-            checkperl
-            if [ -n "$TOOOLD" ]; then
-                perltooold
-            fi
-        else
-                perltooold
-        fi
-    fi
-else
-    echo "Perl not found"
-    exit
-fi
-
-
-]
+AB_PROG_PERL
 
 AC_PATH_PROG(SENDMAIL, sendmail, , /usr/sbin:/usr/lib:/usr/ucb:$PATH)
 
@@ -88,7 +34,7 @@ TEMP=/tmp)
 AC_MSG_CHECKING(if you have an XML parser as well as Lex and Yapp parsers)
 [
 XML=
-$PERLNAME -MXML::Parser -MParse::Lex -MParse::Yapp -e "" 2> /dev/null && XML=1
+$PERL -MXML::Parser -MParse::Lex -MParse::Yapp -e "" 2> /dev/null && XML=1
 if [ -z "$XML" ]; then
     echo "no"
 else
@@ -107,7 +53,7 @@ else
 fi
 fi
 ]
-CFLAGS=`$PERLNAME -MExtUtils::Embed -e ccopts -e ldopts`
+CFLAGS=`$PERL -MExtUtils::Embed -e ccopts -e ldopts`
 LIBS="-lperl"
 AC_MSG_CHECKING(for embedded Perl)
 AC_TRY_RUN( [
@@ -324,11 +270,11 @@ CCPROG=`which $CC`
 
 [
 if [ -n "$PRERUN" ]; then
-    PERLNAME=`echo $PERLNAME | sed -e s!^$PRERUN!!`
+    PERL=`echo $PERL | sed -e s!^$PRERUN!!`
 fi
 ]
 
-AC_SUBST(PERLNAME)
+AC_SUBST(PERL)
 AC_SUBST(CC)
 AC_SUBST(PRERUN)
 AC_SUBST(CCPROG)
@@ -348,11 +294,11 @@ AC_SUBST(DEPDBDEF)
 AC_SUBST(MODPERL)
 AC_SUBST(MODDIR)
 AC_OUTPUT([Makefile htpl-config.pl perl.sh HTPL-modules/lib/HTML/HTPL/Config.pm
-              htplp htreporter htplsrvc htpgen],
-[ chmod +x htplp htreporter htplsrvc htpgen ])
+              htplp htreporter htplsrvc htpgen htplss],
+[ chmod +x htplp htreporter htplsrvc htpgen htplss])
 
 clear
-$PERLNAME -e 'print chr(7);'
+$PERL -e 'print chr(7);'
 echo "Now issue the commands:"
 echo "make"
 echo "make install"

@@ -12,9 +12,7 @@ ac_help=
 ac_default_prefix=/usr/local
 # Any additions from configure.in:
 ac_help="$ac_help
---with-vserver		Compile for a virtual server"
-ac_help="$ac_help
---with-perl=PERL	Location of Perl"
+--with-perl=PERL      Location of Perl"
 ac_help="$ac_help
 --enable-depdb		Include dependency database"
 ac_help="$ac_help
@@ -549,7 +547,7 @@ cross_compiling=$ac_cv_prog_cc_cross
 # Extract the first word of "gcc", so it can be a program name with args.
 set dummy gcc; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:553: checking for $ac_word" >&5
+echo "configure:551: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_CC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -579,7 +577,7 @@ if test -z "$CC"; then
   # Extract the first word of "cc", so it can be a program name with args.
 set dummy cc; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:583: checking for $ac_word" >&5
+echo "configure:581: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_CC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -630,7 +628,7 @@ fi
       # Extract the first word of "cl", so it can be a program name with args.
 set dummy cl; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:634: checking for $ac_word" >&5
+echo "configure:632: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_CC'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -662,7 +660,7 @@ fi
 fi
 
 echo $ac_n "checking whether the C compiler ($CC $CFLAGS $LDFLAGS) works""... $ac_c" 1>&6
-echo "configure:666: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) works" >&5
+echo "configure:664: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) works" >&5
 
 ac_ext=c
 # CFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
@@ -673,12 +671,12 @@ cross_compiling=$ac_cv_prog_cc_cross
 
 cat > conftest.$ac_ext << EOF
 
-#line 677 "configure"
+#line 675 "configure"
 #include "confdefs.h"
 
 main(){return(0);}
 EOF
-if { (eval echo configure:682: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:680: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   ac_cv_prog_cc_works=yes
   # If we can't run a trivial program, we are probably using a cross compiler.
   if (./conftest; exit) 2>/dev/null; then
@@ -704,12 +702,12 @@ if test $ac_cv_prog_cc_works = no; then
   { echo "configure: error: installation or configuration problem: C compiler cannot create executables." 1>&2; exit 1; }
 fi
 echo $ac_n "checking whether the C compiler ($CC $CFLAGS $LDFLAGS) is a cross-compiler""... $ac_c" 1>&6
-echo "configure:708: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) is a cross-compiler" >&5
+echo "configure:706: checking whether the C compiler ($CC $CFLAGS $LDFLAGS) is a cross-compiler" >&5
 echo "$ac_t""$ac_cv_prog_cc_cross" 1>&6
 cross_compiling=$ac_cv_prog_cc_cross
 
 echo $ac_n "checking whether we are using GNU C""... $ac_c" 1>&6
-echo "configure:713: checking whether we are using GNU C" >&5
+echo "configure:711: checking whether we are using GNU C" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_gcc'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -718,7 +716,7 @@ else
   yes;
 #endif
 EOF
-if { ac_try='${CC-cc} -E conftest.c'; { (eval echo configure:722: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } | egrep yes >/dev/null 2>&1; then
+if { ac_try='${CC-cc} -E conftest.c'; { (eval echo configure:720: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }; } | egrep yes >/dev/null 2>&1; then
   ac_cv_prog_gcc=yes
 else
   ac_cv_prog_gcc=no
@@ -737,7 +735,7 @@ ac_test_CFLAGS="${CFLAGS+set}"
 ac_save_CFLAGS="$CFLAGS"
 CFLAGS=
 echo $ac_n "checking whether ${CC-cc} accepts -g""... $ac_c" 1>&6
-echo "configure:741: checking whether ${CC-cc} accepts -g" >&5
+echo "configure:739: checking whether ${CC-cc} accepts -g" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_cc_g'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -799,7 +797,7 @@ ac_configure=$ac_aux_dir/configure # This should be Cygnus configure.
 # SVR4 /usr/ucb/install, which tries to use the nonexistent group "staff"
 # ./install, which can be erroneously created by make from ./install.sh.
 echo $ac_n "checking for a BSD compatible install""... $ac_c" 1>&6
-echo "configure:803: checking for a BSD compatible install" >&5
+echo "configure:801: checking for a BSD compatible install" >&5
 if test -z "$INSTALL"; then
 if eval "test \"`echo '$''{'ac_cv_path_install'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -856,7 +854,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:860: checking for $ac_word" >&5
+echo "configure:858: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_AWK'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -885,53 +883,35 @@ fi
 test -n "$AWK" && break
 done
 
-DONE=
-PERLS=perl
-# Check whether --enable-vserver or --disable-vserver was given.
-if test "${enable_vserver+set}" = set; then
-  enableval="$enable_vserver"
-  PRERUN=$HOME
-else
-  PRERUN=
-fi
 
-ALTPERLPATH=$PRERUN/usr/bin:$PRERUN/usr/local/bin
 
-if [ -z "$PRERUN" ]; then
-    PERLPATH=$PATH:$ALTPERLPATH
-    PREDISP=
-else
-    PERLPATH=$ALTPERLPATH
-    PREDISP="(virtual)"
-fi
-
-# Check whether --with-perl or --without-perl was given.
+    # Check whether --with-perl or --without-perl was given.
 if test "${with_perl+set}" = set; then
   withval="$with_perl"
-  PERLNAME=$withval; WITHPERL=1
+  PERL=$withval; WITHPERL=1
 else
   
-    # Extract the first word of "perl", so it can be a program name with args.
+        # Extract the first word of "perl", so it can be a program name with args.
 set dummy perl; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:918: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_path_PERLNAME'+set}'`\" = set"; then
+echo "configure:898: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_path_PERL'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  case "$PERLNAME" in
+  case "$PERL" in
   /*)
-  ac_cv_path_PERLNAME="$PERLNAME" # Let the user override the test with a path.
+  ac_cv_path_PERL="$PERL" # Let the user override the test with a path.
   ;;
   ?:/*)			 
-  ac_cv_path_PERLNAME="$PERLNAME" # Let the user override the test with a dos path.
+  ac_cv_path_PERL="$PERL" # Let the user override the test with a dos path.
   ;;
   *)
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
-  ac_dummy="$PERLPATH"
+  ac_dummy="$PATH:/usr/local/bin:/usr/contrib/bin"
   for ac_dir in $ac_dummy; do 
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_path_PERLNAME="$ac_dir/$ac_word"
+      ac_cv_path_PERL="$ac_dir/$ac_word"
       break
     fi
   done
@@ -939,58 +919,51 @@ else
   ;;
 esac
 fi
-PERLNAME="$ac_cv_path_PERLNAME"
-if test -n "$PERLNAME"; then
-  echo "$ac_t""$PERLNAME" 1>&6
+PERL="$ac_cv_path_PERL"
+if test -n "$PERL"; then
+  echo "$ac_t""$PERL" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
 
+    
 fi
 
 
+    
+        if [ -n "$PERL" ]; then
+    
+        echo $ac_n "checking if your Perl version is sufficient""... $ac_c" 1>&6
+echo "configure:938: checking if your Perl version is sufficient" >&5
+    
+        PERLTOOOLD=
+        $PERL -e 'require 5.004;' 2> /dev/null && echo "yes" || (PERLTOOOLD=1 && echo "no") 
+    
 
-checkperl() {
-
-echo $ac_n "checking if your Perl version is sufficient""... $ac_c" 1>&6
-echo "configure:957: checking if your Perl version is sufficient" >&5
-
-    TOOOLD=
-    $PERLNAME -e 'require 5.004;' 2> /dev/null && echo "yes" || TOOOLD=1
-    test -n "$TOOOLD" && echo "no"
-}
-
-perltooold() {
-    echo Your perl version is too old. HTPL requires Perl 5.004
-    exit
-}
-
-if [ -n "$PERLNAME" ]; then
-    checkperl
-    if [ -n "$TOOOLD" ] && [ -z "$WITHPERL" ]; then
-
-
+        
+            if [ -n "$PERLTOOOLD" ] && [ -z "$WITHPERL" ]; then
+        
         # Extract the first word of "perl5", so it can be a program name with args.
 set dummy perl5; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:977: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_path_PERL5NAME'+set}'`\" = set"; then
+echo "configure:950: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_path_PERL5'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  case "$PERL5NAME" in
+  case "$PERL5" in
   /*)
-  ac_cv_path_PERL5NAME="$PERL5NAME" # Let the user override the test with a path.
+  ac_cv_path_PERL5="$PERL5" # Let the user override the test with a path.
   ;;
   ?:/*)			 
-  ac_cv_path_PERL5NAME="$PERL5NAME" # Let the user override the test with a dos path.
+  ac_cv_path_PERL5="$PERL5" # Let the user override the test with a dos path.
   ;;
   *)
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
-  ac_dummy="$PERLPATH"
+  ac_dummy="$PATH:/usr/local/bin:/usr/contrib/bin"
   for ac_dir in $ac_dummy; do 
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_path_PERL5NAME="$ac_dir/$ac_word"
+      ac_cv_path_PERL5="$ac_dir/$ac_word"
       break
     fi
   done
@@ -998,36 +971,48 @@ else
   ;;
 esac
 fi
-PERL5NAME="$ac_cv_path_PERL5NAME"
-if test -n "$PERL5NAME"; then
-  echo "$ac_t""$PERL5NAME" 1>&6
+PERL5="$ac_cv_path_PERL5"
+if test -n "$PERL5"; then
+  echo "$ac_t""$PERL5" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
 
-        PERLNAME=$PERL5NAME
+        PERL=$PERL5
+        
+            if [ -n "$PERL" ]; then
+        
+            echo $ac_n "checking if your Perl version is sufficient""... $ac_c" 1>&6
+echo "configure:987: checking if your Perl version is sufficient" >&5
+    
+        PERLTOOOLD=
+        $PERL -e 'require 5.004;' 2> /dev/null && echo "yes" || (PERLTOOOLD=1 && echo "no") 
+    
 
-        if [ -n "$PERLNAME" ]; then
-            checkperl
-            if [ -n "$TOOOLD" ]; then
-                perltooold
+            
+                if [ -n "$PERLTOOOLD" ]; then
+                
+                echo Your perl version is too old; exit -1
+                
+                fi
+            else
+                
+                echo Your perl version is too old; exit -1
+                
             fi
-        else
-                perltooold
         fi
-    fi
-else
-    echo "Perl not found"
-    exit
+    else
+        echo "Perl not found"
+    exit -1
 fi
-
-
+    
+    
 
 
 # Extract the first word of "sendmail", so it can be a program name with args.
 set dummy sendmail; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:1031: checking for $ac_word" >&5
+echo "configure:1016: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_SENDMAIL'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1064,7 +1049,7 @@ fi
 if test "${enable_depdb+set}" = set; then
   enableval="$enable_depdb"
   echo $ac_n "checking how to run the C preprocessor""... $ac_c" 1>&6
-echo "configure:1068: checking how to run the C preprocessor" >&5
+echo "configure:1053: checking how to run the C preprocessor" >&5
 # On Suns, sometimes $CPP names a directory.
 if test -n "$CPP" && test -d "$CPP"; then
   CPP=
@@ -1079,13 +1064,13 @@ else
   # On the NeXT, cc -E runs the code through the compiler's parser,
   # not just through cpp.
   cat > conftest.$ac_ext <<EOF
-#line 1083 "configure"
+#line 1068 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1089: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1074: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1096,13 +1081,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -E -traditional-cpp"
   cat > conftest.$ac_ext <<EOF
-#line 1100 "configure"
+#line 1085 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1106: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1091: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1113,13 +1098,13 @@ else
   rm -rf conftest*
   CPP="${CC-cc} -nologo -E"
   cat > conftest.$ac_ext <<EOF
-#line 1117 "configure"
+#line 1102 "configure"
 #include "confdefs.h"
 #include <assert.h>
 Syntax Error
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1123: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1108: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   :
@@ -1147,17 +1132,17 @@ s%@CPP@%$CPP%g
 
     ac_safe=`echo "db_185.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for db_185.h""... $ac_c" 1>&6
-echo "configure:1151: checking for db_185.h" >&5
+echo "configure:1136: checking for db_185.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1156 "configure"
+#line 1141 "configure"
 #include "confdefs.h"
 #include <db_185.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1161: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1146: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -1174,7 +1159,7 @@ fi
 if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
   echo "$ac_t""yes" 1>&6
   echo $ac_n "checking for dbopen in -ldb""... $ac_c" 1>&6
-echo "configure:1178: checking for dbopen in -ldb" >&5
+echo "configure:1163: checking for dbopen in -ldb" >&5
 ac_lib_var=`echo db'_'dbopen | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -1182,7 +1167,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-ldb  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 1186 "configure"
+#line 1171 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -1193,7 +1178,7 @@ int main() {
 dbopen()
 ; return 0; }
 EOF
-if { (eval echo configure:1197: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1182: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -1240,10 +1225,10 @@ else
 fi
 
 echo $ac_n "checking if you have an XML parser as well as Lex and Yapp parsers""... $ac_c" 1>&6
-echo "configure:1244: checking if you have an XML parser as well as Lex and Yapp parsers" >&5
+echo "configure:1229: checking if you have an XML parser as well as Lex and Yapp parsers" >&5
 
 XML=
-$PERLNAME -MXML::Parser -MParse::Lex -MParse::Yapp -e "" 2> /dev/null && XML=1
+$PERL -MXML::Parser -MParse::Lex -MParse::Yapp -e "" 2> /dev/null && XML=1
 if [ -z "$XML" ]; then
     echo "no"
 else
@@ -1252,7 +1237,7 @@ fi
 if [ -z "$PRERUN" ]; then
 
 echo $ac_n "checking if you are running as superuser""... $ac_c" 1>&6
-echo "configure:1256: checking if you are running as superuser" >&5
+echo "configure:1241: checking if you are running as superuser" >&5
 
 if [ "$USER" = "root" ]; then
     echo "yes"
@@ -1263,15 +1248,15 @@ else
 fi
 fi
 
-CFLAGS=`$PERLNAME -MExtUtils::Embed -e ccopts -e ldopts`
+CFLAGS=`$PERL -MExtUtils::Embed -e ccopts -e ldopts`
 LIBS="-lperl"
 echo $ac_n "checking for embedded Perl""... $ac_c" 1>&6
-echo "configure:1270: checking for embedded Perl" >&5
+echo "configure:1255: checking for embedded Perl" >&5
 if test "$cross_compiling" = yes; then
    echo no; OBJEMBED= 
 else
   cat > conftest.$ac_ext <<EOF
-#line 1275 "configure"
+#line 1260 "configure"
 #include "confdefs.h"
 
 #include "htpl.h"
@@ -1297,7 +1282,7 @@ int main(int argc, char **argv, char **env) {
 
 
 EOF
-if { (eval echo configure:1301: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:1286: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
    echo yes; OBJEMBED="htpl-xsi.c htpl-perl.c" 
 else
@@ -1310,7 +1295,7 @@ rm -fr conftest*
 fi
 
 echo $ac_n "checking if users can write in "$PRERUN"$TEMP""... $ac_c" 1>&6
-echo "configure:1314: checking if users can write in "$PRERUN"$TEMP" >&5
+echo "configure:1299: checking if users can write in "$PRERUN"$TEMP" >&5
 
 
 
@@ -1378,7 +1363,7 @@ do
 
 ac_safe=`echo "$ac_file" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_file""... $ac_c" 1>&6
-echo "configure:1382: checking for $ac_file" >&5
+echo "configure:1367: checking for $ac_file" >&5
 if eval "test \"`echo '$''{'ac_cv_file_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1415,7 +1400,7 @@ do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:1419: checking for $ac_word" >&5
+echo "configure:1404: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_path_HTTPD'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -1575,7 +1560,7 @@ CCPROG=`which $CC`
 
 
 if [ -n "$PRERUN" ]; then
-    PERLNAME=`echo $PERLNAME | sed -e s!^$PRERUN!!`
+    PERL=`echo $PERL | sed -e s!^$PRERUN!!`
 fi
 
 
@@ -1712,7 +1697,7 @@ ac_given_srcdir=$srcdir
 ac_given_INSTALL="$INSTALL"
 
 trap 'rm -fr `echo "Makefile htpl-config.pl perl.sh HTPL-modules/lib/HTML/HTPL/Config.pm
-              htplp htreporter htplsrvc htpgen" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+              htplp htreporter htplsrvc htpgen htplss" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -1749,8 +1734,8 @@ s%@INSTALL_PROGRAM@%$INSTALL_PROGRAM%g
 s%@INSTALL_SCRIPT@%$INSTALL_SCRIPT%g
 s%@INSTALL_DATA@%$INSTALL_DATA%g
 s%@AWK@%$AWK%g
-s%@PERLNAME@%$PERLNAME%g
-s%@PERL5NAME@%$PERL5NAME%g
+s%@PERL@%$PERL%g
+s%@PERL5@%$PERL5%g
 s%@SENDMAIL@%$SENDMAIL%g
 s%@HTTPD@%$HTTPD%g
 s%@PRERUN@%$PRERUN%g
@@ -1812,7 +1797,7 @@ EOF
 cat >> $CONFIG_STATUS <<EOF
 
 CONFIG_FILES=\${CONFIG_FILES-"Makefile htpl-config.pl perl.sh HTPL-modules/lib/HTML/HTPL/Config.pm
-              htplp htreporter htplsrvc htpgen"}
+              htplp htreporter htplsrvc htpgen htplss"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then
@@ -1876,7 +1861,7 @@ cat >> $CONFIG_STATUS <<EOF
 
 EOF
 cat >> $CONFIG_STATUS <<\EOF
- chmod +x htplp htreporter htplsrvc htpgen 
+ chmod +x htplp htreporter htplsrvc htpgen htplss
 exit 0
 EOF
 chmod +x $CONFIG_STATUS
@@ -1885,7 +1870,7 @@ test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
 
 
 clear
-$PERLNAME -e 'print chr(7);'
+$PERL -e 'print chr(7);'
 echo "Now issue the commands:"
 echo "make"
 echo "make install"

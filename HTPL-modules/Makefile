@@ -103,7 +103,7 @@ C_FILES =
 O_FILES = 
 H_FILES = 
 MAN1PODS = 
-MAN3PODS = lib/Tie/Collection.pm
+MAN3PODS = 
 INST_MAN1DIR = blib/man1
 INSTALLMAN1DIR = $(PREFIX)/man/man1
 MAN1EXT = 1
@@ -158,7 +158,6 @@ TO_INST_PM = lib/HTML/HTPL.pm \
 	lib/HTML/HTPL/Mem.pm \
 	lib/HTML/HTPL/Munge.pm \
 	lib/HTML/HTPL/Orig.pm \
-	lib/HTML/HTPL/Per.pm \
 	lib/HTML/HTPL/Result.pm \
 	lib/HTML/HTPL/Select.pm \
 	lib/HTML/HTPL/Site.pm \
@@ -166,36 +165,22 @@ TO_INST_PM = lib/HTML/HTPL.pm \
 	lib/HTML/HTPL/Table.pm \
 	lib/HTML/HTPL/Tcl.pm \
 	lib/HTML/HTPL/Template.pm \
-	lib/HTML/HTPL/Txt.pm \
-	lib/Tie/Collection.pm \
-	lib/Tie/Func.pm \
-	lib/Tie/NormalArray.pm \
-	lib/Tie/Parent.pm
+	lib/HTML/HTPL/Txt.pm
 
 PM_TO_BLIB = lib/HTML/HTPL/Db.pm \
 	$(INST_LIB)/HTML/HTPL/Db.pm \
-	lib/HTML/HTPL/Per.pm \
-	$(INST_LIB)/HTML/HTPL/Per.pm \
 	lib/HTML/HTPL/Flat.pm \
 	$(INST_LIB)/HTML/HTPL/Flat.pm \
 	lib/HTML/HTPL/Table.pm \
 	$(INST_LIB)/HTML/HTPL/Table.pm \
 	lib/HTML/HTPL/CSV.pm \
 	$(INST_LIB)/HTML/HTPL/CSV.pm \
-	lib/Tie/NormalArray.pm \
-	$(INST_LIB)/Tie/NormalArray.pm \
-	lib/Tie/Parent.pm \
-	$(INST_LIB)/Tie/Parent.pm \
 	lib/HTML/HTPL/Fixed.pm \
 	$(INST_LIB)/HTML/HTPL/Fixed.pm \
 	lib/HTML/HTPL.pm \
 	$(INST_LIB)/HTML/HTPL.pm \
 	lib/HTML/HTPL/Orig.pm \
 	$(INST_LIB)/HTML/HTPL/Orig.pm \
-	lib/Tie/Func.pm \
-	$(INST_LIB)/Tie/Func.pm \
-	lib/Tie/Collection.pm \
-	$(INST_LIB)/Tie/Collection.pm \
 	lib/HTML/HTPL/Graph.pm \
 	$(INST_LIB)/HTML/HTPL/Graph.pm \
 	lib/HTML/HTPL/Site.pm \
@@ -386,16 +371,6 @@ $(INST_ARCHAUTODIR)/.exists :: /usr/lib/perl5/5.00503/i386-linux/CORE/perl.h
 
 	-@$(CHMOD) $(PERM_RWX) $(INST_ARCHAUTODIR)
 
-config :: $(INST_MAN3DIR)/.exists
-	@$(NOOP)
-
-
-$(INST_MAN3DIR)/.exists :: /usr/lib/perl5/5.00503/i386-linux/CORE/perl.h
-	@$(MKPATH) $(INST_MAN3DIR)
-	@$(EQUALIZE_TIMESTAMP) /usr/lib/perl5/5.00503/i386-linux/CORE/perl.h $(INST_MAN3DIR)/.exists
-
-	-@$(CHMOD) $(PERM_RWX) $(INST_MAN3DIR)
-
 help:
 	perldoc ExtUtils::MakeMaker
 
@@ -444,17 +419,10 @@ static :: Makefile $(INST_STATIC)
 
 
 # --- MakeMaker manifypods section:
-POD2MAN_EXE = /usr/bin/pod2man
-POD2MAN = $(PERL) -we '%m=@ARGV;for (keys %m){' \
--e 'next if -e $$m{$$_} && -M $$m{$$_} < -M $$_ && -M $$m{$$_} < -M "Makefile";' \
--e 'print "Manifying $$m{$$_}\n";' \
--e 'system(qq[$$^X ].q["-I$(PERL_ARCHLIB)" "-I$(PERL_LIB)" $(POD2MAN_EXE) ].qq[$$_>$$m{$$_}])==0 or warn "Couldn\047t install $$m{$$_}\n";' \
--e 'chmod(oct($(PERM_RW))), $$m{$$_} or warn "chmod $(PERM_RW) $$m{$$_}: $$!\n";}'
 
-manifypods : pure_all lib/Tie/Collection.pm
-	@$(POD2MAN) \
-	lib/Tie/Collection.pm \
-	$(INST_MAN3DIR)/Tie::Collection.$(MAN3EXT)
+manifypods : pure_all
+	@$(NOOP)
+
 
 # --- MakeMaker processPL section:
 
@@ -481,7 +449,7 @@ clean ::
 # Delete temporary files (via clean) and also delete installed files
 realclean purge ::  clean
 	rm -rf $(INST_AUTODIR) $(INST_ARCHAUTODIR)
-	rm -f $(INST_LIB)/HTML/HTPL/Db.pm $(INST_LIB)/HTML/HTPL/Per.pm $(INST_LIB)/HTML/HTPL/Flat.pm $(INST_LIB)/HTML/HTPL/Table.pm $(INST_LIB)/HTML/HTPL/CSV.pm $(INST_LIB)/Tie/NormalArray.pm $(INST_LIB)/Tie/Parent.pm $(INST_LIB)/HTML/HTPL/Fixed.pm $(INST_LIB)/HTML/HTPL.pm $(INST_LIB)/HTML/HTPL/Orig.pm $(INST_LIB)/Tie/Func.pm $(INST_LIB)/Tie/Collection.pm $(INST_LIB)/HTML/HTPL/Graph.pm $(INST_LIB)/HTML/HTPL/Site.pm $(INST_LIB)/HTML/HTPL/Config.pm $(INST_LIB)/HTML/HTPL/Lib.pm $(INST_LIB)/HTML/HTPL/Config.pm.in $(INST_LIB)/HTML/HTPL/Template.pm $(INST_LIB)/HTML/HTPL/Munge.pm $(INST_LIB)/HTML/HTPL/Sys.pm $(INST_LIB)/HTML/HTPL/Result.pm $(INST_LIB)/HTML/HTPL/Mem.pm $(INST_LIB)/HTML/HTPL/Client.pm $(INST_LIB)/HTML/HTPL/Select.pm $(INST_LIB)/HTML/HTPL/Txt.pm $(INST_LIB)/HTML/HTPL/LDAP.pm $(INST_LIB)/HTML/HTPL/Tcl.pm
+	rm -f $(INST_LIB)/HTML/HTPL/Db.pm $(INST_LIB)/HTML/HTPL/Flat.pm $(INST_LIB)/HTML/HTPL/Table.pm $(INST_LIB)/HTML/HTPL/CSV.pm $(INST_LIB)/HTML/HTPL/Fixed.pm $(INST_LIB)/HTML/HTPL.pm $(INST_LIB)/HTML/HTPL/Orig.pm $(INST_LIB)/HTML/HTPL/Graph.pm $(INST_LIB)/HTML/HTPL/Site.pm $(INST_LIB)/HTML/HTPL/Config.pm $(INST_LIB)/HTML/HTPL/Lib.pm $(INST_LIB)/HTML/HTPL/Config.pm.in $(INST_LIB)/HTML/HTPL/Template.pm $(INST_LIB)/HTML/HTPL/Munge.pm $(INST_LIB)/HTML/HTPL/Sys.pm $(INST_LIB)/HTML/HTPL/Result.pm $(INST_LIB)/HTML/HTPL/Mem.pm $(INST_LIB)/HTML/HTPL/Client.pm $(INST_LIB)/HTML/HTPL/Select.pm $(INST_LIB)/HTML/HTPL/Txt.pm $(INST_LIB)/HTML/HTPL/LDAP.pm $(INST_LIB)/HTML/HTPL/Tcl.pm
 	rm -rf Makefile Makefile.old
 
 

@@ -322,7 +322,7 @@ sub makepersist {
 
 sub get_session {
     my ($quick) = @_;
-    require HTML::HTPL::Per;
+    require Tie::Depth;
 
     &makepersist;
     $REMOTE_HOST = &getvar('REMOTE_HOST');
@@ -365,9 +365,9 @@ sub get_session {
     }
     $HTML::HTPL::Root::objects{"sessions"}->{$s_id} = time;
     $HTML::HTPL::Root::session = $s_id;
-    tie %{$htpl_pkg . "'session"}, 'HTML::HTPL::Per', 
+    tie %{$htpl_pkg . "'session"}, 'Tie::Depth', 
         \%HTML::HTPL::Root::objects, "sessions\0$s_id";
-    tie %{$htpl_pkg . "'application"}, 'HTML::HTPL::Per', 
+    tie %{$htpl_pkg . "'application"}, 'Tie::Depth', 
         \%HTML::HTPL::Root::objects, 'app';
 }
 

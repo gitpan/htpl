@@ -6,6 +6,7 @@ package HTML::HTPL::Config;
 $mailprog = "@SENDMAIL@";
 $ccprog = "@CCPROG@";
 $dbgbin = "@INSTALLDIR@/htpldbg";
+$pcbin = "@INSTALLDIR@/htplp";
 $temp = "@TEMP@";
 
 ###
@@ -42,6 +43,13 @@ $htpl_system_log = "@HTLOGS@";
 $htpl_language = "English"; # Norwegian, Austrian, English, German,
                             # Czech, French, Italian
 
+####
+# Comment to disable persistent DB connections under mod_perl
+$htpl_db_save = 1;
+
+####
+# HTPL PTS port
+$htpl_pts_port = 4002;
 
 ###
 # Put configuration for directories in htpl-site.pl in directories

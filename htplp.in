@@ -1,4 +1,4 @@
-#!@PERLNAME@
+#!@PERL@
 use HTML::HTPL::Lib;
 use HTML::HTPL::Config;
 use Text::ParseWords;
@@ -85,7 +85,9 @@ sub select_$comp {
 
 package $comp;
 sub getObject {
-    \$${comp}{(shift)};
+    my \$arg = shift;
+    \$arg = shift if (UNIVERSAL::isa(\$arg, __PACKAGE__));
+    \$${comp}{\$arg};
 }
 
 sub selectObject {
@@ -94,6 +96,7 @@ sub selectObject {
 
 EOP
 
+    @fields = map {lc($_);} @fields;
     my @atts = &HTML::HTPL::Lib::undouble(@${conf2{'worksection'}}, @fields);
     my $atts = join(" ", grep /./, @atts);
 

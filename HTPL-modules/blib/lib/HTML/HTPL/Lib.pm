@@ -24,7 +24,7 @@ pusht popt undouble uniq timestep rotate ror rol getcwd hostname core
 selfurl querystring takebroadlog subpkg subhash maketime power
 html_treeview selfsameurl new_template new_select getweekday
 elapsed hebrewflip agg sum splitline $STD_BODY @MONTH_NAMES @WEEKDAY_NAMES
-randstr randrange
+randstr randrange filedepend
 @DoW @DoWs @MoY @MoYs);
 
 CONFIG: {
@@ -1216,6 +1216,13 @@ sub randstr {
         $set[0] =~ /^\d+$/ && $set[1] =~ /^\d+$/ &&
         length($set[0] . $set[1]) > 2);
     join("", map { $set[int(rand(@set))] } 1 .. $len);
+}
+
+sub filedepend {
+    my ($file1, $file2) = @_;
+    return 1 unless (-f $file1);
+    return undef unless (-f $file2);
+    &lastmodified($file1) > &lastmodified($file2);
 }
 
 1;
