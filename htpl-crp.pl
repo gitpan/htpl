@@ -536,13 +536,16 @@ sub outparamcount {
     die "Non numeric minimum $min in $sub" if ($min && $min !~ /^\d+$/);
     die "Non numeric maximum $max in $sub" if ($max && $max !~ /^\d+$/);
     my $ret;
-    $ret .= <<EOM if ($min);
-    if (numtokens < $min) RETURN(croak("$sub called with %d arguments, minimum needed is $min", numtokens))
+    my $p;
+    $p = '(untag ? "/" : ""), ';
+    my %hash = qw(min < max >);
+    foreach (keys %hash) {
+        my $val = eval "\$$_";
+        my $op = $hash{$_};
+        $ret .= <<EOM if ($val);
+    if (numtokens $op $val) RETURN(croak("%s$sub called with %d arguments, ${_}imum needed is $val", ${p}numtokens))
 EOM
-    $ret .= <<EOM if (defined($max));
-    if (numtokens > $max) RETURN(croak("$sub called with %d arguments, maximum needed is $max", numtokens))
-
-EOM
+    }
     $ret;
 }
 

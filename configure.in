@@ -158,9 +158,9 @@ else
     fi
 fi
 ]
-ab_cv_httpdroot=$HTTPDROOT
+ab_cv_httpdroot="HTTPDROOT=${HTTPDROOT} ; MODMAKE=${MODMAKE} ; MODINS=${MODINS} ; CPANMAKE = ${CPANMAKE}"
 ])
-HTTPDROOT=$ab_cv_httpdroot
+eval $ab_cv_httpdroot
 [
 HTDOCS=""
 if [ -n "$HTTPDROOT" ] ; then

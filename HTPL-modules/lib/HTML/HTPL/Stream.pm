@@ -9,7 +9,7 @@ sub TIEHANDLE {
 
 sub WRITE {
 	my ($self, $scalar, $length, $offset) = @_;
-	$$self .= substr($scalar, $offset, $length);
+	$self->PRINT(substr($scalar, $offset, $length));
 }
 
 sub PRINT {
@@ -19,7 +19,7 @@ sub PRINT {
 
 sub PRINTF {
 	my ($self, $format, @list) = @_;
-	$$self .= sprintf($format, @list);
+	$self->PRINT(sprintf($format, @list));
 }
 
 1;

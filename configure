@@ -2206,12 +2206,12 @@ done
     fi
 fi
 
-ab_cv_httpdroot=$HTTPDROOT
+ab_cv_httpdroot="HTTPDROOT=${HTTPDROOT} ; MODMAKE=${MODMAKE} ; MODINS=${MODINS} ; CPANMAKE = ${CPANMAKE}"
 
 fi
 
 echo "$ac_t""$ab_cv_httpdroot" 1>&6
-HTTPDROOT=$ab_cv_httpdroot
+eval $ab_cv_httpdroot
 
 HTDOCS=""
 if [ -n "$HTTPDROOT" ] ; then

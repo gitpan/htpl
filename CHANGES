@@ -1,5 +1,10 @@
 Versions:
 
+2.96: Perl subroutine post processor added
+2.95: Improved configure script supports caching
+2.94: Improved macro parser generator, improved transaction
+implementation.
+2.85: PTS ceased, due to memory management impossibility.
 2.81: Experimental middle-ware architecture: PTS, with the htplss
 packager.
 2.80: Tie-Tools as a seperate package

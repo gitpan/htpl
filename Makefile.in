@@ -80,7 +80,7 @@ realclean: clean
 	/bin/rm -f core *.perl *.ht.pl perl.sh || true
 
 release: 
-	VERSION=`$(PERL) -e 'require "HTPL-modules/lib/HTML/HTPL.pm"; print $$HTML::HTPL::VERSION + 0.01;'`; \
+	VERSION=`$(PERL) -e 'require "HTPL-modules/lib/HTML/HTPL.pm"; print sprintf("%4.2f", $$HTML::HTPL::VERSION + 0.01);'`; \
 	echo -n "htpl-$$VERSION" > release.name ; \
 	echo $$VERSION | $(PERL) -ne 'chop; print' | $(PERL) -pi -e \
 's/^\s*\$$VERSION\s+=.*;/"    \$$VERSION = ". scalar(<STDIN>) . ";"/e;' \

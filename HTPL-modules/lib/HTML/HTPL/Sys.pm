@@ -234,6 +234,12 @@ sub initrun {
     require Tie::Func;
     tie ${$htpl_pkg . "::timer"}, 'Tie::Func', \&HTML::HTPL::Lib::elapsed,
                undef, undef;
+    my $filter = $HTML::HTPL::Config::filter;
+    if ($filter) {
+        my $old = select;
+	tie *HOUT, HTML::HTPL::Filter, $filter, $old;
+	select HOUT;
+    }
 }
 
 sub htpl_startup {

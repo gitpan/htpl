@@ -20,7 +20,7 @@ int parse_htpl_load(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("LOAD called with %d arguments, minimum needed is 1", numtokens))
+    if (numtokens < 1) RETURN(croak("%sLOAD called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     printfcode("die \"Unknown query\" unless $HTML::HTPL::Sys::query_pool{'%s'};\n", gettoken(1));
     printfcode("$%s = $HTML::HTPL::Sys::query_pool{'%s'}->load(qw(%s));\n", gettoken(1), gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
@@ -40,7 +40,7 @@ int parse_htpl_method___fwd(stack, untag)
     makepersist(stack);
     if (!currscope) RETURN(croak("Unexpected METHOD"))
     if (currscope->scope != scope_class) RETURN(croak("Now in scope %s from %d and met METHOD, expecting: class", scope_names[currscope->scope], currscope->nline))
-    if (numtokens < 1) RETURN(croak("METHOD called with %d arguments, minimum needed is 1", numtokens))
+    if (numtokens < 1) RETURN(croak("%sMETHOD called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     pushscope(scope_method, 0);
     buff = (STR)mysprintf("#CLSUTILS OTHER\n");
     nest++;
@@ -108,9 +108,8 @@ int parse_htpl_ldap_delete(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("LDAP DELETE called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 1) RETURN(croak("LDAP DELETE called with %d arguments, maximum needed is 1", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sLDAP DELETE called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 1) RETURN(croak("%sLDAP DELETE called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
     printfcode("$HTML::HTPL::htpl_dir_obj->modify('%s');\n", gettoken(1));
     nesting = 0;
     RETURN(1)
@@ -127,9 +126,8 @@ int parse_htpl_ldap_init(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("LDAP INIT called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 4) RETURN(croak("LDAP INIT called with %d arguments, maximum needed is 4", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sLDAP INIT called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 4) RETURN(croak("%sLDAP INIT called with %d arguments, maximum needed is 4", (untag ? "/" : ""), numtokens))
     printcode("$HTML::HTPL::htpl_dir_obj = new\n");
     printfcode("              HTML::HTPL::LDAP(qw(%s));\n", gettokenlist(1, " ", ""));
     nesting = 0;
@@ -148,7 +146,7 @@ int parse_htpl_ldap_search(stack, untag)
 
     makepersist(stack);
     printcode("{\n");
-    if (numtokens < 1) RETURN(croak("LDAP SEARCH called with %d arguments, minimum needed is 1", numtokens))
+    if (numtokens < 1) RETURN(croak("%sLDAP SEARCH called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     code = 1;
     buff = (STR)mysprintf("LDAP DOSEARCH %s", gettokenlist(1, " ", ""));
     nest++;
@@ -178,7 +176,7 @@ int parse_htpl_ldap_modify(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 2) RETURN(croak("LDAP MODIFY called with %d arguments, minimum needed is 2", numtokens))
+    if (numtokens < 2) RETURN(croak("%sLDAP MODIFY called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("$HTML::HTPL::htpl_dir_obj->modify('%s', '%2*');\n", gettoken(1));
     nesting = 0;
     RETURN(1)
@@ -224,7 +222,7 @@ int parse_htpl_ldap_add(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 2) RETURN(croak("LDAP ADD called with %d arguments, minimum needed is 2", numtokens))
+    if (numtokens < 2) RETURN(croak("%sLDAP ADD called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("$HTML::HTPL::htpl_dir_obj->add('%s', '%2*');\n", gettoken(1));
     nesting = 0;
     RETURN(1)
@@ -326,7 +324,7 @@ int parse_htpl_include(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("INCLUDE called with %d arguments, minimum needed is 1", numtokens))
+    if (numtokens < 1) RETURN(croak("%sINCLUDE called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     printfcode("&include(qw(%s));\n", gettokenlist(1, " ", ""));
     nesting = 0;
     RETURN(1)
@@ -345,8 +343,6 @@ int parse_htpl_default(stack, untag)
     makepersist(stack);
     if (!currscope) RETURN(croak("Unexpected DEFAULT"))
     if (currscope->scope != scope_switch) RETURN(croak("Now in scope %s from %d and met DEFAULT, expecting: switch", scope_names[currscope->scope], currscope->nline))
-    if (numtokens > 0) RETURN(croak("DEFAULT called with %d arguments, maximum needed is 0", numtokens))
-
     printcode("}; \n");
     printcode("$__htpl_cases_default = sub\n");
     printcode("{\n");
@@ -401,7 +397,7 @@ int parse_htpl_text_fixed(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 3) RETURN(croak("TEXT FIXED called with %d arguments, minimum needed is 3", numtokens))
+    if (numtokens < 3) RETURN(croak("%sTEXT FIXED called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     code = 1;
     buff = (STR)mysprintf("TEXT PREFIXED");
     nest++;
@@ -430,7 +426,7 @@ int parse_htpl_text_records(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 3) RETURN(croak("TEXT RECORDS called with %d arguments, minimum needed is 3", numtokens))
+    if (numtokens < 3) RETURN(croak("%sTEXT RECORDS called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     code = 1;
     buff = (STR)mysprintf("TEXT PREFIXED");
     nest++;
@@ -499,7 +495,7 @@ int parse_htpl_text_flat(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 3) RETURN(croak("TEXT FLAT called with %d arguments, minimum needed is 3", numtokens))
+    if (numtokens < 3) RETURN(croak("%sTEXT FLAT called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     if (!done) {
         done = 1;
         printcode("use HTML::HTPL::Flat;\n");
@@ -520,9 +516,8 @@ int parse_htpl_text_template___fwd(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("TEXT TEMPLATE called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 1) RETURN(croak("TEXT TEMPLATE called with %d arguments, maximum needed is 1", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sTEXT TEMPLATE called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 1) RETURN(croak("%sTEXT TEMPLATE called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
     printcode("{\n");
     printfcode("my $__htpl_params = \\%%%s;\n", gettoken(1));
     printcode("	&begintransaction;\n");
@@ -580,9 +575,8 @@ int parse_htpl_text_read(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 2) RETURN(croak("TEXT READ called with %d arguments, minimum needed is 2", numtokens))
-    if (numtokens > 2) RETURN(croak("TEXT READ called with %d arguments, maximum needed is 2", numtokens))
-
+    if (numtokens < 2) RETURN(croak("%sTEXT READ called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
+    if (numtokens > 2) RETURN(croak("%sTEXT READ called with %d arguments, maximum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("$%s = &readfile(\"%s\");\n", gettoken(1), gettoken(2));
     nesting = 0;
     RETURN(1)
@@ -599,7 +593,7 @@ int parse_htpl_text_csv(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 3) RETURN(croak("TEXT CSV called with %d arguments, minimum needed is 3", numtokens))
+    if (numtokens < 3) RETURN(croak("%sTEXT CSV called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     code = 1;
     buff = (STR)mysprintf("TEXT PRECSV");
     nest++;
@@ -628,7 +622,7 @@ int parse_htpl_text_cube(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 4) RETURN(croak("TEXT CUBE called with %d arguments, minimum needed is 4", numtokens))
+    if (numtokens < 4) RETURN(croak("%sTEXT CUBE called with %d arguments, minimum needed is 4", (untag ? "/" : ""), numtokens))
     code = 1;
     buff = (STR)mysprintf("TEXT PRECSV");
     nest++;
@@ -695,8 +689,6 @@ int parse_htpl_endif(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens > 0) RETURN(croak("ENDIF called with %d arguments, maximum needed is 0", numtokens))
-
     printcode("}\n");
     if (!currscope) RETURN(croak("Unexpected ENDIF"))
     if (currscope->scope != scope_if_then && currscope->scope != scope_if_then_else) RETURN(croak("Now in scope %s from %d and met ENDIF, expecting: if-then, if-then-else", scope_names[currscope->scope], currscope->nline))
@@ -716,7 +708,7 @@ int parse_htpl_net_get(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 2) RETURN(croak("NET GET called with %d arguments, minimum needed is 2", numtokens))
+    if (numtokens < 2) RETURN(croak("%sNET GET called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("$%s = $htpl_net_obj->get(\"%s\", qw(%s));\n", gettoken(1), gettoken(2), gettokenlist(3, " ", ""));
     nesting = 0;
     RETURN(1)
@@ -733,9 +725,8 @@ int parse_htpl_net_setup(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("NET SETUP called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 3) RETURN(croak("NET SETUP called with %d arguments, maximum needed is 3", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sNET SETUP called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 3) RETURN(croak("%sNET SETUP called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
     printfcode("$htpl_net_obj = HTML::HTPL::Client->setup(\"%s\", \"%s\", \"%s\");\n", gettoken(1), gettoken(2), gettoken(3));
     nesting = 0;
     RETURN(1)
@@ -786,9 +777,8 @@ int parse_htpl_for___fwd(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("FOR called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 4) RETURN(croak("FOR called with %d arguments, maximum needed is 4", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sFOR called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 4) RETURN(croak("%sFOR called with %d arguments, maximum needed is 4", (untag ? "/" : ""), numtokens))
     pushscope(scope_for, 0);
     if (numtokens <= 1)  {
         printfcode("foreach (1 .. %s) {\n", gettoken(1));
@@ -797,7 +787,7 @@ int parse_htpl_for___fwd(stack, untag)
         printfcode("foreach $%s (1 .. %s) {\n", gettoken(1), gettoken(2));
     }
     if (numtokens >= 3 && numtokens <= 3)  {
-        printfcode("foreach $%s (%s .. %s) {\n", gettoken(1), gettoken(1), gettoken(2));
+        printfcode("foreach $%s (%s .. %s) {\n", gettoken(1), gettoken(2), gettoken(3));
     }
     if (numtokens >= 4 && numtokens <= 4)  {
         printfcode("for ($%s = %s; $%s <= %s; $%s += %s) {\n", gettoken(1), gettoken(2), gettoken(1), gettoken(3), gettoken(1), gettoken(4));
@@ -896,9 +886,8 @@ int parse_htpl_sql_batch(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 2) RETURN(croak("SQL BATCH called with %d arguments, minimum needed is 2", numtokens))
-    if (numtokens > 2) RETURN(croak("SQL BATCH called with %d arguments, maximum needed is 2", numtokens))
-
+    if (numtokens < 2) RETURN(croak("%sSQL BATCH called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
+    if (numtokens > 2) RETURN(croak("%sSQL BATCH called with %d arguments, maximum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("$HTML::HTPL::htpl_db_obj->batch_insert('%s', $%s);\n", gettoken(1), gettoken(2));
     nesting = 0;
     RETURN(1)
@@ -931,7 +920,7 @@ int parse_htpl_sql_exec(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("SQL EXEC called with %d arguments, minimum needed is 1", numtokens))
+    if (numtokens < 1) RETURN(croak("%sSQL EXEC called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     printfcode("$HTML::HTPL::htpl_db_obj->execsql(&HTML::HTPL::Db'parse_sql(\"%s\"));\n", gettokenlist(1, " ", ""));
     nesting = 0;
     RETURN(1)
@@ -1004,9 +993,8 @@ int parse_htpl_sql_connect(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("SQL CONNECT called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 3) RETURN(croak("SQL CONNECT called with %d arguments, maximum needed is 3", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sSQL CONNECT called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 3) RETURN(croak("%sSQL CONNECT called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
     printfcode("$HTML::HTPL::htpl_db_obj = HTML::HTPL::Db->new(\"%s\", \"%s\", \"%s\");\n", gettoken(1), gettoken(2), gettoken(3));
     nesting = 0;
     RETURN(1)
@@ -1124,9 +1112,8 @@ int parse_htpl_sql_xbase(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("SQL XBASE called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 1) RETURN(croak("SQL XBASE called with %d arguments, maximum needed is 1", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sSQL XBASE called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 1) RETURN(croak("%sSQL XBASE called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL XBASE"))
     buff = (STR)mysprintf("SQL CONNECT DBI:XBase:%s", gettoken(1));
@@ -1183,7 +1170,7 @@ int parse_htpl_sql_postgresql(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("SQL POSTGRESQL called with %d arguments, minimum needed is 1", numtokens))
+    if (numtokens < 1) RETURN(croak("%sSQL POSTGRESQL called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL POSTGRESQL"))
     buff = (STR)mysprintf("SQL CONNECT DBI:Pg:dbname=%s", gettoken(1));
@@ -1244,9 +1231,8 @@ int parse_htpl_sql_mysql(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("SQL MYSQL called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 3) RETURN(croak("SQL MYSQL called with %d arguments, maximum needed is 3", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sSQL MYSQL called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 3) RETURN(croak("%sSQL MYSQL called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL MYSQL"))
     buff = (STR)mysprintf("SQL CONNECT DBI:mysql:%s %s", gettoken(1), gettokenlist(2, " ", ""));
@@ -1303,7 +1289,7 @@ int parse_htpl_sql_project(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 2) RETURN(croak("SQL PROJECT called with %d arguments, minimum needed is 2", numtokens))
+    if (numtokens < 2) RETURN(croak("%sSQL PROJECT called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printcode("{ my $imm;\n");
     code = 1;
     buff = (STR)mysprintf("SQL CURSOR imm %s", gettokenlist(2, " ", ""));
@@ -1373,9 +1359,8 @@ int parse_htpl_sql_scope_connect(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("SQL SCOPE CONNECT called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 3) RETURN(croak("SQL SCOPE CONNECT called with %d arguments, maximum needed is 3", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sSQL SCOPE CONNECT called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 3) RETURN(croak("%sSQL SCOPE CONNECT called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
     setvar("dbobj", (STR)mysprintf("$__htpl_db_%s_%d", getblockid(""), random()));
     if (!exportvar("dbobj", "")) RETURN(croak("Scope  not found in stack"));
     printfcode("my %s = \n", getvar("dbobj"));
@@ -1396,7 +1381,7 @@ int parse_htpl_sql_scope_exec(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("SQL SCOPE EXEC called with %d arguments, minimum needed is 1", numtokens))
+    if (numtokens < 1) RETURN(croak("%sSQL SCOPE EXEC called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     code = 1;
     buff = (STR)mysprintf("SQL SCOPE RETRIEVE");
     nest++;
@@ -1425,7 +1410,7 @@ int parse_htpl_sql_scope_cursor(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 2) RETURN(croak("SQL SCOPE CURSOR called with %d arguments, minimum needed is 2", numtokens))
+    if (numtokens < 2) RETURN(croak("%sSQL SCOPE CURSOR called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     code = 1;
     buff = (STR)mysprintf("SQL SCOPE RETRIEVE");
     nest++;
@@ -1504,9 +1489,8 @@ int parse_htpl_sql_msql(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("SQL MSQL called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 1) RETURN(croak("SQL MSQL called with %d arguments, maximum needed is 1", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sSQL MSQL called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 1) RETURN(croak("%sSQL MSQL called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL MSQL"))
     buff = (STR)mysprintf("SQL CONNECT DBI:mSQL:%s", gettoken(1));
@@ -1535,7 +1519,7 @@ int parse_htpl_sql_cursor(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 2) RETURN(croak("SQL CURSOR called with %d arguments, minimum needed is 2", numtokens))
+    if (numtokens < 2) RETURN(croak("%sSQL CURSOR called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("$%s = $HTML::HTPL::htpl_db_obj->cursor(&HTML::HTPL::Db'parse_sql(\"%s\"));\n", gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
     RETURN(1)
@@ -1606,7 +1590,7 @@ int parse_htpl_proc___fwd(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("PROC called with %d arguments, minimum needed is 1", numtokens))
+    if (numtokens < 1) RETURN(croak("%sPROC called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     pushscope(scope_procedure, 0);
     printfcode("sub %s {\n", gettoken(1));
     if (numtokens >= 2)  {
@@ -1662,7 +1646,7 @@ int parse_htpl_class___fwd(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("CLASS called with %d arguments, minimum needed is 1", numtokens))
+    if (numtokens < 1) RETURN(croak("%sCLASS called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     pushscope(scope_class, 0);
     if (disposetrue((STR)mysprintf("%s", getsubtoken(1, ':', 2))))  {
         printfcode(" package %s;\n", getsubtoken(1, ':', 1));
@@ -1839,7 +1823,7 @@ int parse_htpl_foreach___fwd(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 2) RETURN(croak("FOREACH called with %d arguments, minimum needed is 2", numtokens))
+    if (numtokens < 2) RETURN(croak("%sFOREACH called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     pushscope(scope_foreach, 0);
     printfcode("foreach $%s (qw(%s)) {\n", gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
@@ -1891,8 +1875,6 @@ int parse_htpl_loop(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens > 0) RETURN(croak("LOOP called with %d arguments, maximum needed is 0", numtokens))
-
     printcode("}\n");
     if (!currscope) RETURN(croak("Unexpected LOOP"))
     if (currscope->scope != scope_fetch) RETURN(croak("Now in scope %s from %d and met LOOP, expecting: fetch", scope_names[currscope->scope], currscope->nline))
@@ -1912,9 +1894,8 @@ int parse_htpl_ifnotnull___fwd(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("IFNOTNULL called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 1) RETURN(croak("IFNOTNULL called with %d arguments, maximum needed is 1", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sIFNOTNULL called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 1) RETURN(croak("%sIFNOTNULL called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
     pushscope(scope_if_then, 0);
     printfcode("unless (!$%s || $%s->none) {\n", gettoken(1), gettoken(1));
     nesting = 0;
@@ -1932,8 +1913,6 @@ int parse_htpl_ifnotnull___rev(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens > 0) RETURN(croak("IFNOTNULL called with %d arguments, maximum needed is 0", numtokens))
-
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in IFNOTNULL"))
     buff = (STR)mysprintf("ENDIF");
@@ -2228,9 +2207,8 @@ int parse_htpl_fetchit(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("FETCHIT called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 1) RETURN(croak("FETCHIT called with %d arguments, maximum needed is 1", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sFETCHIT called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 1) RETURN(croak("%sFETCHIT called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
     printfcode("$%s->fetch;\n", gettoken(1));
     nesting = 0;
     RETURN(1)
@@ -2247,8 +2225,6 @@ int parse_htpl_else(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens > 0) RETURN(croak("ELSE called with %d arguments, maximum needed is 0", numtokens))
-
     if (!currscope) RETURN(croak("Unexpected ELSE"))
     if (currscope->scope != scope_if_then) RETURN(croak("Now in scope %s from %d and met ELSE, expecting: if-then", scope_names[currscope->scope], currscope->nline))
     popscope();
@@ -2269,9 +2245,8 @@ int parse_htpl_fetch___fwd(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("FETCH called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 1) RETURN(croak("FETCH called with %d arguments, maximum needed is 1", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sFETCH called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 1) RETURN(croak("%sFETCH called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
     pushscope(scope_fetch, 0);
     printfcode("$%s->rewind if ($%s);\n", gettoken(1), gettoken(1));
     printfcode("while ($%s && !$%s->eof && $%s->fetch) {\n", gettoken(1), gettoken(1), gettoken(1));
@@ -2290,8 +2265,6 @@ int parse_htpl_fetch___rev(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens > 0) RETURN(croak("FETCH called with %d arguments, maximum needed is 0", numtokens))
-
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in FETCH"))
     buff = (STR)mysprintf("LOOP");
@@ -2335,9 +2308,8 @@ int parse_htpl_fetchcell(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 3) RETURN(croak("FETCHCELL called with %d arguments, minimum needed is 3", numtokens))
-    if (numtokens > 3) RETURN(croak("FETCHCELL called with %d arguments, maximum needed is 3", numtokens))
-
+    if (numtokens < 3) RETURN(croak("%sFETCHCELL called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
+    if (numtokens > 3) RETURN(croak("%sFETCHCELL called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
     printfcode("$%s = $%s->get(\"%s\");\n", gettoken(3), gettoken(1), gettoken(2));
     nesting = 0;
     RETURN(1)
@@ -2354,9 +2326,8 @@ int parse_htpl_ifnull___fwd(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("IFNULL called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 1) RETURN(croak("IFNULL called with %d arguments, maximum needed is 1", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sIFNULL called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 1) RETURN(croak("%sIFNULL called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
     pushscope(scope_if_then, 0);
     printfcode("if (!$%s || $%s->none) {\n", gettoken(1), gettoken(1));
     nesting = 0;
@@ -2374,8 +2345,6 @@ int parse_htpl_ifnull___rev(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens > 0) RETURN(croak("IFNULL called with %d arguments, maximum needed is 0", numtokens))
-
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in IFNULL"))
     buff = (STR)mysprintf("ENDIF");
@@ -2419,9 +2388,8 @@ int parse_htpl_define___fwd(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("DEFINE called with %d arguments, minimum needed is 1", numtokens))
-    if (numtokens > 1) RETURN(croak("DEFINE called with %d arguments, maximum needed is 1", numtokens))
-
+    if (numtokens < 1) RETURN(croak("%sDEFINE called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 1) RETURN(croak("%sDEFINE called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
     setvar("var", (STR)mysprintf("%s", gettoken(1)));
     printcode("&begintransaction;\n");
     nesting = 0;
@@ -2472,8 +2440,6 @@ int parse_htpl_destructor___fwd(stack, untag)
     makepersist(stack);
     if (!currscope) RETURN(croak("Unexpected DESTRUCTOR"))
     if (currscope->scope != scope_class) RETURN(croak("Now in scope %s from %d and met DESTRUCTOR, expecting: class", scope_names[currscope->scope], currscope->nline))
-    if (numtokens > 0) RETURN(croak("DESTRUCTOR called with %d arguments, maximum needed is 0", numtokens))
-
     pushscope(scope_destructor, 0);
     if (!importvar("destructor", "class")) RETURN(croak("Scope class not found in stack"));
     if (disposetrue((STR)mysprintf("%s", getvar("destructor"))))  {
@@ -2545,7 +2511,7 @@ int parse_htpl_if___fwd(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("IF called with %d arguments, minimum needed is 1", numtokens))
+    if (numtokens < 1) RETURN(croak("%sIF called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     pushscope(scope_if_then, 0);
     printfcode("if (%s) {\n", gettokenlist(1, " ", ""));
     nesting = 0;
@@ -2563,8 +2529,6 @@ int parse_htpl_if___rev(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens > 0) RETURN(croak("IF called with %d arguments, maximum needed is 0", numtokens))
-
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in IF"))
     buff = (STR)mysprintf("ENDIF");
@@ -2609,7 +2573,7 @@ int parse_htpl_graph(stack, untag)
 
     makepersist(stack);
     printcode("{\n");
-    if (numtokens < 3) RETURN(croak("GRAPH called with %d arguments, minimum needed is 3", numtokens))
+    if (numtokens < 3) RETURN(croak("%sGRAPH called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     if (!done) {
         done = 1;
         printcode("use HTML::HTPL::Graph;\n");
@@ -2934,9 +2898,8 @@ int parse_htpl_pts_set(stack, untag)
 
     makepersist(stack);
     printcode("{\n");
-    if (numtokens < 2) RETURN(croak("PTS SET called with %d arguments, minimum needed is 2", numtokens))
-    if (numtokens > 3) RETURN(croak("PTS SET called with %d arguments, maximum needed is 3", numtokens))
-
+    if (numtokens < 2) RETURN(croak("%sPTS SET called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
+    if (numtokens > 3) RETURN(croak("%sPTS SET called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
     printfcode("my @t = split(/:/, \"%s\");\n", gettoken(1));
     printcode("push(@t, $HTML::HTPL::Config::htpl_pts_port);\n");
     printcode("$HTML::HTPL::pts_obj = new RPC::PlClient(\n");
@@ -2962,7 +2925,7 @@ int parse_htpl_pts_create(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 2) RETURN(croak("PTS CREATE called with %d arguments, minimum needed is 2", numtokens))
+    if (numtokens < 2) RETURN(croak("%sPTS CREATE called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("$%s = $HTML::HTPL::pts_obj->ClientObject(\"%s\", \"new\",\n", gettoken(1), gettoken(2));
     printfcode("                      qw(%s));\n", gettokenlist(3, " ", ""));
     nesting = 0;
@@ -2980,9 +2943,8 @@ int parse_htpl_pts_pool(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 3) RETURN(croak("PTS POOL called with %d arguments, minimum needed is 3", numtokens))
-    if (numtokens > 3) RETURN(croak("PTS POOL called with %d arguments, maximum needed is 3", numtokens))
-
+    if (numtokens < 3) RETURN(croak("%sPTS POOL called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
+    if (numtokens > 3) RETURN(croak("%sPTS POOL called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
     printfcode("$%s = $HTML::HTPL::pts_obj->ClientObject(\"%s\", \n", gettoken(1), gettoken(2));
     printfcode(" \"getObject\", \"%s\");\n", gettoken(3));
     nesting = 0;
@@ -3000,7 +2962,7 @@ int parse_htpl_pts_call(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 2) RETURN(croak("PTS CALL called with %d arguments, minimum needed is 2", numtokens))
+    if (numtokens < 2) RETURN(croak("%sPTS CALL called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("$%s = $HTML::HTPL::pts_obj->Call(\"%s\", qw(%s));\n", gettoken(1), gettoken(1), gettokenlist(3, " ", ""));
     nesting = 0;
     RETURN(1)
@@ -3053,7 +3015,7 @@ int parse_htpl_project(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 3) RETURN(croak("PROJECT called with %d arguments, minimum needed is 3", numtokens))
+    if (numtokens < 3) RETURN(croak("%sPROJECT called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     printfcode("@%s = $%s->project(qw(%s));\n", gettoken(2), gettoken(1), gettokenlist(3, " ", ""));
     nesting = 0;
     RETURN(1)
@@ -3070,9 +3032,8 @@ int parse_htpl_fetchcols(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 2) RETURN(croak("FETCHCOLS called with %d arguments, minimum needed is 2", numtokens))
-    if (numtokens > 2) RETURN(croak("FETCHCOLS called with %d arguments, maximum needed is 2", numtokens))
-
+    if (numtokens < 2) RETURN(croak("%sFETCHCOLS called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
+    if (numtokens > 2) RETURN(croak("%sFETCHCOLS called with %d arguments, maximum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("foreach %s (%s->cols) {\n", gettoken(2), gettoken(1));
     nesting = 0;
     RETURN(1)
@@ -3089,7 +3050,7 @@ int parse_htpl_call(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    if (numtokens < 1) RETURN(croak("CALL called with %d arguments, minimum needed is 1", numtokens))
+    if (numtokens < 1) RETURN(croak("%sCALL called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     printfcode("&%s(%2, *%);\n", gettoken(1));
     nesting = 0;
     RETURN(1)
