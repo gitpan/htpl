@@ -18,7 +18,9 @@ int parse_htpl_proc___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sPROC called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     pushscope(scope_procedure, 0);
@@ -39,7 +41,9 @@ int parse_htpl_proc___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("}\n");
     printcode("	\n");
@@ -59,7 +63,9 @@ int parse_htpl_proc(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_proc___fwd(stack, untag))
         else RETURN(parse_htpl_proc___rev(stack, untag))
@@ -74,7 +80,9 @@ int parse_htpl_try___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     pushscope(scope_try, 0);
     printcode("{\n");
@@ -92,7 +100,9 @@ int parse_htpl_try___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("};\n");
     printcode("$@ = undef; \n");
@@ -129,7 +139,9 @@ int parse_htpl_try(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_try___fwd(stack, untag))
         else RETURN(parse_htpl_try___rev(stack, untag))
@@ -144,7 +156,9 @@ int parse_htpl_graph(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("{\n");
     if (numtokens < 3) RETURN(croak("%sGRAPH called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
@@ -179,7 +193,9 @@ int parse_htpl_case(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!currscope) RETURN(croak("Unexpected CASE"))
     if (currscope->scope != scope_switch) RETURN(croak("Now in scope %s from %d and met CASE, expecting: switch", scope_names[currscope->scope], currscope->nline))
@@ -212,7 +228,9 @@ int parse_htpl_img_rnd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("{\n");
     printfcode("my %%tags = &HTML::HTPL::Sys::parse_tags('%s');\n", gettokenlist(1, " ", ""));
@@ -246,7 +264,9 @@ int parse_htpl_img(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     eat(&stack, token);
     {
@@ -275,7 +295,9 @@ int parse_htpl_mem_project(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("{ my $imm;\n");
     code = 1;
@@ -316,7 +338,9 @@ int parse_htpl_mem_search(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in MEM SEARCH"))
@@ -344,7 +368,9 @@ int parse_htpl_mem_cursor(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printfcode("$%s = HTML::HTPL::Mem'cursor(&HTML::HTPL::Db'parse_sql(\"%s\"));\n", gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
@@ -360,7 +386,9 @@ int parse_htpl_mem_immediate(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("{ my $imm;\n");
     code = 1;
@@ -401,7 +429,9 @@ int parse_htpl_mem(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!done) {
         done = 1;
@@ -437,7 +467,9 @@ int parse_htpl_assert(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sASSERT called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     printfcode("die \"Assertion failed: (%s)\" unless (%s);\n", gettokenlist(-1, " ", ""), gettokenlist(1, " ", ""));
@@ -454,7 +486,9 @@ int parse_htpl_listbox(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("{\n");
     code = 1;
@@ -486,7 +520,9 @@ int parse_htpl_class___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sCLASS called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     pushscope(scope_class, 0);
@@ -540,7 +576,9 @@ int parse_htpl_class___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!currscope) RETURN(croak("Unexpected CLASS"))
     if (currscope->scope != scope_class) RETURN(croak("Now in scope %s from %d and met CLASS, expecting: class", scope_names[currscope->scope], currscope->nline))
@@ -558,7 +596,9 @@ int parse_htpl_class(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_class___fwd(stack, untag))
         else RETURN(parse_htpl_class___rev(stack, untag))
@@ -573,7 +613,9 @@ int parse_htpl_fetchit(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sFETCHIT called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 1) RETURN(croak("%sFETCHIT called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
@@ -591,7 +633,9 @@ int parse_htpl_filter(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printfcode("$%s = $%s->filter(sub {%s;});\n", gettoken(2), gettoken(1), gettokenlist(3, " ", ""));
     nesting = 0;
@@ -607,7 +651,9 @@ int parse_htpl_catch(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!currscope) RETURN(croak("Unexpected CATCH"))
     if (currscope->scope != scope_try && currscope->scope != scope_catch) RETURN(croak("Now in scope %s from %d and met CATCH, expecting: try,catch", scope_names[currscope->scope], currscope->nline))
@@ -633,7 +679,9 @@ int parse_htpl_project(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 3) RETURN(croak("%sPROJECT called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     printfcode("@%s = $%s->project(qw(%s));\n", gettoken(2), gettoken(1), gettokenlist(3, " ", ""));
@@ -650,7 +698,9 @@ int parse_htpl_die(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printfcode("&htdie(\"%s\");\n", gettokenlist(1, " ", ""));
     nesting = 0;
@@ -666,9 +716,29 @@ int parse_htpl_continue(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("next;\n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_rewind(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    printcode("&rewind;\n");
     nesting = 0;
     RETURN(1)
 }
@@ -682,7 +752,9 @@ int parse_htpl_fetchitorbreak(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sFETCHITORBREAK called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 1) RETURN(croak("%sFETCHITORBREAK called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
@@ -700,7 +772,9 @@ int parse_htpl_else(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!currscope) RETURN(croak("Unexpected ELSE"))
     if (currscope->scope != scope_if_then) RETURN(croak("Now in scope %s from %d and met ELSE, expecting: if-then", scope_names[currscope->scope], currscope->nline))
@@ -720,7 +794,9 @@ int parse_htpl_text_precsv(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!nest) RETURN(0)
     if (!done) {
@@ -740,7 +816,9 @@ int parse_htpl_text_template___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sTEXT TEMPLATE called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 1) RETURN(croak("%sTEXT TEMPLATE called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
@@ -760,7 +838,9 @@ int parse_htpl_text_template___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("{ my $text = &endtransaction;\n");
     printcode("		 my $temp = new Template({ 'INCLUDE_PATH' => $ORIG_DIR,\n");
@@ -780,7 +860,9 @@ int parse_htpl_text_template(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!done) {
         done = 1;
@@ -799,7 +881,9 @@ int parse_htpl_text_fixed(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 3) RETURN(croak("%sTEXT FIXED called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     code = 1;
@@ -828,7 +912,9 @@ int parse_htpl_text_read(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sTEXT READ called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     if (numtokens > 2) RETURN(croak("%sTEXT READ called with %d arguments, maximum needed is 2", (untag ? "/" : ""), numtokens))
@@ -846,7 +932,9 @@ int parse_htpl_text_prefixed(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!nest) RETURN(0)
     if (!done) {
@@ -866,7 +954,9 @@ int parse_htpl_text_records(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 3) RETURN(croak("%sTEXT RECORDS called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     code = 1;
@@ -895,7 +985,9 @@ int parse_htpl_text_flat(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 3) RETURN(croak("%sTEXT FLAT called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     if (!done) {
@@ -916,7 +1008,9 @@ int parse_htpl_text_csv(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 3) RETURN(croak("%sTEXT CSV called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     code = 1;
@@ -945,7 +1039,9 @@ int parse_htpl_text_cube(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 4) RETURN(croak("%sTEXT CUBE called with %d arguments, minimum needed is 4", (untag ? "/" : ""), numtokens))
     code = 1;
@@ -975,7 +1071,9 @@ int parse_htpl_text(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     eat(&stack, token);
     {
@@ -1012,7 +1110,9 @@ int parse_htpl_ifnotnull___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sIFNOTNULL called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 1) RETURN(croak("%sIFNOTNULL called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
@@ -1031,7 +1131,9 @@ int parse_htpl_ifnotnull___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in IFNOTNULL"))
@@ -1059,7 +1161,9 @@ int parse_htpl_ifnotnull(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_ifnotnull___fwd(stack, untag))
         else RETURN(parse_htpl_ifnotnull___rev(stack, untag))
@@ -1074,7 +1178,9 @@ int parse_htpl_connection(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sCONNECTION called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     printfcode("        *HTML::HTPL::htpl_db_obj = \\$%s;\n", gettoken(1));
@@ -1105,7 +1211,9 @@ int parse_htpl_time_modified(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("print scalar(localtime(&lastmodified()));\n");
     nesting = 0;
@@ -1121,7 +1229,9 @@ int parse_htpl_time(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     eat(&stack, token);
     {
@@ -1150,7 +1260,9 @@ int parse_htpl_auth_create(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("use HTML::HTPL::ACL;\n");
     printcode("HTML::HTPL::ACL::CreateDDL($HTML::HTPL::htpl_db_obj->{'dbh'});\n");
@@ -1167,7 +1279,9 @@ int parse_htpl_loop(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("}\n");
     if (!currscope) RETURN(croak("Unexpected LOOP"))
@@ -1186,7 +1300,9 @@ int parse_htpl_end(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in END"))
@@ -1214,7 +1330,9 @@ int parse_htpl_default(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!currscope) RETURN(croak("Unexpected DEFAULT"))
     if (currscope->scope != scope_switch) RETURN(croak("Now in scope %s from %d and met DEFAULT, expecting: switch", scope_names[currscope->scope], currscope->nline))
@@ -1234,7 +1352,9 @@ int parse_htpl_counter(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printfcode("print &increasefile(\"%s\");\n", gettoken(1));
     nesting = 0;
@@ -1250,7 +1370,9 @@ int parse_htpl_redirect(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sREDIRECT called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 1) RETURN(croak("%sREDIRECT called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
@@ -1268,7 +1390,9 @@ int parse_htpl_call(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sCALL called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     printfcode("&%s(%2, *%);\n", gettoken(1));
@@ -1285,7 +1409,9 @@ int parse_htpl_throw(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printfcode("%#line %d %s\n", nline, thefilename);
     printfcode("die \"%s\";\n", gettokenlist(1, " ", ""));
@@ -1303,7 +1429,9 @@ int parse_htpl_auth_iflogin(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sAUTH IFLOGIN called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     if (numtokens > 2) RETURN(croak("%sAUTH IFLOGIN called with %d arguments, maximum needed is 2", (untag ? "/" : ""), numtokens))
@@ -1344,7 +1472,9 @@ int parse_htpl_auth_realm(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sAUTH REALM called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 1) RETURN(croak("%sAUTH REALM called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
@@ -1368,7 +1498,9 @@ int parse_htpl_auth_ifunauthorized___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     pushscope(scope_if_then, 0);
     printcode("unless\n");
@@ -1386,7 +1518,9 @@ int parse_htpl_auth_ifunauthorized___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in AUTH IFUNAUTHORIZED"))
@@ -1414,7 +1548,9 @@ int parse_htpl_auth_ifunauthorized(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_auth_ifunauthorized___fwd(stack, untag))
         else RETURN(parse_htpl_auth_ifunauthorized___rev(stack, untag))
@@ -1429,7 +1565,9 @@ int parse_htpl_auth_iflogged___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     pushscope(scope_if_then, 0);
     printcode("if\n");
@@ -1447,7 +1585,9 @@ int parse_htpl_auth_iflogged___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in AUTH IFLOGGED"))
@@ -1475,7 +1615,9 @@ int parse_htpl_auth_iflogged(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_auth_iflogged___fwd(stack, untag))
         else RETURN(parse_htpl_auth_iflogged___rev(stack, untag))
@@ -1490,7 +1632,9 @@ int parse_htpl_auth_login(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sAUTH LOGIN called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     if (numtokens > 2) RETURN(croak("%sAUTH LOGIN called with %d arguments, maximum needed is 2", (untag ? "/" : ""), numtokens))
@@ -1509,7 +1653,9 @@ int parse_htpl_auth_adduser(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sAUTH ADDUSER called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     if (numtokens > 3) RETURN(croak("%sAUTH ADDUSER called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
@@ -1535,7 +1681,9 @@ int parse_htpl_auth_ifnotlogged___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     pushscope(scope_if_then, 0);
     printcode("unless\n");
@@ -1553,7 +1701,9 @@ int parse_htpl_auth_ifnotlogged___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in AUTH IFNOTLOGGED"))
@@ -1581,7 +1731,9 @@ int parse_htpl_auth_ifnotlogged(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_auth_ifnotlogged___fwd(stack, untag))
         else RETURN(parse_htpl_auth_ifnotlogged___rev(stack, untag))
@@ -1596,7 +1748,9 @@ int parse_htpl_auth_ifauthorized___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     pushscope(scope_if_then, 0);
     printcode("if\n");
@@ -1614,7 +1768,9 @@ int parse_htpl_auth_ifauthorized___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in AUTH IFAUTHORIZED"))
@@ -1642,7 +1798,9 @@ int parse_htpl_auth_ifauthorized(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_auth_ifauthorized___fwd(stack, untag))
         else RETURN(parse_htpl_auth_ifauthorized___rev(stack, untag))
@@ -1657,7 +1815,9 @@ int parse_htpl_auth(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!done) {
         done = 1;
@@ -1697,13 +1857,72 @@ int parse_htpl_fetchcols(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sFETCHCOLS called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     if (numtokens > 2) RETURN(croak("%sFETCHCOLS called with %d arguments, maximum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("foreach %s (%s->cols) {\n", gettoken(2), gettoken(1));
     nesting = 0;
     RETURN(1)
+}
+
+int parse_htpl_init___fwd(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    pushscope(scope_init, 0);
+    printcode("sub InitDoc {\n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_init___rev(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    printcode("}\n");
+    if (!currscope) RETURN(croak("Unexpected INIT"))
+    if (currscope->scope != scope_init) RETURN(croak("Now in scope %s from %d and met INIT, expecting: init", scope_names[currscope->scope], currscope->nline))
+    popscope();
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_init(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_init___fwd(stack, untag))
+        else RETURN(parse_htpl_init___rev(stack, untag))
 }
 
 int parse_htpl_mail___fwd(stack, untag)
@@ -1715,7 +1934,9 @@ int parse_htpl_mail___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("{\n");
     printfcode("my %%tags = &HTML::HTPL::Sys::parse_tags('%s');\n", gettokenlist(1, " ", ""));
@@ -1741,7 +1962,9 @@ int parse_htpl_mail___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("		$message = &endtransaction();\n");
     printcode("		$message = &subhash($message, '#', %params)\n");
@@ -1766,7 +1989,9 @@ int parse_htpl_mail(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_mail___fwd(stack, untag))
         else RETURN(parse_htpl_mail___rev(stack, untag))
@@ -1781,7 +2006,9 @@ int parse_htpl_endif(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("}\n");
     if (!currscope) RETURN(croak("Unexpected ENDIF"))
@@ -1800,7 +2027,9 @@ int parse_htpl_constructor___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!currscope) RETURN(croak("Unexpected CONSTRUCTOR"))
     if (currscope->scope != scope_class) RETURN(croak("Now in scope %s from %d and met CONSTRUCTOR, expecting: class", scope_names[currscope->scope], currscope->nline))
@@ -1857,7 +2086,9 @@ int parse_htpl_constructor___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("    $self;\n");
     printcode("}\n");
@@ -1879,7 +2110,9 @@ int parse_htpl_constructor(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_constructor___fwd(stack, untag))
         else RETURN(parse_htpl_constructor___rev(stack, untag))
@@ -1894,7 +2127,9 @@ int parse_htpl_publish(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printfcode("&publish(%%$%s);\n", gettoken(1));
     nesting = 0;
@@ -1910,7 +2145,9 @@ int parse_htpl_switch_case___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     pushscope(scope_switch, 0);
     printcode("{\n");
@@ -1932,7 +2169,9 @@ int parse_htpl_switch_case___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("}; my $__htpl_proc = $__htpl_cases{$__htpl_cases_choose}\n");
     printcode("				|| $__htpl_cases_default;\n");
@@ -1955,7 +2194,9 @@ int parse_htpl_switch_case(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_switch_case___fwd(stack, untag))
         else RETURN(parse_htpl_switch_case___rev(stack, untag))
@@ -1970,7 +2211,9 @@ int parse_htpl_switch_rnd___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     pushscope(scope_random_switch, 0);
     printcode("{\n");
@@ -1999,7 +2242,9 @@ int parse_htpl_switch_rnd___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("}; my @__htpl_case_keys = keys %__htpl_cases;\n");
     printcode("        my $__htpl_rcase = int(rand(@__htpl_case_keys));\n");
@@ -2033,7 +2278,9 @@ int parse_htpl_switch_rnd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_switch_rnd___fwd(stack, untag))
         else RETURN(parse_htpl_switch_rnd___rev(stack, untag))
@@ -2048,7 +2295,9 @@ int parse_htpl_switch(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     eat(&stack, token);
     {
@@ -2078,7 +2327,9 @@ int parse_htpl_fetch___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sFETCH called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 1) RETURN(croak("%sFETCH called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
@@ -2098,7 +2349,9 @@ int parse_htpl_fetch___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in FETCH"))
@@ -2126,7 +2379,9 @@ int parse_htpl_fetch(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_fetch___fwd(stack, untag))
         else RETURN(parse_htpl_fetch___rev(stack, untag))
@@ -2141,7 +2396,9 @@ int parse_htpl_for___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sFOR called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 4) RETURN(croak("%sFOR called with %d arguments, maximum needed is 4", (untag ? "/" : ""), numtokens))
@@ -2171,7 +2428,9 @@ int parse_htpl_for___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("}\n");
     if (!currscope) RETURN(croak("Unexpected FOR"))
@@ -2190,7 +2449,9 @@ int parse_htpl_for(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_for___fwd(stack, untag))
         else RETURN(parse_htpl_for___rev(stack, untag))
@@ -2205,7 +2466,9 @@ int parse_htpl_exit(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("exit;\n");
     nesting = 0;
@@ -2221,13 +2484,72 @@ int parse_htpl_load(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sLOAD called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     printfcode("die \"Unknown query\" unless $HTML::HTPL::Sys::query_pool{'%s'};\n", gettoken(1));
     printfcode("$%s = $HTML::HTPL::Sys::query_pool{'%s'}->load(qw(%s));\n", gettoken(1), gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
     RETURN(1)
+}
+
+int parse_htpl_cleanup___fwd(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    pushscope(scope_clean, 0);
+    printcode("sub CleanDoc {\n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_cleanup___rev(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    printcode("}\n");
+    if (!currscope) RETURN(croak("Unexpected CLEANUP"))
+    if (currscope->scope != scope_clean) RETURN(croak("Now in scope %s from %d and met CLEANUP, expecting: clean", scope_names[currscope->scope], currscope->nline))
+    popscope();
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_cleanup(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_cleanup___fwd(stack, untag))
+        else RETURN(parse_htpl_cleanup___rev(stack, untag))
 }
 
 int parse_htpl_include(stack, untag)
@@ -2239,7 +2561,9 @@ int parse_htpl_include(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sINCLUDE called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     printfcode("&include(qw(%s));\n", gettokenlist(1, " ", ""));
@@ -2256,7 +2580,9 @@ int parse_htpl_sql_search(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL SEARCH"))
@@ -2284,7 +2610,9 @@ int parse_htpl_sql_query(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printfcode("$%s = $HTML::HTPL::htpl_db_obj->query(\"%s\", qw(%s));\n", gettoken(1), gettoken(2), gettokenlist(3, " ", ""));
     nesting = 0;
@@ -2300,7 +2628,9 @@ int parse_htpl_sql_postgres(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL POSTGRES"))
@@ -2328,7 +2658,9 @@ int parse_htpl_sql_postgresql(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sSQL POSTGRESQL called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     nesting++;
@@ -2357,7 +2689,9 @@ int parse_htpl_sql_batch(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sSQL BATCH called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     if (numtokens > 2) RETURN(croak("%sSQL BATCH called with %d arguments, maximum needed is 2", (untag ? "/" : ""), numtokens))
@@ -2375,7 +2709,9 @@ int parse_htpl_sql_msql(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sSQL MSQL called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 1) RETURN(croak("%sSQL MSQL called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
@@ -2405,7 +2741,9 @@ int parse_htpl_sql_connect(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sSQL CONNECT called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 3) RETURN(croak("%sSQL CONNECT called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
@@ -2423,7 +2761,9 @@ int parse_htpl_sql_project(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sSQL PROJECT called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printcode("{ my $imm;\n");
@@ -2465,7 +2805,9 @@ int parse_htpl_sql_scope_exec(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sSQL SCOPE EXEC called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     code = 1;
@@ -2494,7 +2836,9 @@ int parse_htpl_sql_scope_cursor(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sSQL SCOPE CURSOR called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     code = 1;
@@ -2524,7 +2868,9 @@ int parse_htpl_sql_scope_retrieve(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!nest) RETURN(0)
     if (!importvar("dbobj", "")) RETURN(croak("Scope  not found in stack"));
@@ -2541,7 +2887,9 @@ int parse_htpl_sql_scope_connect(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sSQL SCOPE CONNECT called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 3) RETURN(croak("%sSQL SCOPE CONNECT called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
@@ -2563,7 +2911,9 @@ int parse_htpl_sql_scope(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     eat(&stack, token);
     {
@@ -2595,7 +2945,9 @@ int parse_htpl_sql_delete(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printfcode("$HTML::HTPL::htpl_db_obj->delete(\"%s, qw(%s));\n", gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
@@ -2611,7 +2963,9 @@ int parse_htpl_sql_immediate(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("{ my $imm;\n");
     code = 1;
@@ -2652,7 +3006,9 @@ int parse_htpl_sql_exec(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sSQL EXEC called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     printfcode("$HTML::HTPL::htpl_db_obj->execsql(&HTML::HTPL::Db'parse_sql(\"%s\"));\n", gettokenlist(1, " ", ""));
@@ -2669,7 +3025,9 @@ int parse_htpl_sql_execute(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL EXECUTE"))
@@ -2697,7 +3055,9 @@ int parse_htpl_sql_declare(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printfcode("$HTML::HTPL::Sys::query_pool{'%s'} ||= $HTML::HTPL::htpl_db_obj->prepare(\"%s\");\n", gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
@@ -2713,7 +3073,9 @@ int parse_htpl_sql_add(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL ADD"))
@@ -2741,7 +3103,9 @@ int parse_htpl_sql_modify(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL MODIFY"))
@@ -2769,7 +3133,9 @@ int parse_htpl_sql_mysql(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sSQL MYSQL called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 3) RETURN(croak("%sSQL MYSQL called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
@@ -2799,7 +3165,9 @@ int parse_htpl_sql_xbase(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sSQL XBASE called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 1) RETURN(croak("%sSQL XBASE called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
@@ -2829,7 +3197,9 @@ int parse_htpl_sql_erase(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in SQL ERASE"))
@@ -2857,7 +3227,9 @@ int parse_htpl_sql_cursor(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sSQL CURSOR called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("$%s = $HTML::HTPL::htpl_db_obj->cursor(&HTML::HTPL::Db'parse_sql(\"%s\"));\n", gettoken(1), gettokenlist(2, " ", ""));
@@ -2874,7 +3246,9 @@ int parse_htpl_sql_update(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printfcode("$HTML::HTPL::htpl_db_obj->update(\"%s\", qw(%s));\n", gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
@@ -2890,7 +3264,9 @@ int parse_htpl_sql_insert(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printfcode("$HTML::HTPL::htpl_db_obj->add(\"%s\", qw(%s));\n", gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
@@ -2906,7 +3282,9 @@ int parse_htpl_sql(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!done) {
         done = 1;
@@ -2960,7 +3338,9 @@ int parse_htpl_net_setup(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sNET SETUP called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 3) RETURN(croak("%sNET SETUP called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
@@ -2978,7 +3358,9 @@ int parse_htpl_net_get(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sNET GET called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("$%s = $htpl_net_obj->get(\"%s\", qw(%s));\n", gettoken(1), gettoken(2), gettokenlist(3, " ", ""));
@@ -2995,7 +3377,9 @@ int parse_htpl_net(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!done) {
         done = 1;
@@ -3029,7 +3413,9 @@ int parse_htpl_clsutils_imp(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!importvar("cls", "class")) RETURN(croak("Scope class not found in stack"));
     nesting = 0;
@@ -3045,7 +3431,9 @@ int parse_htpl_clsutils_mine(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     code = 1;
     buff = (STR)mysprintf("CLSUTILS IMP");
@@ -3073,7 +3461,9 @@ int parse_htpl_clsutils_other(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     code = 1;
     buff = (STR)mysprintf("CLSUTILS IMP");
@@ -3101,7 +3491,9 @@ int parse_htpl_clsutils(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!nest) RETURN(0)
     eat(&stack, token);
@@ -3133,7 +3525,9 @@ int parse_htpl_define___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sDEFINE called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 1) RETURN(croak("%sDEFINE called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
@@ -3152,7 +3546,9 @@ int parse_htpl_define___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printfcode("$%s = &endtransaction; \n", getvar("var"));
     nesting = 0;
@@ -3168,7 +3564,9 @@ int parse_htpl_define(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_define___fwd(stack, untag))
         else RETURN(parse_htpl_define___rev(stack, untag))
@@ -3183,7 +3581,9 @@ int parse_htpl_pts_pool(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 3) RETURN(croak("%sPTS POOL called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     if (numtokens > 3) RETURN(croak("%sPTS POOL called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
@@ -3202,7 +3602,9 @@ int parse_htpl_pts_call(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sPTS CALL called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("$%s = $HTML::HTPL::pts_obj->Call(\"%s\", qw(%s));\n", gettoken(1), gettoken(1), gettokenlist(3, " ", ""));
@@ -3219,7 +3621,9 @@ int parse_htpl_pts_create(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sPTS CREATE called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("$%s = $HTML::HTPL::pts_obj->ClientObject(\"%s\", \"new\",\n", gettoken(1), gettoken(2));
@@ -3237,7 +3641,9 @@ int parse_htpl_pts_set(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("{\n");
     if (numtokens < 2) RETURN(croak("%sPTS SET called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
@@ -3265,7 +3671,9 @@ int parse_htpl_pts(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!done) {
         done = 1;
@@ -3301,7 +3709,9 @@ int parse_htpl_foreach___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sFOREACH called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     pushscope(scope_foreach, 0);
@@ -3319,7 +3729,9 @@ int parse_htpl_foreach___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("}\n");
     if (!currscope) RETURN(croak("Unexpected FOREACH"))
@@ -3338,7 +3750,9 @@ int parse_htpl_foreach(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_foreach___fwd(stack, untag))
         else RETURN(parse_htpl_foreach___rev(stack, untag))
@@ -3353,7 +3767,9 @@ int parse_htpl_out_tag(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!nest) RETURN(0)
     printfcode("print &outhtmltag(\"%s\", %s);\n", gettoken(1), gettoken(2));
@@ -3370,7 +3786,9 @@ int parse_htpl_out(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     eat(&stack, token);
     {
@@ -3399,7 +3817,9 @@ int parse_htpl_rem___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("&begintransaction;\n");
     nesting = 0;
@@ -3415,7 +3835,9 @@ int parse_htpl_rem___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("&endtransaction;\n");
     nesting = 0;
@@ -3431,7 +3853,9 @@ int parse_htpl_rem(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_rem___fwd(stack, untag))
         else RETURN(parse_htpl_rem___rev(stack, untag))
@@ -3446,7 +3870,9 @@ int parse_htpl_next(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("}\n");
     if (!currscope) RETURN(croak("Unexpected NEXT"))
@@ -3465,7 +3891,9 @@ int parse_htpl_fetchcell(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 3) RETURN(croak("%sFETCHCELL called with %d arguments, minimum needed is 3", (untag ? "/" : ""), numtokens))
     if (numtokens > 3) RETURN(croak("%sFETCHCELL called with %d arguments, maximum needed is 3", (untag ? "/" : ""), numtokens))
@@ -3483,7 +3911,9 @@ int parse_htpl_ldap_search(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("{\n");
     if (numtokens < 1) RETURN(croak("%sLDAP SEARCH called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
@@ -3514,7 +3944,9 @@ int parse_htpl_ldap_delete(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sLDAP DELETE called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 1) RETURN(croak("%sLDAP DELETE called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
@@ -3532,7 +3964,9 @@ int parse_htpl_ldap_dosearch(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("{\n");
     printfcode("my %%tags = &HTML::HTPL::Sys::parse_tags('%s');\n", gettokenlist(1, " ", ""));
@@ -3561,7 +3995,9 @@ int parse_htpl_ldap_add(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sLDAP ADD called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("$HTML::HTPL::htpl_dir_obj->add('%s', '%2*');\n", gettoken(1));
@@ -3578,7 +4014,9 @@ int parse_htpl_ldap_modify(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("%sLDAP MODIFY called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
     printfcode("$HTML::HTPL::htpl_dir_obj->modify('%s', '%2*');\n", gettoken(1));
@@ -3595,7 +4033,9 @@ int parse_htpl_ldap_init(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sLDAP INIT called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 4) RETURN(croak("%sLDAP INIT called with %d arguments, maximum needed is 4", (untag ? "/" : ""), numtokens))
@@ -3614,7 +4054,9 @@ int parse_htpl_ldap(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!done) {
         done = 1;
@@ -3652,7 +4094,9 @@ int parse_htpl_break(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("last;\n");
     nesting = 0;
@@ -3668,7 +4112,9 @@ int parse_htpl_if___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sIF called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     pushscope(scope_if_then, 0);
@@ -3686,7 +4132,9 @@ int parse_htpl_if___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in IF"))
@@ -3714,7 +4162,9 @@ int parse_htpl_if(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_if___fwd(stack, untag))
         else RETURN(parse_htpl_if___rev(stack, untag))
@@ -3729,7 +4179,9 @@ int parse_htpl_ifnull___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sIFNULL called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 1) RETURN(croak("%sIFNULL called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
@@ -3748,7 +4200,9 @@ int parse_htpl_ifnull___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     nesting++;
     if (nesting > 1) RETURN(croak("Infinite loop in IFNULL"))
@@ -3776,7 +4230,9 @@ int parse_htpl_ifnull(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_ifnull___fwd(stack, untag))
         else RETURN(parse_htpl_ifnull___rev(stack, untag))
@@ -3791,7 +4247,9 @@ int parse_htpl_destructor___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!currscope) RETURN(croak("Unexpected DESTRUCTOR"))
     if (currscope->scope != scope_class) RETURN(croak("Now in scope %s from %d and met DESTRUCTOR, expecting: class", scope_names[currscope->scope], currscope->nline))
@@ -3828,7 +4286,9 @@ int parse_htpl_destructor___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("}\n");
     if (!currscope) RETURN(croak("Unexpected DESTRUCTOR"))
@@ -3849,7 +4309,9 @@ int parse_htpl_destructor(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_destructor___fwd(stack, untag))
         else RETURN(parse_htpl_destructor___rev(stack, untag))
@@ -3864,7 +4326,9 @@ int parse_htpl_method___fwd(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!currscope) RETURN(croak("Unexpected METHOD"))
     if (currscope->scope != scope_class) RETURN(croak("Now in scope %s from %d and met METHOD, expecting: class", scope_names[currscope->scope], currscope->nline))
@@ -3898,7 +4362,9 @@ int parse_htpl_method___rev(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     printcode("}\n");
     if (!currscope) RETURN(croak("Unexpected METHOD"))
@@ -3919,7 +4385,9 @@ int parse_htpl_method(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_method___fwd(stack, untag))
         else RETURN(parse_htpl_method___rev(stack, untag))
@@ -3934,7 +4402,9 @@ int parse_htpl(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     eat(&stack, token);
     {
@@ -3946,6 +4416,7 @@ int parse_htpl(stack, untag)
             "CASE",
             "CATCH",
             "CLASS",
+            "CLEANUP",
             "CLSUTILS",
             "CONNECTION",
             "CONSTRUCTOR",
@@ -3973,6 +4444,7 @@ int parse_htpl(stack, untag)
             "IFNULL",
             "IMG",
             "INCLUDE",
+            "INIT",
             "LDAP",
             "LISTBOX",
             "LOAD",
@@ -3989,18 +4461,19 @@ int parse_htpl(stack, untag)
             "PUBLISH",
             "REDIRECT",
             "REM",
+            "REWIND",
             "SQL",
             "SWITCH",
             "TEXT",
             "THROW",
             "TIME",
             "TRY"};
-        static int htpl_locations[] = { 14, 15, 25, 33, 40, 49, 53, -1, 10, 31, 51, -1, 20, 37, 52, 55, -1, 8, 22, 27, 47, 50, -1, 1, 2, 7, 34, 35, 38, 41, 45, -1, 11, 16, 17, 18, 21, 36, 42, 54, -1, 9, 32, 43, -1, 3, 19, 24, 28, 29, 46, 48, -1, 0, 4, 26, 30, 39, -1, 5, 6, 12, 13, 23, 44, 56, -1 };
-        static int htpl_shortcuts[] = { 0, 8, 12, 17, 23, 32, 41, 45, 53, 59 };
+        static int htpl_locations[] = { 15, 16, 26, 34, 42, 51, 56, -1, 11, 32, 54, -1, 21, 39, 53, 55, 58, -1, 9, 23, 28, 49, 52, -1, 1, 2, 7, 35, 37, 40, 43, 47, -1, 12, 17, 18, 19, 22, 38, 44, 57, -1, 10, 33, 45, -1, 3, 8, 20, 25, 29, 30, 48, 50, -1, 0, 4, 27, 31, 36, 41, -1, 5, 6, 13, 14, 24, 46, 59, -1 };
+        static int htpl_shortcuts[] = { 0, 8, 12, 18, 24, 33, 42, 46, 55, 62 };
         static struct hash_t htpl_hash = {htpl_table,
              htpl_locations, htpl_shortcuts};
 
-        static parser funs[] = { parse_htpl_assert, parse_htpl_auth, parse_htpl_auth_create, parse_htpl_break, parse_htpl_call, parse_htpl_case, parse_htpl_catch, parse_htpl_class, parse_htpl_clsutils, parse_htpl_connection, parse_htpl_constructor, parse_htpl_continue, parse_htpl_counter, parse_htpl_default, parse_htpl_define, parse_htpl_destructor, parse_htpl_die, parse_htpl_else, parse_htpl_end, parse_htpl_endif, parse_htpl_exit, parse_htpl_fetch, parse_htpl_fetchcell, parse_htpl_fetchcols, parse_htpl_fetchit, parse_htpl_fetchitorbreak, parse_htpl_filter, parse_htpl_for, parse_htpl_foreach, parse_htpl_graph, parse_htpl_if, parse_htpl_ifnotnull, parse_htpl_ifnull, parse_htpl_img, parse_htpl_include, parse_htpl_ldap, parse_htpl_listbox, parse_htpl_load, parse_htpl_loop, parse_htpl_mail, parse_htpl_mem, parse_htpl_method, parse_htpl_net, parse_htpl_next, parse_htpl_out, parse_htpl_proc, parse_htpl_project, parse_htpl_pts, parse_htpl_publish, parse_htpl_redirect, parse_htpl_rem, parse_htpl_sql, parse_htpl_switch, parse_htpl_text, parse_htpl_throw, parse_htpl_time, parse_htpl_try };
+        static parser funs[] = { parse_htpl_assert, parse_htpl_auth, parse_htpl_auth_create, parse_htpl_break, parse_htpl_call, parse_htpl_case, parse_htpl_catch, parse_htpl_class, parse_htpl_cleanup, parse_htpl_clsutils, parse_htpl_connection, parse_htpl_constructor, parse_htpl_continue, parse_htpl_counter, parse_htpl_default, parse_htpl_define, parse_htpl_destructor, parse_htpl_die, parse_htpl_else, parse_htpl_end, parse_htpl_endif, parse_htpl_exit, parse_htpl_fetch, parse_htpl_fetchcell, parse_htpl_fetchcols, parse_htpl_fetchit, parse_htpl_fetchitorbreak, parse_htpl_filter, parse_htpl_for, parse_htpl_foreach, parse_htpl_graph, parse_htpl_if, parse_htpl_ifnotnull, parse_htpl_ifnull, parse_htpl_img, parse_htpl_include, parse_htpl_init, parse_htpl_ldap, parse_htpl_listbox, parse_htpl_load, parse_htpl_loop, parse_htpl_mail, parse_htpl_mem, parse_htpl_method, parse_htpl_net, parse_htpl_next, parse_htpl_out, parse_htpl_proc, parse_htpl_project, parse_htpl_pts, parse_htpl_publish, parse_htpl_redirect, parse_htpl_rem, parse_htpl_rewind, parse_htpl_sql, parse_htpl_switch, parse_htpl_text, parse_htpl_throw, parse_htpl_time, parse_htpl_try };
         int n;
         parser fun;
         n = search_hash(&htpl_hash, token, 0);
@@ -4019,7 +4492,9 @@ int parse_(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
     eat(&stack, token);
     {

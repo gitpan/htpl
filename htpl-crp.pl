@@ -226,6 +226,10 @@ sub recur {
         $code .= &outpush($atref->{'PUSH'});
     }
 
+    if ($atref->{'ONCE'} && !$atref->{'AREA'}) {
+        $code .= &outonce($subname);
+    }
+
 # Now lets's check if this tag is a leaf - if so, we should reduce to the
 # code
 
@@ -261,6 +265,7 @@ sub recur {
             my @ary = @$ref;
             my $attr = shift @ary;
             $attr->{$tiny{$key}} = $atref->{'BLOCK'} if ($atref->{'BLOCK'});
+	    $attr->{'ONCE'} = 1 if ($atref->{'ONCE'} && $key eq 'FWD');
             $attr->{'BROTHER'} = $atref->{'BROTHER'};
             $attr->{' SYS '} = $key;
             if ($atref->{'SCOPE'}) {
@@ -315,7 +320,9 @@ int parse_$sub(stack, untag)
     STR buff;
     int code;
     static int nesting = 0;
+    static int refcount = 0;
 
+    refcount++;
     makepersist(stack);
 EOM
 }
@@ -788,4 +795,13 @@ $hash
     }
 EOM
     return $code;
+}
+
+sub outonce {
+    my $subname = shift;
+    return <<EOM;
+    if (refcount > 1) {
+        croak("$subname may be called only once");
+    }
+EOM
 }

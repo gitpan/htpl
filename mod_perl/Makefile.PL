@@ -6,6 +6,6 @@ WriteMakefile(
     'VERSION_FROM' => 'HTPL.pm', # finds $VERSION
     'LIBS'	=> [''],   # e.g., '-lm' 
     'DEFINE'	=> '',     # e.g., '-DHAVE_SOMETHING' 
-    'INC'	=> '',     # e.g., '-I/usr/include/other' 
-    'OBJECT'    => '-D__DEBUG__ ../htpl.c ../htpl-l.c ../htpl-sub.c ../htpl-parse.c HTPL.o',
+#    'INC'	=> '',     # e.g., '-I/usr/include/other' 
+#    'OBJECT'    => '-D__DEBUG__ ../htpl.c ../htpl-l.c ../htpl-sub.c ../htpl-parse.c HTPL.o',
 );

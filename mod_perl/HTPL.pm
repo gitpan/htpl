@@ -1,11 +1,12 @@
 package Apache::HTPL;
 
-no strict;
+use strict qw(subs vars);
+no strict qw(refs);
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK);
 
 require Exporter;
-require DynaLoader;
-require AutoLoader;
+#require DynaLoader;
+#require AutoLoader;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -16,7 +17,7 @@ require AutoLoader;
 );
 $VERSION = '0.01';
 
-bootstrap Apache::HTPL $VERSION;
+#bootstrap Apache::HTPL $VERSION;
 
 
 # Preloaded methods go here.
@@ -60,23 +61,12 @@ sub handler {
     }
 
     unless ($ref) {
-            pipe(READ, WRITE);        
-            my $pid;
-            unless ($pid = fork) {
-                require HTML::HTPL::Config;
-                close(STDOUT);
-                close(READ);
-                open(STDOUT, ">&WRITE");
-                close(WRITE);
-                compile($filename, $script, $HTML::HTPL::Config'dbgbin);
-                close(STDOUT);
-                CORE::exit;    
-            }
-            close(WRITE);
-            waitpid($pid, 0);
+	    open(READ, "$HTML::HTPL::Config'dbgbin -o $script $filename 2>&1 |");
+
             my @lines = <READ>;
             my $buff = join("", @lines);
             close(READ);
+
             if ($buff) {
                 $r->content_type("text/plain");
                 $r->send_http_header;
@@ -92,14 +82,14 @@ sub handler {
         my $pkg = "Apache::ROOT$scrfn";
         my $precode = qq!
 package $pkg;
-use Apache;
-use Apache::HTPL::Lib qw(exit);
+no strict;
 sub $subname {
 use HTML::HTPL::Lib;
 use HTML::HTPL::Sys;
 \$HTML::HTPL::Lib'in_mod_htpl = 1;
 \$HTML::HTPL::Lib'htpl_pkg = '$pkg';
-import Apache::HTPL::Lib qw(exit);
+use subs qw(exit);
+sub exit { goto htpl_lblend; }
 *0 = \'$filename';
 $tcode
 htpl_lblend:
@@ -107,10 +97,12 @@ htpl_lblend:
 1;
 !;	
 
+
         $@ = undef;
         eval("undef \&$pkg\::$subname;"); 
         eval $precode;
         $ecode = !$@;
+	$ref = undef;
         $ref = {'package' => $pkg,
                                'proc' => $subname,
                                'code' => \&{"$pkg\::$subname"},
@@ -144,9 +136,10 @@ htpl_lblend:
     }
 
     %{"$package\::ENV"} = %ENV;
+    my $init = "$package\::__sys_init";
+    my $deinit = "$package\::__sys_deinit";
     my $str = $ref->{'str'};
-    $ecode &&= eval("\&$str; 1;");
-
+    $ecode &&= eval("&$init; \&$str; &$deinit; 1;");
 
     select(STDOUT);
     close(HTPL_MOD_OUT);
@@ -181,6 +174,9 @@ __END__
 Apache::HTPL - Apache mod_perl driver for HTPL.
 
 =head1 SYNOPSIS
+
+
+=head1 DESCRIPTION
 
 After installed, this module will boost the performance of HTPL by having
 pages compiled in memory and run again and again.

@@ -51,6 +51,7 @@
 
 #define HEADER_FILE "htpl.head"
 #define HEADER_FILE_OFFLINE "htpl.offhead"
+#define HEADER_FILE_SITE "htpl.sitehead"
 
 /* #define __DEBUG__ */
 
@@ -265,6 +266,7 @@ HTE DFA cstate HTZ;
 
 #ifdef __DEBUG__
 
+HTE int create HTZ;
 HTE short runit HTZ;
 HTE short noweb HTZ;
 HTE short inputcgi HTZ;

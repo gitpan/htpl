@@ -143,7 +143,9 @@ install-it:
 	for f in htpl-pm.code htpl-xsub.pl ; do \
 	$(INSBIN) -m 644 $$f $(INSTALLDIR) ; \
 	done
-	for f in htpl.head htpl.offhead htpl-config.pl ; do \
+	$(INSBIN) -m 644 htpl.head $(INSTALLDIR)
+	$(INSBIN) -m 644 htpl.offhead $(INSTALLDIR)
+	for f in htpl.sitehead htpl-config.pl ; do \
 	if [ ! -f $(INSTALLDIR)/$$f ] ; then \
 	$(INSBIN) -m 644 $$f $(INSTALLDIR) ; \
 	fi ; \

@@ -67,8 +67,31 @@ AC_ARG_ENABLE(depdb, [  --enable-depdb	  Include dependency database], [
 ], [
         exit])], DEPDBDEF= )
 
+
 AC_ARG_WITH(temp, [  --with-temp=TEMP	  Temp directory], TEMP=$withval, TEMP=/tmp)
 AB_CHECK_TEMP($TEMP, , exit)
+
+AC_ARG_WITH(pipe,  [  --without-pipe	  No | code lines], PIPE=$withval, PIPE=yes)
+
+[
+if [ "$PIPE" != "no" ] ; then
+]
+    AC_DEFINE(PIPE_CMDS)
+[
+fi
+]
+
+AC_ARG_WITH(sharp, [  --without-sharp	  No #var# substitution], SHARP=$withval, SHARP=yes)
+
+[
+
+if [ "$SHARP" != "no" ] ; then
+]
+    AC_DEFINE(SHARP_VARS)
+[
+fi
+
+]
 
 AB_PERL_CHECK(Tie::DeepTied, , [ echo You must get Tie-Tools from CPAN to run this package,
 echo Try \$CPAN/authors/id/S/SC/SCHOP or use CPAN.pm module for Tie::DeepTied.

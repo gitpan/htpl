@@ -460,8 +460,6 @@ sub cleanup {
 sub exit {
     &cleanup;
     if ($in_mod_htpl) {
-        require Apache;
-        import Apache('exit');
         goto htpl_lblend;
     } else {
         CORE::exit($_[0]);

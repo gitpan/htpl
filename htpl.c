@@ -412,7 +412,7 @@ void doinclude(o, filename1)
 
     if (strcmp(ndir, cdir)) outf(o, "use lib '%s';", qualify(ndir, 0));
     c = fopen("/dev/null", "w");
-    outf(o, "% Including %s", filename);
+    outf(o, "# Including %s", filename);
     outline(o, thefilename, 1);
     process(i, c, o);
     fclose(i);
@@ -423,15 +423,82 @@ void doinclude(o, filename1)
     chdir(cdir);
 }
 
+int beforefunc(node, level, tag)
+    BTREE *node;
+    int level;
+    PTR tag; {
+
+    FILE *o = (FILE *)tag;
+    STR key = (*node)->key;
+    STR data = (STR)((*node)->data);
+
+    outf(o, "$%s = \"%s\";", key, data);
+    return 0;
+}
+
+void beforerequire(o, vars)
+    FILE *o;
+    STR vars; {
+    pchar ch = vars;
+    pchar v, p;
+    char boundary;
+    BTREE tree = NULL;
+    STR result = malloc(2);
+    int len = 0, size = 1, len2;
+
+    result[0] = '\0';
+    while (*ch) {
+        while (*ch && isspace(*ch)) ch++;
+        if (!*ch) break;
+        v = ch++;
+        while (*ch && isalnum(*ch)) ch++;
+        if (!*ch) break;
+        boundary = *ch;
+
+#define BOUND(ch1, ch2) if (boundary == (ch1)) boundary = (ch2); else \
+if (boundary == (ch2)) boundary = (ch1);
+
+        BOUND('(', ')')
+        BOUND('[', ']')
+        BOUND('{', '}')
+#undef BOUND
+
+        len2 = len;
+        len += (ch - v);
+        *ch++ = '\0';
+        p = ch;
+        while (*ch && *ch != boundary) ch++;
+        if (!*ch) break;
+        *ch++ = '\0';
+        btreeadd(&tree, v, strdup(p));
+
+        if (len >= size - 2) {
+            size = len + 5;
+            result = realloc(result, size);
+        }
+        if (len2 > 0) result[len2++] = ' ';
+        memcpy(&result[len2], v, p - 1 - v);
+        len = len2 + p - 1 - v;
+        result[len] = '\0';
+    }
+    outf(o, "&HTML::HTPL::Sys::pushvars(qw(%s));", result);
+    free(result);
+    btreescan(&tree, beforefunc, 0, o, BTREE_INFIX);
+    btreekill(&tree);
+}
+
 /********************************************
  * Process runtime include files            *
  ********************************************/
 
-void dorequire(filename1, o) 
+void dorequire(filename1, o, params) 
     FILE *o;
-    STR filename1; {
+    STR filename1;
+    STR params; {
 
     FILENAME filename, script, component;
+
+    if (params && !*params) params = NULL;
 
     makecache(filename1, filename, "htpm");
     makecache(filename1, component, "htpc");
@@ -442,7 +509,9 @@ void dorequire(filename1, o)
         fit(filename, component, 1);
     }
     if (depend(script, filename) > 0 || fit(script, filename, 0)) compile(filename, script);
-    outf(o, "require \"%s\";", qualify(script, 0));
+    if (params) beforerequire(o, params);
+    outf(o, "do \"%s\";", qualify(script, 0));
+    if (params) outf(o, "&HTML::HTPL::Sys::popvars;");
 } 
 
 /**************************************
@@ -595,7 +664,7 @@ void outperl(o, c, line, language)
 
     if (!strcasecmp(token, "#USE")) {
         outdbg(o, save);
-        dorequire(token2, o);
+        dorequire(token2, o, line);
         return;
     }
 
@@ -655,6 +724,9 @@ void process(f, c, o)
     long preplen;
     static STR prepend = "</@>";
     short prepstate = 0;
+    TOKEN sub;
+    pchar helper;
+    int lastnl = 1;
 
 /* Initialize */
     scopestack = NULL;
@@ -688,6 +760,14 @@ void process(f, c, o)
         if (save && !*save) save = NULL;
 /* Ignore CR to make dos users' life easier */
         if (ch == '\r') continue;
+#ifdef PIPE_CMDS
+        if (lastnl && ch == '|' && before == HTML) {
+                TOKEN code;
+                fgets(code, sizeof(code), f);
+                outperl(o, c, code, language);
+                goto nxt;
+        }
+#endif
         after = eat_one(ch, before, perlkind, language);
 
 /* preprocess */
@@ -790,6 +870,30 @@ automaton */
                 ptr = line;
                 goto nxt;
             }
+            strncpy(sub, &htmlbuff[1], sizeof(sub));
+            helper = strchr(sub, ' ');
+            if (helper) *helper = '\0';
+            helper = strchr(htmlbuff, ' ');
+            if (helper) *helper++ = '\0';
+            if ((!strcasecmp(sub, "HTINCLUDE")
+              || !strcasecmp(sub, "HTUSE")) && helper) {
+                pchar pch;
+                pch = helper;
+                while (*pch) if (*pch == '>') *pch = '\0';
+                else pch++;
+                intag = 0;
+                ptr = line;
+                if (!strcasecmp(sub, "HTINCLUDE")) {
+                    doinclude(o, helper);
+                    goto nxt;
+                }
+                if (!strcasecmp(sub, "HTUSE") ) {
+                    pchar line = strchr(helper, ' ');
+                    if (line) *line++ = '\0';
+                    dorequire(helper, o, line);
+                    goto nxt;
+                }
+            }
 /* Match against macro tags  - our tag might be one */
             code = (language == LNG_PERL) && copyhtmltag(htmlbuff);
             intag = 0;
@@ -837,6 +941,7 @@ automaton */
 /* If we are printing HTML */
                 strcat(line, qNEWLINE);
                 outplain(o, line, language);
+                lastnl = 1;
             }
             ptr = line;
             nline++;
@@ -940,6 +1045,7 @@ automaton */
 /* Ok - plain char - add to token */
         *ptr++ = ch;
 nxt:
+        if (ch != '\n') lastnl = 0;
 /* If we are in a tag we know not to contain a macro */
         if (after == TAG_NONE) after = TAG;
 /* Update automaton */
@@ -1038,6 +1144,7 @@ int main(int argc, char *argv[], char **env) {
             case 't': noout = 1;
                       break;
             case 'o': strcpy(script, optarg);
+                      create = 1;
                       break;
             default: printf("Invalid switch%s", NEWLINE);
                      exit(1);
@@ -1101,7 +1208,6 @@ int main(int argc, char *argv[], char **env) {
 /* Find names for temporary files */
 
     finddir(inputfile, scriptdir);
-
 
     if (script[0] == '\0') {
 #ifdef __DEBUG__
@@ -1197,7 +1303,7 @@ HTPL page. Check in dependency database if used */
 /* Create script file and add minimal code */
 
     o = FOPEN(script, "w");
-/*o =fdopen(1, "w");*/
+
     rline = 1;
 
     strcpy(thescript, script);
@@ -1223,6 +1329,18 @@ HTPL page. Check in dependency database if used */
 
     fputs(NEWLINE, o);
     fclose(i);
+
+    sprintf(header, "%s%c%s", bindir, SLASH_CHAR, HEADER_FILE_SITE);
+    i = fopen(header, "r");
+    if (i) {
+        outf(o, "# %s follows:", header);
+
+        fcpy(i, o, 1);
+
+        fputs(NEWLINE, o);
+        fclose(i);
+    }
+
 
 
     outf(o, "# End of %s", header);
@@ -1365,7 +1483,7 @@ void execute(script, postdata, headers, output, error)
 
 #ifdef __DEBUG__
 
-    if (!runit) {
+    if (!runit && !create) {
 /* We are neither in precompilation or exection mode, and not in CGI -
 dump processed perl script to STDOUT */
 
@@ -1374,7 +1492,8 @@ dump processed perl script to STDOUT */
         fclose(i);
         unlink(script);
         return;
-    } 
+    }
+    if (create) return;
     if (noweb) {
 /* Run script from the shell */
         chdir(origdir);

@@ -38,10 +38,13 @@ long fcpy(i, o, how)
 
     buff = malloc(BUFF_SIZE);
 
-    while (red = fread(buff, 1, BUFF_SIZE, i)) {
-        if (!how) fwrite(buff, 1, red,o);
-        else outblock(o, buff);
-        total += red;
+    if (!how) {
+        while (red = fread(buff, 1, BUFF_SIZE, i)) {
+            fwrite(buff, 1, red,o);
+            total += red;
+        }
+    } else {
+        while (fgets(buff, BUFF_SIZE, i)) outblock(o, buff);
     }
 
     free(buff);
@@ -982,6 +985,7 @@ STR escapevars(code)
 
     ch = code;
     while (*ch) {
+#ifdef SHARP_VARS
         if (*ch == '#') {
             switch (flag) {
                 case 0: flag = 1;
@@ -1058,6 +1062,9 @@ STR escapevars(code)
         } else if ((flag == 3 || flag == 4) && cast == *ch) {
             *dst++ = *ch;
             m++;
+#else
+        if (0) {
+#endif
         } else {
             if (flag) {
                 *dst = '\0';

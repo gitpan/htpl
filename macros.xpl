@@ -533,4 +533,13 @@ $HTML::HTPL::acl->{'acl'}->IsAuthorized($session{'username'}, $REALM);
         </__MACRO>
 </__MACRO>
 <__MACRO NAME="EXIT">exit;</__MACRO>
+<__MACRO NAME="REWIND">&amp;rewind;</__MACRO>
+<__MACRO NAME="INIT" AREA="1" ONCE="1" BLOCK="init">
+        <__FWD>sub InitDoc {</__FWD>
+        <__REV>}</__REV>
+</__MACRO>
+<__MACRO NAME="CLEANUP" AREA="1" ONCE="1" BLOCK="clean">
+        <__FWD>sub CleanDoc {</__FWD>
+        <__REV>}</__REV>
+</__MACRO>
 </HTPL>

@@ -26,6 +26,7 @@ int parse_htpl_catch(STR, int);
 int parse_htpl_project(STR, int);
 int parse_htpl_die(STR, int);
 int parse_htpl_continue(STR, int);
+int parse_htpl_rewind(STR, int);
 int parse_htpl_fetchitorbreak(STR, int);
 int parse_htpl_else(STR, int);
 int parse_htpl_text(STR, int);
@@ -72,6 +73,9 @@ int parse_htpl_auth_ifauthorized(STR, int);
 int parse_htpl_auth_ifauthorized___fwd(STR, int);
 int parse_htpl_auth_ifauthorized___rev(STR, int);
 int parse_htpl_fetchcols(STR, int);
+int parse_htpl_init(STR, int);
+int parse_htpl_init___fwd(STR, int);
+int parse_htpl_init___rev(STR, int);
 int parse_htpl_mail(STR, int);
 int parse_htpl_mail___fwd(STR, int);
 int parse_htpl_mail___rev(STR, int);
@@ -95,6 +99,9 @@ int parse_htpl_for___fwd(STR, int);
 int parse_htpl_for___rev(STR, int);
 int parse_htpl_exit(STR, int);
 int parse_htpl_load(STR, int);
+int parse_htpl_cleanup(STR, int);
+int parse_htpl_cleanup___fwd(STR, int);
+int parse_htpl_cleanup___rev(STR, int);
 int parse_htpl_include(STR, int);
 int parse_htpl_sql(STR, int);
 int parse_htpl_sql_search(STR, int);
@@ -170,42 +177,46 @@ int parse_htpl_method___fwd(STR, int);
 int parse_htpl_method___rev(STR, int);
 
 enum scopevalues {no_scope,
+    scope_init,
     scope_mail,
     scope_if_then_else,
     scope_try,
     scope_method,
     scope_switch,
     scope_destructor,
-    scope_foreach,
-    scope_if_then,
     scope_procedure,
     scope_class,
     scope_for,
     scope_fetch,
     scope_contsructor,
     scope_catch,
+    scope_clean,
+    scope_if_then,
+    scope_foreach,
     scope_random_switch};
 #ifdef __HTPARSE__
 char *scope_names[] = {"none",
+    "init",
     "mail",
     "if-then-else",
     "try",
     "method",
     "switch",
     "destructor",
-    "foreach",
-    "if-then",
     "procedure",
     "class",
     "for",
     "fetch",
     "contsructor",
     "catch",
+    "clean",
+    "if-then",
+    "foreach",
     "random-switch"};
-int scope_ids[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int scope_ids[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 #else
 extern char *scope_names[];
 extern int scope_ids[];
 #endif
 
-#define NUM_MACROS 170
+#define NUM_MACROS 177

@@ -1,5 +1,11 @@
 Versions:
 
+3.08: Fixed bugs in the component support
+3.07: Fixed mod_perl support for concurrent versions of Apache.
+3.06: Added perl one liners.
+3.05: Added ACL database and multiple database connections
+3.02: Added macros and utility functions
+3.00: Debug screens added
 2.96: Perl subroutine post processor added
 2.95: Improved configure script supports caching
 2.94: Improved macro parser generator, improved transaction
