@@ -19,7 +19,7 @@ begintransaction endtransaction imagesize finger revmap safemkdir mkfile
 jewishdate getdmy monthname weekdayname foreachdir slash wrap hebrew_wrap
 pusht popt undouble uniq timestep rotate ror rol getcwd hostname core
 selfurl querystring takebroadlog subpkg subhash maketime
-html_treeview selfsameurl
+html_treeview selfsameurl new_template
 elapsed hebrewflip agg sum splitline $STD_BODY @MONTH_NAMES @WEEKDAY_NAMES);
 
 @MONTH_NAMES = qw(January February March April May June July August
@@ -879,6 +879,11 @@ sub new_table {
     return new HTML::HTPL::Table(@_);
 }
 
+sub new_template {
+    require HTML::HTPL::Template;
+    return new HTML::HTPL::Template(@_);
+}
+
 sub pusht {
     push(@__htpl_timer, time);
 }
@@ -1035,6 +1040,10 @@ sub subhash {
                 delete $hash{$_};
             }
             $result .= &selfurl(%hash);
+            next;
+        }
+        if ($cmd =~ /^esc(ape)?\s+(.*)$/i) {
+            $result .= &urlencode($hash{lc($2)});
             next;
         }
         &htdie("Invalid template: $cmd");

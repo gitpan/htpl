@@ -29,7 +29,7 @@ CMP = htplc
 SRVC = htplsrvc
 SH = /bin/sh
 CONDS = -DTMP_DIR=\"$(TEMP)\" -DPERL_BIN=\"$(PERL_BIN)\" $(DEFEMBED)
-INFO = -DCOMPILATION=`$(PERL) -e "print time;"`  -DBUILD=`cat build` -DSUBVER=`cat subver`
+INFO = -DCOMPILATION=`$(PERL) -e "print time;"`  -DBUILD=`cat build` 
 CCFLAGS = -O3 $(LIBS) $(CONDS) $(INFO)
 CC = $(CCPROG) $(CCFLAGS)
 CS = htpl.c htpl-l.c htpl-sub.c htpl-parse.c $(OBJEMBED)
@@ -44,7 +44,7 @@ DEFEMBED = `test -z "$(OBJEMBED)" || echo -D__PERLEMBED__`
 PL = `test -z "$(OBJEMBED)" || $(PERL) -MExtUtils::Embed -e ccopts -e ldopts`
 LIBS = `test -z "$(DEPDBDEF)" || echo -ldb` `test -z "$(OBJEMBED)" || echo -lperl`
 MODPERL = 
-MODULES = HTPL-modules HTPL-SQL Hebrew Calendar Crypt SubHash $(MODPERL)
+MODULES = HTPL-modules HTPL-SQL Hebrew Calendar $(MODPERL)
 
 # Rules
 
@@ -63,6 +63,7 @@ $(DBG) : $(DEP)
 
 # Cancel this dependency if you fail to compile with no XML
 htpl-parse.c : htpl.subs htpl-crp.pl $(OBV)
+	test -z "$(XML)"  || yapp htplparse.yp || true
 	test -z "$(XML)"  || $(PERL) htpl-crp.pl
 
 htpl-sh.h : htpl-parse.c
@@ -161,7 +162,7 @@ build-root :
 clean-modules:
 	for pk in $(MODULES); do \
 	cd $$pk; \
-	make realclean ; \
+	make realclean || true; \
 	cd .. ; \
 	done
 

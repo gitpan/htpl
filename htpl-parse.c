@@ -20,10 +20,8 @@ int parse_htpl_load(stack, untag)
 
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("LOAD called with %d arguments, minimum needed is 1", numtokens))
-    printfcode("die \"Unknown query\" unless $HTML::HTPL::Sys::query_pool{'%s'};\n",
-	gettoken(1));
-    printfcode("$%s = $HTML::HTPL::Sys::query_pool{'%s'}->load(qw(%s));\n", gettoken(1),
-	gettoken(1), gettokenlist(2, " ", ""));
+    printfcode("die \"Unknown query\" unless $HTML::HTPL::Sys::query_pool{'%s'};\n", gettoken(1));
+    printfcode("$%s = $HTML::HTPL::Sys::query_pool{'%s'}->load(qw(%s));\n", gettoken(1), gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
     RETURN(1)
 }
@@ -55,7 +53,7 @@ int parse_htpl_method___fwd(stack, untag)
     free(buff);
     printfcode("                sub __shadow__%s {\n", gettoken(1));
     printcode("SYNC\n");
-    if (numtokens >= 2) {
+    if (numtokens >= 2)  {
         printfcode("my (%s) = @_;\n", gettokenlist(2, ", ", "$"));
     }
     nesting = 0;
@@ -235,8 +233,7 @@ int parse_htpl_text_csv(stack, untag)
     }
     free(buff);
 
-    printfcode("$%s = &HTML::HTPL::CSV'opencsv(\"%s\", \"%s\", qw(%s));\n", gettoken(1),
-	gettoken(2), gettoken(3), gettokenlist(4, " ", ""));
+    printfcode("$%s = &HTML::HTPL::CSV'opencsv(\"%s\", \"%s\", qw(%s));\n", gettoken(1), gettoken(2), gettoken(3), gettokenlist(4, " ", ""));
     nesting = 0;
     RETURN(1)
 }
@@ -265,8 +262,7 @@ int parse_htpl_text_cube(stack, untag)
     }
     free(buff);
 
-    printfcode("$%s = &HTML::HTPL::CSV'opencsv(\"%s\", [\"%s\", \"%s\"],\n", gettoken(1),
-	gettoken(2), gettoken(3), gettoken(4));
+    printfcode("$%s = &HTML::HTPL::CSV'opencsv(\"%s\", [\"%s\", \"%s\"],\n", gettoken(1), gettoken(2), gettoken(3), gettoken(4));
     printfcode("qw(%s));\n", gettokenlist(5, " ", ""));
     nesting = 0;
     RETURN(1)
@@ -288,8 +284,7 @@ int parse_htpl_text_flat(stack, untag)
         done = 1;
         printcode("use HTML::HTPL::Flat;\n");
     }
-    printfcode(" $%s = &HTML::HTPL::Flat'openflat(\"%s\", qw(%s));\n", gettoken(1),
-	gettoken(2), gettokenlist(3, " ", ""));
+    printfcode(" $%s = &HTML::HTPL::Flat'openflat(\"%s\", qw(%s));\n", gettoken(1), gettoken(2), gettokenlist(3, " ", ""));
     nesting = 0;
     RETURN(1)
 }
@@ -346,8 +341,7 @@ int parse_htpl_net_get(stack, untag)
 
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("NET GET called with %d arguments, minimum needed is 2", numtokens))
-    printfcode("$%s = $htpl_net_obj->get(\"%s\", qw(%s));\n", gettoken(1), gettoken(2),
-	gettokenlist(3, " ", ""));
+    printfcode("$%s = $htpl_net_obj->get(\"%s\", qw(%s));\n", gettoken(1), gettoken(2), gettokenlist(3, " ", ""));
     nesting = 0;
     RETURN(1)
 }
@@ -366,8 +360,7 @@ int parse_htpl_net_setup(stack, untag)
     if (numtokens < 1) RETURN(croak("NET SETUP called with %d arguments, minimum needed is 1", numtokens))
     if (numtokens > 3) RETURN(croak("NET SETUP called with %d arguments, maximum needed is 3", numtokens))
 
-    printfcode("$htpl_net_obj = HTML::HTPL::Client->setup(\"%s\", \"%s\", \"%s\");\n",
-	gettoken(1), gettoken(2), gettoken(3));
+    printfcode("$htpl_net_obj = HTML::HTPL::Client->setup(\"%s\", \"%s\", \"%s\");\n", gettoken(1), gettoken(2), gettoken(3));
     nesting = 0;
     RETURN(1)
 }
@@ -407,18 +400,17 @@ int parse_htpl_for___fwd(stack, untag)
     if (numtokens > 4) RETURN(croak("FOR called with %d arguments, maximum needed is 4", numtokens))
 
     pushscope(scope_for, 0);
-    if (numtokens <= 1) {
+    if (numtokens <= 1)  {
         printfcode("foreach (1 .. %s) {\n", gettoken(1));
     }
-    if (numtokens >= 2 && numtokens <= 2) {
+    if (numtokens >= 2 && numtokens <= 2)  {
         printfcode("foreach $%s (1 .. %s) {\n", gettoken(1), gettoken(2));
     }
-    if (numtokens >= 3 && numtokens <= 3) {
+    if (numtokens >= 3 && numtokens <= 3)  {
         printfcode("foreach $%s (%s .. %s) {\n", gettoken(1), gettoken(1), gettoken(2));
     }
-    if (numtokens >= 4 && numtokens <= 4) {
-        printfcode("for ($%s = %s; $%s <= %s; $%s += %s) {\n", gettoken(1), gettoken(2),
-    	gettoken(1), gettoken(3), gettoken(1), gettoken(4));
+    if (numtokens >= 4 && numtokens <= 4)  {
+        printfcode("for ($%s = %s; $%s <= %s; $%s += %s) {\n", gettoken(1), gettoken(2), gettoken(1), gettoken(3), gettoken(1), gettoken(4));
     }
     nesting = 0;
     RETURN(1)
@@ -499,8 +491,7 @@ int parse_htpl_sql_update(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    printfcode("$HTML::HTPL::htpl_db_obj->update(\"%s\", qw(%s));\n", gettoken(1),
-	gettokenlist(2, " ", ""));
+    printfcode("$HTML::HTPL::htpl_db_obj->update(\"%s\", qw(%s));\n", gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
     RETURN(1)
 }
@@ -517,8 +508,7 @@ int parse_htpl_sql_exec(stack, untag)
 
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("SQL EXEC called with %d arguments, minimum needed is 1", numtokens))
-    printfcode("$HTML::HTPL::htpl_db_obj->execsql(&HTML::HTPL::Db'parse_sql(\"%s\"));\n",
-	gettokenlist(1, " ", ""));
+    printfcode("$HTML::HTPL::htpl_db_obj->execsql(&HTML::HTPL::Db'parse_sql(\"%s\"));\n", gettokenlist(1, " ", ""));
     nesting = 0;
     RETURN(1)
 }
@@ -593,8 +583,7 @@ int parse_htpl_sql_connect(stack, untag)
     if (numtokens < 1) RETURN(croak("SQL CONNECT called with %d arguments, minimum needed is 1", numtokens))
     if (numtokens > 3) RETURN(croak("SQL CONNECT called with %d arguments, maximum needed is 3", numtokens))
 
-    printfcode("$HTML::HTPL::htpl_db_obj = HTML::HTPL::Db->new(\"%s\", \"%s\", \"%s\");\n",
-	gettoken(1), gettoken(2), gettoken(3));
+    printfcode("$HTML::HTPL::htpl_db_obj = HTML::HTPL::Db->new(\"%s\", \"%s\", \"%s\");\n", gettoken(1), gettoken(2), gettoken(3));
     nesting = 0;
     RETURN(1)
 }
@@ -679,8 +668,7 @@ int parse_htpl_sql_declare(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    printfcode("$HTML::HTPL::Sys::query_pool('%s'} ||= $HTML::HTPL::htpl_db_obj->prepare(\"%2*
-	\");\n", gettoken(1));
+    printfcode("$HTML::HTPL::Sys::query_pool('%s'} ||= $HTML::HTPL::htpl_db_obj->prepare(\"%2*\");\n", gettoken(1));
     nesting = 0;
     RETURN(1)
 }
@@ -696,8 +684,7 @@ int parse_htpl_sql_delete(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    printfcode("$HTML::HTPL::htpl_db_obj->delete(\"%s, qw(%s));\n", gettoken(1),
-	gettokenlist(2, " ", ""));
+    printfcode("$HTML::HTPL::htpl_db_obj->delete(\"%s, qw(%s));\n", gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
     RETURN(1)
 }
@@ -801,8 +788,7 @@ int parse_htpl_sql_insert(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    printfcode("$HTML::HTPL::htpl_db_obj->add(\"%s\", qw(%s));\n", gettoken(1),
-	gettokenlist(2, " ", ""));
+    printfcode("$HTML::HTPL::htpl_db_obj->add(\"%s\", qw(%s));\n", gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
     RETURN(1)
 }
@@ -818,8 +804,7 @@ int parse_htpl_sql_query(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    printfcode("$%s = $HTML::HTPL::htpl_db_obj->query(\"%s\", qw(%s));\n", gettoken(1),
-	gettoken(2), gettokenlist(3, " ", ""));
+    printfcode("$%s = $HTML::HTPL::htpl_db_obj->query(\"%s\", qw(%s));\n", gettoken(1), gettoken(2), gettokenlist(3, " ", ""));
     nesting = 0;
     RETURN(1)
 }
@@ -995,8 +980,7 @@ int parse_htpl_sql_cursor(stack, untag)
 
     makepersist(stack);
     if (numtokens < 2) RETURN(croak("SQL CURSOR called with %d arguments, minimum needed is 2", numtokens))
-    printfcode("$%s = $HTML::HTPL::htpl_db_obj->cursor(&HTML::HTPL::Db'parse_sql(\"%s\"));\n",
-	gettoken(1), gettokenlist(2, " ", ""));
+    printfcode("$%s = $HTML::HTPL::htpl_db_obj->cursor(&HTML::HTPL::Db'parse_sql(\"%s\"));\n", gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
     RETURN(1)
 }
@@ -1053,7 +1037,7 @@ int parse_htpl_proc___fwd(stack, untag)
     if (numtokens < 1) RETURN(croak("PROC called with %d arguments, minimum needed is 1", numtokens))
     pushscope(scope_procedure, 0);
     printfcode("sub %s {\n", gettoken(1));
-    if (numtokens >= 2) {
+    if (numtokens >= 2)  {
         printfcode("my (%s) = @_;\n", gettokenlist(2, ", ", "$"));
     }
     nesting = 0;
@@ -1107,17 +1091,16 @@ int parse_htpl_class___fwd(stack, untag)
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("CLASS called with %d arguments, minimum needed is 1", numtokens))
     pushscope(scope_class, 0);
-    if ((disposetrue((STR)mysprintf("%s", getsubtoken(1, ':', 2))))) {
+    if (disposetrue((STR)mysprintf("%s", getsubtoken(1, ':', 2))))  {
         printfcode(" package %s;\n", getsubtoken(1, ':', 1));
         printfcode(" @ISA = split(/:/, \"%s\");\n", gettoken(1));
         printcode("	shift @ISA;\n");
         printfcode("        package %s::__shadow__;\n", getsubtoken(1, ':', 1));
-        printfcode("        @ISA = map { \"${_}::__shadow__\"; } @%s::ISA;\n", getsubtoken(1, ':',
-    	1));
+        printfcode("        @ISA = map { \"${_}::__shadow__\"; } @%s::ISA;\n", getsubtoken(1, ':', 1));
         printcode("	\n");
         setvar("cls", (STR)mysprintf("%s", getsubtoken(1, ':', 1)));
     }
-    if (!(disposetrue((STR)mysprintf("%s", getsubtoken(1, ':', 2))))) {
+    if (!(disposetrue((STR)mysprintf("%s", getsubtoken(1, ':', 2)))))  {
         printfcode(" package %s;\n", gettoken(1));
         printcode("	\n");
         setvar("cls", (STR)mysprintf("%s", gettoken(1)));
@@ -1399,11 +1382,11 @@ int parse_htpl_case(stack, untag)
     printcode("      @__htpl_cases_scope = ( '__' . ++$__htpl_cases_defopt)\n");
     printcode("        unless (@__htpl_cases_scope &&\n");
     printcode("        !@__htpl_cases{@__htpl_cases_scope});\n");
-    if (numtokens >= 1) {
+    if (numtokens >= 1)  {
         printcode("$__htpl_case_last = (!$#__htpl_cases_scope &&\n");
         printcode("$__htpl_cases_scope[0] =~ /^\\d+$/) ? $__htpl_cases_scope[0] : undef; \n");
     }
-    if (numtokens <= 0) {
+    if (numtokens <= 0)  {
         printcode("$__htpl_case_last++;\n");
     }
     printcode("@__htpl_cases{@__htpl_cases_scope} = revmap \\@__htpl_cases_scope,\n");
@@ -1511,10 +1494,10 @@ int parse_htpl_catch(stack, untag)
     popscope();
     pushscope(scope_catch, 0);
     printcode("};\n");
-    if (numtokens <= 0) {
+    if (numtokens <= 0)  {
         printcode("$__htpl_default_handler = sub {$_ = shift; \n");
     }
-    if (numtokens >= 1) {
+    if (numtokens >= 1)  {
         printfcode("$__htpl_handler{'%s'} = sub {$_ = shift; \n", gettoken(1));
     }
     nesting = 0;
@@ -1536,7 +1519,7 @@ int parse_htpl_constructor___fwd(stack, untag)
     if (currscope->scope != scope_class) RETURN(croak("Now in scope %s from %d and met CONSTRUCTOR, expecting: class", scope_names[currscope->scope], currscope->nline))
     pushscope(scope_contsructor, 0);
     if (!importvar("constructor", "class")) RETURN(croak("Scope class not found in stack"));
-    if ((disposetrue((STR)mysprintf("%s", getvar("constructor"))))) {
+    if (disposetrue((STR)mysprintf("%s", getvar("constructor"))))  {
         RETURN(croak("Only one constructor per class! Previous at %s", getvar("constructor")))
     }
     setvar("constructor", (STR)mysprintf("%d", nline));
@@ -1571,7 +1554,7 @@ int parse_htpl_constructor___fwd(stack, untag)
     printcode("	unshift(@_, $self);\n");
     printcode("SYNC\n");
     printcode("	\n");
-    if (numtokens >= 1) {
+    if (numtokens >= 1)  {
         printfcode(" my (%s) = @_;\n", gettokenlist(1, ", ", "$"));
     }
     nesting = 0;
@@ -1625,8 +1608,7 @@ int parse_htpl_filter(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    printfcode("$%s = $%s->filter(sub {%s;});\n", gettoken(2), gettoken(1), gettokenlist(3, "
-	", ""));
+    printfcode("$%s = $%s->filter(sub {%s;});\n", gettoken(2), gettoken(1), gettokenlist(3, " ", ""));
     nesting = 0;
     RETURN(1)
 }
@@ -1688,8 +1670,7 @@ int parse_htpl_fetch___fwd(stack, untag)
 
     pushscope(scope_fetch, 0);
     printfcode("$%s->rewind if ($%s);\n", gettoken(1), gettoken(1));
-    printfcode("while ($%s && !$%s->eof && $%s->fetch) {\n", gettoken(1), gettoken(1),
-	gettoken(1));
+    printfcode("while ($%s && !$%s->eof && $%s->fetch) {\n", gettoken(1), gettoken(1), gettoken(1));
     nesting = 0;
     RETURN(1)
 }
@@ -1838,7 +1819,7 @@ int parse_htpl_destructor___fwd(stack, untag)
 
     pushscope(scope_destructor, 0);
     if (!importvar("destructor", "class")) RETURN(croak("Scope class not found in stack"));
-    if ((disposetrue((STR)mysprintf("%s", getvar("destructor"))))) {
+    if (disposetrue((STR)mysprintf("%s", getvar("destructor"))))  {
         RETURN(croak("Only one destructor per class! Previous at %s", getvar("destructor")))
     }
     setvar("destructor", (STR)mysprintf("%d", nline));
@@ -1977,13 +1958,13 @@ int parse_htpl_graph(stack, untag)
     printcode("	my $g = new HTML::HTPL::Graph;\n");
     printfcode(" $g->set('data' => [$%s->project('%s')]);\n", gettoken(1), gettoken(2));
     printfcode(" $g->set('labels' => [$%s->project('%s')]);\n", gettoken(1), gettoken(3));
-    if (numtokens >= 4) {
+    if (numtokens >= 4)  {
         printfcode(" $g->set('width' => %s);\n", gettoken(4));
     }
-    if (numtokens >= 5) {
+    if (numtokens >= 5)  {
         printfcode(" $g->set('cols' => %s);\n", gettoken(5));
     }
-    if (numtokens >= 6) {
+    if (numtokens >= 6)  {
         printfcode(" $g->set('legend' => [split(/:/, \"%s\")]);\n", gettokenlist(6, " ", ""));
     }
     printcode("	print $g->ashtml;\n");
@@ -2495,8 +2476,7 @@ int parse_htpl_mem_cursor(stack, untag)
     static int nesting = 0;
 
     makepersist(stack);
-    printfcode("$%s = HTML::HTPL::Mem'cursor(&HTML::HTPL::Db'parse_sql(\"%s\"));\n",
-	gettoken(1), gettokenlist(2, " ", ""));
+    printfcode("$%s = HTML::HTPL::Mem'cursor(&HTML::HTPL::Db'parse_sql(\"%s\"));\n", gettoken(1), gettokenlist(2, " ", ""));
     nesting = 0;
     RETURN(1)
 }

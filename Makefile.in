@@ -28,7 +28,7 @@ CMP = htplc
 SRVC = htplsrvc
 SH = /bin/sh
 CONDS = -DTMP_DIR=\"$(TEMP)\" -DPERL_BIN=\"$(PERL_BIN)\" $(DEFEMBED)
-INFO = -DCOMPILATION=`$(PERL) -e "print time;"` @DEPDBDEF@ -DBUILD=`cat build` -DSUBVER=`cat subver`
+INFO = -DCOMPILATION=`$(PERL) -e "print time;"` @DEPDBDEF@ -DBUILD=`cat build` 
 CCFLAGS = -O3 $(LIBS) $(CONDS) $(INFO)
 CC = $(CCPROG) $(CCFLAGS)
 CS = htpl.c htpl-l.c htpl-sub.c htpl-parse.c $(OBJEMBED)
@@ -62,6 +62,7 @@ $(DBG) : $(DEP)
 
 # Cancel this dependency if you fail to compile with no XML
 htpl-parse.c : htpl.subs htpl-crp.pl $(OBV)
+	test -z "$(XML)"  || yapp htplparse.yp || true
 	test -z "$(XML)"  || $(PERL) htpl-crp.pl
 
 htpl-sh.h : htpl-parse.c

@@ -1,113 +1,71 @@
 use Text::Wrap;
-use lib "./HTPL-modules/lib";
-use Parser::TopDown;
 
-$Text::Wrap::columns = 80;
+use Parse::Lex;
+use htplparse;
+use Data::Dumper;
 
-$y = {
-'start' => '$expression',
-'expression' => ['$disj', '$token'],
-'token' => ['$conj', '$neg', '$value'],
-'value' => ['$paran', '$comp', '$atom'],
-'atom' => ['$string'],
-'comp' => ['$string $ratio $string'],
-'ratio' => ['>', '<', '$notequal', '$equal'],
-'equal' => ['==', '='],
-'notequal' => ['!=', '<>'],
-'paran' => ['( $expression )'],
-'conj' => ['$value $and $token'],
-'disj' => ['$token $or $expression'],
-'neg' => ['$not $token'],
-'and' => ['and', '&&', '&'],
-'or' => ['or', '||', '|'],
-'not' => ['not', '!', '~']
-};	
-
-$o = join("|", map {s/(.)/\\$1/g; $_;} 
+$o = join("|", map {quotemeta($_);}
       qw(|| | && & <> < > == = != ! ~));
 
-$l = [
-'pp', '[()]',
-'op', $o,
-'string', '(%.*?%|\w+)+|".*?"'
-];
+@token = (qw(
+  AND \&\&?|\b[Aa][Nn][Dd]\b
+  OR \|\|?|\b[Oo][Rr]\b
+  NOT [!~]|\b[Nn][Oo][Tt]
+  EQUAL \=\=?
+  NOTEQUAL \!\=|\<\>
+  OP [><()]
+  STRING \w*(%.*?%\w*)+|".*?"), sub {my $s = $_[1]; $s =~ s/^"(.*)"$/$1/;
+                                $s;}, qw(
+  ERROR .*) , sub {
+                   die qq!can\'t analyze: "$_[1]"!;
+                 }
+ );
+  
+$lexer = new Parse::Lex(@token);
+$lexer->skip('\s+');
 
-$HTML::HTPL::Parser::DEBUG = "";
-
-sub code2c {
-    my $s = shift;
-    $p = new HTML::HTPL::Parser;
-    $p->lexer($l);
-    $p->grammar($y);
-    ($ref) = $p->parser($s);
-    die "Parser failed for $s" unless ($ref);
-    &formit($ref);
+sub lexer {
+    my $token = $lexer->next;
+    return ('', undef) if ($token->eoi || $token->name eq 'EOI');
+    return ($token->name, $token->text);
 }
 
-sub wrapcode {
-    $_ = shift;
-    eval {
-        $_ = &Text::Wrap::wrap('', '        ', split(/\s+/, $_));
-    };
-    s/\0/ /g;
-    $_;
+$parser = new htplparse;
+
+
+sub code2c {
+    my $code = shift;
+    $lexer->from($code);
+    my $st = $parser->YYParse(yylex=>\&lexer);
+    my $c = &formit($st);
 }
 
 sub formit {
-    my $it = shift;
-
-    my $op = $it->[0];
-    my $par = $it->[1];
-    $par = [$par] unless (ref($par));
-
-    if ($op eq 'string') {
-        my $s = $par->[0];
-        $s =~ s/^"(.*)"$/$1/;
-        my $c = &assemble($s);
-        return "(STR)mysprintf($c)";
+    my $node = shift;
+    if (ref($node) !~ /ARRAY/)  {
+        return &expandstr($node);
     }
-
-    if ($op eq 'atom') {
-        my $s = &formit($par->[0]);
-        return qq!(disposetrue($s))!;
+    my @ary = @$node;
+    if (@ary == 1) {
+        my $s = &expandstr($ary[0]);
+        return qq!disposetrue($s)!;
     }
-    if ($op eq 'comp') {
-        my $s1 = &formit($par->[0]);
-        my $s2 = &formit($par->[2]);
-        my $rop = $par->[1]->[1]->[0];
-        my $s = qq!disposecmp(populate("$s1", stack), populate("$s2", stack))!;
-        return "!$s" if ($rop->[0] eq 'equal');
-        return "$s" if ($rop->[0] eq 'notequal');
-        return "($s > 0)" if ($rop eq '>');
-        return "($s < 0)" if ($rop eq '<');
-        die "Unknown ratio $rop " . $rop->[0];
+    if (@ary == 2) {
+        my $s = &formit($ary[1]);
+        return "!($s)"
     }
-
-    if ($op eq 'paran') {
-        return "(" . &formit($par->[0]) . ")";
+    if (@ary == 3) {
+        my $l = &formit($ary[1]);
+        my $r = &formit($ary[2]);
+        my $o = $ary[0];
+        return "($l $o $r)";
     }
-
-    
-    if ($op eq 'neg') {
-        return "!" . &formit($par->[1]);
+    if (@ary == 4) {
+        my $l = &expandstr($ary[2]);
+        my $r = &expandstr($ary[3]);
+        my $o = $ary[1];
+        my $s = qq!(disposecmp($l, $r) $o 0)!;
     }
-
-    if ($op eq 'conj') {
-        my $s1 = &formit($par->[0]);
-        my $s2 = &formit($par->[2]);
-        return "$s1 && $s2";
-    }
-
-    if ($op eq 'disj') {
-        my $s1 = &formit($par->[0]);
-        my $s2 = &formit($par->[2]);
-        return "$s1 || $s2";
-    }
-
-    return &formit($par->[0]) if ($op eq 'value' || $op eq 'expression' || 
-      $op eq 'token'); 
-
-    die "Unresolved symbol $op";
 }
 
 sub assemble {
@@ -118,6 +76,7 @@ sub assemble {
     $main'glob_ary = @ary;
     return join(", ", qq!"$str"!, @ary);
 }
+
 
 sub proctoken {
     my ($token, $aryref) = @_;
@@ -173,4 +132,15 @@ sub expandstr {
     return "(STR)mysprintf($c)";
 }
 
+
+sub wrapcode {
+    $_ = shift;
+    s/\0/ /g;
+return $_;
+    eval {
+        $_ = &Text::Wrap::wrap('', '        ', split(/\s+/, $_));
+    };
+    $_;
+}
+ 
 1;

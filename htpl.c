@@ -914,11 +914,6 @@ int main(int argc, char *argv[], char **env) {
 #else
     long buildtime = -1;
 #endif
-#ifdef SUBVER
-    int subver = SUBVER;
-#else
-    int subver = -1;
-#endif
 
 
 /* Flush stdout. Maybe we were launched from within a CGI */
@@ -1009,8 +1004,6 @@ int main(int argc, char *argv[], char **env) {
     if (!inputfile[0]) {
         printf("Content-type: text/plain\n\n");
         printf("HTPL version %04.2f\n", (float)VERSION);
-        if (subver > 0) 
-            printf("Build number %d\n", subver);
         if (buildtime > 0) 
             printf("Distribution built at %s.\n", convtime(buildtime));
         if (compiletime > 0) 
