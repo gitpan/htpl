@@ -23,19 +23,43 @@ jewishdate getdmy monthname weekdayname foreachdir slash wrap hebrew_wrap
 pusht popt undouble uniq timestep rotate ror rol getcwd hostname core
 selfurl querystring takebroadlog subpkg subhash maketime power
 html_treeview selfsameurl new_template new_select getweekday
-elapsed hebrewflip agg sum splitline $STD_BODY @MONTH_NAMES @WEEKDAY_NAMES);
+elapsed hebrewflip agg sum splitline $STD_BODY @MONTH_NAMES @WEEKDAY_NAMES
+@DoW @DoWs @MoY @MoYs);
 
-@MONTH_NAMES = qw(January February March April May June July August
-September October November December);
-@WEEKDAY_NAMES = qw(Sunday Monday Tuesday Wednesday Thursday Friday
-Saturday);
+CONFIG: {
+    @MoY = qw(January February March April May June July August
+    September October November December);
+
+    *MONTH_NAMES = \@MoY;
+
+    @DoW = qw(Sunday Monday Tuesday Wednesday Thursday Friday
+        Saturday);
+
+    *WEEKDAY_NAMES = \@DoW;
+
+    @MoYs = map {substr($_, 0, 3);} @MoY;
+    @DoWs = map {substr($_, 0, 3);} @DoW;
+
+    eval { require Date::Language; };
+
+    my $lang = $HTML::HTPL::Config'htpl_language || 'English';
+    my $class = "Date::Language::$lang";
+    eval "require $class;";
+    foreach (qw(DoW MoY DoWs MoYs)) {
+        my @new = @{"${class}::$_"};
+        @$_ = @new if (@new);
+    }
+
+}
 
 sub monthname {
-    substr($MONTH_NAMES[shift], 0, 3);
+    my $month = (shift) - 1;
+    @_ ? $MoYs[$month] : $MoY[$month];
 }
 
 sub weekdayname {
-    substr($WEEKDAY_NAMES[shift], 0, 3);
+    my $day = (shift) - 1;
+    @_ ? $DoWs[$day] : $DoW[$day];
 }
 
 sub getdmy {
@@ -57,7 +81,7 @@ sub getweekday {
                         :
                 ($_[0] || time)
              );
-    (localtime($t))[6];
+    (localtime($t))[6] + 1;
 }
     
 

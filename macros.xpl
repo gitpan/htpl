@@ -116,7 +116,7 @@ while ($%1% &amp;&amp; !$%1%->eof &amp;&amp; $%1%->fetch) {</__FWD>
 <FETCHIT MIN="1" MAX="1">$%1%->fetch;</FETCHIT>
 <FETCHCOLS MIN="2" MAX="2">foreach %2% (%1%->cols) {</FETCHCOLS>
 <FETCHCELL MIN="3" MAX="3">$%3% = $%1%->get("%2%");</FETCHCELL>
-<PROJECT MIN="3" MAX="3">@%3% = $%1%->project("%2%");</PROJECT>
+<PROJECT MIN="3">@%3% = $%1%->project(qw(%2*%));</PROJECT>
 <FILTER>$%2% = $%1%->filter(sub {%2*%});</FILTER>
 
 <IFNULL AREA="1"><__FWD MIN="1" MAX="1" PUSH="if-then">if (!$%1% || $%1%->none) {</__FWD>

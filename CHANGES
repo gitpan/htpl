@@ -1,5 +1,8 @@
 Versions:
 
+2.77: Result sets can be dumped to an HTML Table (via a Table object) or
+XML.
+2.76: Locale date strings are supported via the Date::Language module.
 2.71: Introduced HTGenerator
 2.70: Fixed bugs in HTPLNet and HTReporter
 2.69: Added preprocessor, post processor and inprocessor.

@@ -257,15 +257,20 @@ sub unite {
 }
 
 sub project ($$;@) {
-    my ($self, $field) = @_;
+    my ($self, @fields) = @_;
 
     my @r;
     my $save = $self->index;
-    my @fields = split(/:/, $field);
+    if (!$#fields && $fields[0] =~ /:/ && !UNIVERSAL::isa($fields[0], 'CODE')) {
+        @fields = split(/:/, $fields[0]);
+    }
 
+    if (!$#fields && UNIVERSAL::isa($fields[0], 'ARRAY')) {
+        @fields = @{$fields[0]};
+    }
     &HTML::HTPL::Sys::pushvars($self->{'fields'});
     $self->rewind;
-    my $ref = UNIVERSAL::isa($field, 'CODE') ? $field : (
+    my $ref = UNIVERSAL::isa($fields[0], 'CODE') ? $fields[0] : (
          !$#fields ? sub {my $self = shift; $self->get($field);} :
          sub {my $self = shift; [map {$self->get($_);} @fields];});
     while ($self->fetch) {
@@ -300,6 +305,27 @@ sub structured {
         \%hash;
     };
     $self->project($code);
+}
+
+sub astable {
+    my $self = shift;
+    require HTML::HTPL::Table;
+    my $table = new HTML::HTPL::Table('cols' => scalar($self->cols));
+    my $flag = shift;
+    $table->add(map {{'data' => $_, 'header' => 1};} $self->cols) if ($flag);
+    $table->load($self->matrix);
+    return $table;
+}
+
+sub asxml {
+    my ($self, $root, $rec) = @_;
+    unless ($rec) {
+        $rec = $root;
+        $root = 'xml';
+    }
+    my $struct = {$rec => [$self->structured]};
+    require XML::Simple;
+    XML::Simple::XMLout($struct, 'rootname' => $root);
 }
 
 1;

@@ -38,6 +38,12 @@ $temp = "@TEMP@";
 $htpl_system_log = "@HTLOGS@";
 
 ###
+# Locale. Currently supported via the DoW and MoY arrays
+$htpl_language = "English"; # Norwegian, Austrian, English, German,
+                            # Czech, French, Italian
+
+
+###
 # Put configuration for directories in htpl-site.pl in directories
 # Override variables for these directories
 

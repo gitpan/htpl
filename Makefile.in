@@ -52,7 +52,7 @@ all : $(TARGETS) $(EGO)
 
 clean : clean-modules
 	/bin/rm -f $(TARGETS) $(SCRIPTS) || true
-	test -n "$(XML)" && /bin/rm -f htpl-sh.h htpl-parse.c htplparse.pm || true
+	test -n "$(XML)" && /bin/rm -f htpl-sh.h htpl-parse.c htplparse.pm perl.sh htpl-config.pl || true
 	/bin/rm -f Makefile core || true
 	/bin/rm -f config.status config.cache || true
 
@@ -87,20 +87,6 @@ $(CMP) : $(OBV)
 	echo "#!/bin/sh" > $(CMP)
 	echo "$(INSTALLDIR)/$(DBG) -twb$(INSTALLDIR) \$$1" >> $(CMP)
 	chmod 755 $(CMP)
-
-.phony :
-
-$(COMP) : .phony
-	chmod 755 $(COMP)
-
-$(REP) : .phony
-	chmod 755 $(REP)
-
-$(SRVC) : .phony
-	chmod 755 $(SRVC)
-
-$(GEN) : .phony
-	chmod 755 $(GEN)
 
 install-it : 
 	for f in $(DBG) $(BIN) ; do \

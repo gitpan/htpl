@@ -25,6 +25,13 @@ sub add {
     push(@{$self->{'rows'}}, \@cells);
 }
 
+sub load {
+    my ($self, @ary) = @_;
+    foreach (@ary) {
+        $self->add(@$_);
+    }
+}
+
 sub push {
     my ($self, @cells) = @_;
     $self->{'curr'} = [] unless ($self->{'curr'});
