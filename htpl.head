@@ -17,11 +17,16 @@ sub __sys_init {
         if (UNIVERSAL::isa($code, 'CODE')) {
                 &$code;
         }
+	@HTML::HTPL::cleanups = ();
 }
+
 sub __sys_deinit {
         my $code = *CleanDoc{CODE};
         if (UNIVERSAL::isa($code, 'CODE')) {
                 &$code;
         }
+	foreach (@HTML::HTPL::cleanups) {
+		&$_;
+	}
 }
 

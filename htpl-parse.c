@@ -127,6 +127,27 @@ int parse_htpl_catch(stack, untag)
     RETURN(1)
 }
 
+int parse_htpl_merge(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    if (numtokens < 2) RETURN(croak("%sMERGE called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
+    printfcode("foreach (%s) {\n", gettokenlist(2, ", ", "$", ""));
+    printfcode(" ${\"%s\"}->append($_);\n", gettoken(1));
+    printcode("}\n");
+    nesting = 0;
+    RETURN(1)
+}
+
 int parse_htpl_continue(stack, untag)
     int untag;
     STR stack; {
@@ -531,6 +552,24 @@ int parse_htpl_connection(stack, untag)
     RETURN(1)
 }
 
+int parse_htpl_time_now(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    printcode("print scalar(localtime);\n");
+    nesting = 0;
+    RETURN(1)
+}
+
 int parse_htpl_time_modified(stack, untag)
     int untag;
     STR stack; {
@@ -564,13 +603,14 @@ int parse_htpl_time(stack, untag)
     makepersist(stack);
     eat(&stack, token);
     {
-        static char *time_table[] = {"MODIFIED"};
-        static int time_locations[] = { 0, -1 };
-        static int time_shortcuts[] = { -1, -1, -1, -1, 0, -1, -1, -1, -1, -1 };
+        static char *time_table[] = {"MODIFIED",
+            "NOW"};
+        static int time_locations[] = { 0, -1, 1, -1 };
+        static int time_shortcuts[] = { -1, -1, -1, -1, 0, 2, -1, -1, -1, -1 };
         static struct hash_t time_hash = {time_table,
              time_locations, time_shortcuts};
 
-        static parser funs[] = { parse_htpl_time_modified };
+        static parser funs[] = { parse_htpl_time_modified, parse_htpl_time_now };
         int n;
         parser fun;
         n = search_hash(&time_hash, token, 0);
@@ -1094,6 +1134,9 @@ int parse_htpl_init___fwd(stack, untag)
     refcount++;
     makepersist(stack);
     pushscope(scope_init, 0);
+    if (refcount > 1) {
+        croak("INIT may be called only once");
+    }
     printcode("sub InitDoc {\n");
     nesting = 0;
     RETURN(1)
@@ -1468,6 +1511,9 @@ int parse_htpl_cleanup___fwd(stack, untag)
     refcount++;
     makepersist(stack);
     pushscope(scope_clean, 0);
+    if (refcount > 1) {
+        croak("CLEANUP may be called only once");
+    }
     printcode("sub CleanDoc {\n");
     nesting = 0;
     RETURN(1)
@@ -1763,8 +1809,60 @@ int parse_htpl_sql_scope_goto(stack, untag)
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sSQL SCOPE GOTO called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 1) RETURN(croak("%sSQL SCOPE GOTO called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
-    setvar("dbobj", (STR)mysprintf("%s", gettoken(1)));
+    setvar("dbobj", (STR)mysprintf("$%s", gettoken(1)));
     if (!exportvar("dbobj", "")) RETURN(croak("Scope  not found in stack"));
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_sql_scope_emulate(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    if (numtokens < 1) RETURN(croak("%sSQL SCOPE EMULATE called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    code = 1;
+    kludge_reunifying = 1;
+    asprintf(&buff, "SQL SCOPE RETRIEVE");
+    kludge_reunifying = 0;
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    printcode("$HTML::HTPL::save_sql_scope = $HTML::HTPL::htpl_db_obj;\n");
+    printfcode("   $HTML::HTPL::htpl_db_obj = %s;\n", getvar("dbobj"));
+    printcode("		\n");
+    code = 1;
+    kludge_reunifying = 1;
+    asprintf(&buff, "SQL %s", gettokenlist(1, " ", "", ""));
+    kludge_reunifying = 0;
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    printfcode("%s = $HTML::HTPL::htpl_db_obj;\n", getvar("dbobj"));
+    printcode("			$HTML::HTPL::htpl_db_obj = $HTML::HTPL::save_sql_scope;\n");
+    printcode("			undef $HTML::HTPL::save_sql_scope;\n");
     nesting = 0;
     RETURN(1)
 }
@@ -1851,6 +1949,21 @@ int parse_htpl_sql_scope_retrieve(stack, untag)
     makepersist(stack);
     if (!nest) RETURN(0)
     if (!importvar("dbobj", "")) RETURN(croak("Scope  not found in stack"));
+    if (!(disposetrue((STR)mysprintf("%s", getvar("dbobj")))))  {
+        code = 1;
+        kludge_reunifying = 1;
+        asprintf(&buff, "SQL SCOPE BEGIN");
+        kludge_reunifying = 0;
+        nest++;
+        code = parse_htpl(buff, untag);
+        nest--;
+        if (!code) {
+            croak("Unification of '%s' failed", buff);
+            free(buff);
+            RETURN(0)
+        }
+        free(buff);
+    }
     nesting = 0;
     RETURN(1)
 }
@@ -1928,15 +2041,16 @@ int parse_htpl_sql_scope(stack, untag)
         static char *scope_table[] = {"BEGIN",
             "CONNECT",
             "CURSOR",
+            "EMULATE",
             "EXEC",
             "GOTO",
             "RETRIEVE"};
-        static int scope_locations[] = { 1, -1, 5, -1, 2, -1, 3, -1, 4, -1, 0, -1 };
-        static int scope_shortcuts[] = { 2, -1, -1, 8, -1, 10, -1, 0, 4, 6 };
+        static int scope_locations[] = { 1, -1, 6, -1, 2, -1, 4, -1, 5, -1, 0, -1, 3, -1 };
+        static int scope_shortcuts[] = { 2, -1, -1, 8, -1, 10, 12, 0, 4, 6 };
         static struct hash_t scope_hash = {scope_table,
              scope_locations, scope_shortcuts};
 
-        static parser funs[] = { parse_htpl_sql_scope_begin, parse_htpl_sql_scope_connect, parse_htpl_sql_scope_cursor, parse_htpl_sql_scope_exec, parse_htpl_sql_scope_goto, parse_htpl_sql_scope_retrieve };
+        static parser funs[] = { parse_htpl_sql_scope_begin, parse_htpl_sql_scope_connect, parse_htpl_sql_scope_cursor, parse_htpl_sql_scope_emulate, parse_htpl_sql_scope_exec, parse_htpl_sql_scope_goto, parse_htpl_sql_scope_retrieve };
         int n;
         parser fun;
         n = search_hash(&scope_hash, token, 0);
@@ -2007,6 +2121,53 @@ int parse_htpl_sql_immediate(stack, untag)
     free(buff);
 
     printcode("}\n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_sql_append(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    if (numtokens < 2) RETURN(croak("%sSQL APPEND called with %d arguments, minimum needed is 2", (untag ? "/" : ""), numtokens))
+    code = 1;
+    kludge_reunifying = 1;
+    asprintf(&buff, "SQL CURSOR __htpl__temp__ %s", gettokenlist(2, " ", "", ""));
+    kludge_reunifying = 0;
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    code = 1;
+    kludge_reunifying = 1;
+    asprintf(&buff, "MERGE %s __htpl__temp__", gettoken(1));
+    kludge_reunifying = 0;
+    nest++;
+    code = parse_htpl(buff, untag);
+    nest--;
+    if (!code) {
+        croak("Unification of '%s' failed", buff);
+        free(buff);
+        RETURN(0)
+    }
+    free(buff);
+
+    printcode("undef $__htpl__temp__;\n");
     nesting = 0;
     RETURN(1)
 }
@@ -2319,6 +2480,7 @@ int parse_htpl_sql(stack, untag)
     eat(&stack, token);
     {
         static char *sql_table[] = {"ADD",
+            "APPEND",
             "BATCH",
             "CONNECT",
             "CURSOR",
@@ -2340,12 +2502,12 @@ int parse_htpl_sql(stack, untag)
             "SEARCH",
             "UPDATE",
             "XBASE"};
-        static int sql_locations[] = { 5, 10, 15, -1, 4, 11, 20, -1, 17, 18, 19, -1, 0, -1, 6, -1, 8, -1, 1, 2, 16, 21, -1, 3, 9, 12, 14, -1, 7, 13, -1 };
-        static int sql_shortcuts[] = { 0, 4, 8, 12, 14, -1, 16, 18, 23, 28 };
+        static int sql_locations[] = { 6, 11, 16, -1, 5, 12, 21, -1, 18, 19, 20, -1, 0, -1, 7, -1, 9, -1, 2, 3, 17, 22, -1, 1, 4, 10, 13, 15, -1, 8, 14, -1 };
+        static int sql_shortcuts[] = { 0, 4, 8, 12, 14, -1, 16, 18, 23, 29 };
         static struct hash_t sql_hash = {sql_table,
              sql_locations, sql_shortcuts};
 
-        static parser funs[] = { parse_htpl_sql_add, parse_htpl_sql_batch, parse_htpl_sql_connect, parse_htpl_sql_cursor, parse_htpl_sql_declare, parse_htpl_sql_delete, parse_htpl_sql_erase, parse_htpl_sql_exec, parse_htpl_sql_execute, parse_htpl_sql_immediate, parse_htpl_sql_insert, parse_htpl_sql_modify, parse_htpl_sql_msql, parse_htpl_sql_mysql, parse_htpl_sql_postgres, parse_htpl_sql_postgresql, parse_htpl_sql_project, parse_htpl_sql_query, parse_htpl_sql_scope, parse_htpl_sql_search, parse_htpl_sql_update, parse_htpl_sql_xbase };
+        static parser funs[] = { parse_htpl_sql_add, parse_htpl_sql_append, parse_htpl_sql_batch, parse_htpl_sql_connect, parse_htpl_sql_cursor, parse_htpl_sql_declare, parse_htpl_sql_delete, parse_htpl_sql_erase, parse_htpl_sql_exec, parse_htpl_sql_execute, parse_htpl_sql_immediate, parse_htpl_sql_insert, parse_htpl_sql_modify, parse_htpl_sql_msql, parse_htpl_sql_mysql, parse_htpl_sql_postgres, parse_htpl_sql_postgresql, parse_htpl_sql_project, parse_htpl_sql_query, parse_htpl_sql_scope, parse_htpl_sql_search, parse_htpl_sql_update, parse_htpl_sql_xbase };
         int n;
         parser fun;
         n = search_hash(&sql_hash, token, 0);
@@ -2680,6 +2842,7 @@ int parse_htpl_define___fwd(stack, untag)
     makepersist(stack);
     if (numtokens < 1) RETURN(croak("%sDEFINE called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
     if (numtokens > 1) RETURN(croak("%sDEFINE called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
+    pushscope(scope_define, 0);
     setvar("var", (STR)mysprintf("%s", gettoken(1)));
     printcode("&begintransaction;\n");
     nesting = 0;
@@ -2700,6 +2863,9 @@ int parse_htpl_define___rev(stack, untag)
     refcount++;
     makepersist(stack);
     printfcode("$%s = &endtransaction; \n", getvar("var"));
+    if (!currscope) RETURN(croak("Unexpected DEFINE"))
+    if (currscope->scope != scope_define) RETURN(croak("Now in scope %s from %d and met DEFINE, expecting: define", scope_names[currscope->scope], currscope->nline))
+    popscope();
     nesting = 0;
     RETURN(1)
 }
@@ -2784,6 +2950,7 @@ int parse_htpl_rem___fwd(stack, untag)
 
     refcount++;
     makepersist(stack);
+    pushscope(scope_rem, 0);
     printcode("&begintransaction;\n");
     nesting = 0;
     RETURN(1)
@@ -2803,6 +2970,9 @@ int parse_htpl_rem___rev(stack, untag)
     refcount++;
     makepersist(stack);
     printcode("&endtransaction;\n");
+    if (!currscope) RETURN(croak("Unexpected REM"))
+    if (currscope->scope != scope_rem) RETURN(croak("Now in scope %s from %d and met REM, expecting: rem", scope_names[currscope->scope], currscope->nline))
+    popscope();
     nesting = 0;
     RETURN(1)
 }
@@ -2822,6 +2992,74 @@ int parse_htpl_rem(stack, untag)
     makepersist(stack);
     if (!untag) RETURN(parse_htpl_rem___fwd(stack, untag))
         else RETURN(parse_htpl_rem___rev(stack, untag))
+}
+
+int parse_htpl_file___fwd(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    if (numtokens < 1) RETURN(croak("%sFILE called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    if (numtokens > 1) RETURN(croak("%sFILE called with %d arguments, maximum needed is 1", (untag ? "/" : ""), numtokens))
+    pushscope(scope_file, 0);
+    printcode("		push(@HTML::HTPL::file_saves, select);\n");
+    printcode("		$HTML::HTPL::new_file = gensym;\n");
+    printfcode("  open($HTML::HTPL::new_file, \">%s\");\n", gettoken(1));
+    printcode("		select $HTML::HTPL::new_file;\n");
+    printcode("	\n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_file___rev(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    printcode("		$HTML::HTPL::new_file = select;	\n");
+    printcode("		select pop @HTML::HTPL::file_saves;\n");
+    printcode("		close($HTML::HTPL::new_file);\n");
+    printcode("		undef $HTML::HTPL::new_file;\n");
+    printcode("		undef @HTML::HTPL::file_saves unless @HTML::HTPL::file_saves;\n");
+    printcode("	\n");
+    if (!currscope) RETURN(croak("Unexpected FILE"))
+    if (currscope->scope != scope_file) RETURN(croak("Now in scope %s from %d and met FILE, expecting: file", scope_names[currscope->scope], currscope->nline))
+    popscope();
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_file(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    if (!untag) RETURN(parse_htpl_file___fwd(stack, untag))
+        else RETURN(parse_htpl_file___rev(stack, untag))
 }
 
 int parse_htpl_break(stack, untag)
@@ -3654,6 +3892,28 @@ int parse_htpl_rewind(stack, untag)
     refcount++;
     makepersist(stack);
     printcode("&rewind;\n");
+    nesting = 0;
+    RETURN(1)
+}
+
+int parse_htpl_req_symbol(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    if (!nest) RETURN(0)
+    if (!done) {
+        done = 1;
+        printcode("use Symbol;\n");
+    }
     nesting = 0;
     RETURN(1)
 }
@@ -4646,6 +4906,28 @@ int parse_htpl_fetchcell(stack, untag)
     RETURN(1)
 }
 
+int parse_htpl_dispose(stack, untag)
+    int untag;
+    STR stack; {
+
+    TOKEN token;
+    static done = 0;
+    STR buff;
+    int code;
+    static int nesting = 0;
+    static int refcount = 0;
+
+    refcount++;
+    makepersist(stack);
+    if (numtokens < 1) RETURN(croak("%sDISPOSE called with %d arguments, minimum needed is 1", (untag ? "/" : ""), numtokens))
+    printfcode("foreach (%s) {\n", gettokenlist(1, ", ", "$", ""));
+    printcode("	undef %$_;\n");
+    printcode("	undef $_;\n");
+    printcode("}\n");
+    nesting = 0;
+    RETURN(1)
+}
+
 int parse_htpl_if___fwd(stack, untag)
     int untag;
     STR stack; {
@@ -4821,6 +5103,7 @@ int parse_htpl(stack, untag)
             "DESTRUCTOR",
             "DIE",
             "DIR",
+            "DISPOSE",
             "ELSE",
             "END",
             "ENDIF",
@@ -4830,6 +5113,7 @@ int parse_htpl(stack, untag)
             "FETCHCOLS",
             "FETCHIT",
             "FETCHITORBREAK",
+            "FILE",
             "FILTER",
             "FOR",
             "FOREACH",
@@ -4845,6 +5129,7 @@ int parse_htpl(stack, untag)
             "LOOP",
             "MAIL",
             "MEM",
+            "MERGE",
             "METHOD",
             "NET",
             "NEXT",
@@ -4855,6 +5140,7 @@ int parse_htpl(stack, untag)
             "PUBLISH",
             "REDIRECT",
             "REM",
+            "REQ_SYMBOL",
             "REWIND",
             "SERVBOXEN",
             "SQL",
@@ -4863,12 +5149,12 @@ int parse_htpl(stack, untag)
             "THROW",
             "TIME",
             "TRY"};
-        static int htpl_locations[] = { 17, 18, 29, 37, 44, 53, 59, -1, 12, 35, 57, -1, 24, 41, 55, 58, 61, -1, 9, 26, 31, 51, 54, -1, 1, 2, 7, 39, 42, 45, 49, -1, 13, 19, 21, 22, 25, 40, 46, 60, -1, 11, 36, 47, -1, 3, 8, 14, 23, 28, 32, 33, 50, 52, 56, -1, 0, 4, 10, 30, 34, 38, 43, -1, 5, 6, 15, 16, 20, 27, 48, 62, -1 };
-        static int htpl_shortcuts[] = { 0, 8, 12, 18, 24, 32, 41, 45, 56, 64 };
+        static int htpl_locations[] = { 17, 18, 30, 39, 46, 56, 63, -1, 12, 21, 37, 61, -1, 25, 43, 59, 62, 65, -1, 9, 27, 33, 54, 57, -1, 1, 2, 7, 41, 44, 48, 52, -1, 13, 19, 22, 23, 26, 42, 49, 64, -1, 11, 31, 38, 47, 50, 58, -1, 3, 8, 14, 24, 29, 34, 35, 53, 55, 60, -1, 0, 4, 10, 32, 36, 40, 45, -1, 5, 6, 15, 16, 20, 28, 51, 66, -1 };
+        static int htpl_shortcuts[] = { 0, 8, 13, 19, 25, 33, 42, 49, 60, 68 };
         static struct hash_t htpl_hash = {htpl_table,
              htpl_locations, htpl_shortcuts};
 
-        static parser funs[] = { parse_htpl_assert, parse_htpl_auth, parse_htpl_auth_create, parse_htpl_break, parse_htpl_call, parse_htpl_case, parse_htpl_catch, parse_htpl_class, parse_htpl_cleanup, parse_htpl_clsutils, parse_htpl_combobox, parse_htpl_connection, parse_htpl_constructor, parse_htpl_continue, parse_htpl_copy, parse_htpl_counter, parse_htpl_default, parse_htpl_define, parse_htpl_destructor, parse_htpl_die, parse_htpl_dir, parse_htpl_else, parse_htpl_end, parse_htpl_endif, parse_htpl_exit, parse_htpl_fetch, parse_htpl_fetchcell, parse_htpl_fetchcols, parse_htpl_fetchit, parse_htpl_fetchitorbreak, parse_htpl_filter, parse_htpl_for, parse_htpl_foreach, parse_htpl_graph, parse_htpl_if, parse_htpl_ifnotnull, parse_htpl_ifnull, parse_htpl_img, parse_htpl_init, parse_htpl_ldap, parse_htpl_listbox, parse_htpl_load, parse_htpl_loop, parse_htpl_mail, parse_htpl_mem, parse_htpl_method, parse_htpl_net, parse_htpl_next, parse_htpl_out, parse_htpl_proc, parse_htpl_project, parse_htpl_pts, parse_htpl_publish, parse_htpl_redirect, parse_htpl_rem, parse_htpl_rewind, parse_htpl_servboxen, parse_htpl_sql, parse_htpl_switch, parse_htpl_text, parse_htpl_throw, parse_htpl_time, parse_htpl_try };
+        static parser funs[] = { parse_htpl_assert, parse_htpl_auth, parse_htpl_auth_create, parse_htpl_break, parse_htpl_call, parse_htpl_case, parse_htpl_catch, parse_htpl_class, parse_htpl_cleanup, parse_htpl_clsutils, parse_htpl_combobox, parse_htpl_connection, parse_htpl_constructor, parse_htpl_continue, parse_htpl_copy, parse_htpl_counter, parse_htpl_default, parse_htpl_define, parse_htpl_destructor, parse_htpl_die, parse_htpl_dir, parse_htpl_dispose, parse_htpl_else, parse_htpl_end, parse_htpl_endif, parse_htpl_exit, parse_htpl_fetch, parse_htpl_fetchcell, parse_htpl_fetchcols, parse_htpl_fetchit, parse_htpl_fetchitorbreak, parse_htpl_file, parse_htpl_filter, parse_htpl_for, parse_htpl_foreach, parse_htpl_graph, parse_htpl_if, parse_htpl_ifnotnull, parse_htpl_ifnull, parse_htpl_img, parse_htpl_init, parse_htpl_ldap, parse_htpl_listbox, parse_htpl_load, parse_htpl_loop, parse_htpl_mail, parse_htpl_mem, parse_htpl_merge, parse_htpl_method, parse_htpl_net, parse_htpl_next, parse_htpl_out, parse_htpl_proc, parse_htpl_project, parse_htpl_pts, parse_htpl_publish, parse_htpl_redirect, parse_htpl_rem, parse_htpl_req_symbol, parse_htpl_rewind, parse_htpl_servboxen, parse_htpl_sql, parse_htpl_switch, parse_htpl_text, parse_htpl_throw, parse_htpl_time, parse_htpl_try };
         int n;
         parser fun;
         n = search_hash(&htpl_hash, token, 0);

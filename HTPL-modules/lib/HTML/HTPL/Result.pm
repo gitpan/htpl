@@ -21,10 +21,24 @@ sub new {
     @fields = map {s/ /_/g; $_;} @fields;
 
     my $self = {'origin' => $origin,
+		'more' => [],
                  'rows' => [],
                  'cursor' => 0,
                  'fields' => \@fields};
     bless $self, $class;
+}
+
+sub append {
+    my ($self, $twin) = @_;
+    my %hash;
+    my @fields = @{$self->{'fields'}};
+    @hash{@fields} = @fields;
+    my @other = @{$twin->{'fields'}};
+    foreach (@other) {
+        next if $hash{$_};
+        push(@{$self->{'fields'}}, $_);
+    }
+    push(@{$self->{'more'}}, $twin);
 }
 
 sub makehash {
@@ -72,12 +86,36 @@ sub fetch {
 
 sub receive {
     my $self = shift;
-    return undef unless ($self->{'origin'});
-    return undef if $self->{'origin'}->eof;
+    return $self->receivenext unless ($self->{'origin'});
+    return $self->receivenext if $self->{'origin'}->eof;
     my $rec = $self->{'origin'}->fetch;
-    return undef unless ($rec);
+    return $self->receivenext unless ($rec);
     $self->add($rec) if (UNIVERSAL::isa($rec, 'HASH'));
     $self->addrow(@$rec) if (UNIVERSAL::isa($rec, 'ARRAY'));
+    1;
+}
+
+sub receivenext {
+    my $self = shift;
+    for (;;) {
+        return undef unless $self->loadnext;
+        last unless $self->eof;
+    }
+    $self->sync;
+    1;
+}
+
+sub loadnext {
+    my $self = shift;
+    my $twin = pop @{$self->{'more'}};
+    return undef unless $twin;
+    foreach (1 .. $twin->_rows) {
+        $twin->sync($_ - 1);
+	$self->add($twin->current);
+    }
+
+    $self->{'origin'} = $twin->{'origin'};
+    push(@{$self->{'more'}}, @{$twin->{'more'}});
     1;
 }
 
@@ -87,14 +125,15 @@ sub cache {
 }
 
 sub sync {
-    my $self = shift;
+    my ($self, $goto) = @_;
 
     my $cursor = $self->{'cursor'};
+    $cursor = $self->{'cursor'} = $goto if defined($goto);
 
     while ($cursor >= $self->_rows) {
-        return undef unless ($self->{'origin'});
-        return undef if ($self->{'origin'}->eof);
-        return undef unless($self->receive);
+#        return undef unless ($self->{'origin'});
+#        return undef if ($self->{'origin'}->eof);
+        return undef unless ($self->receive);
     }
     return 1;
 }
@@ -153,8 +192,9 @@ sub eof {
     $cursor = $self->{'cursor2'};
     $cursor = $self->{'cursor'} unless ($cursor);
     return undef if ($cursor < $self->_rows);
-    return 1 unless ($self->{'origin'});
-    return $self->{'origin'}->eof;
+    return undef if ($self->{'origin'} && !$self->{'origin'}->eof);
+    return $self->eof if $self->loadnext;
+    1;
 }
 
 sub bof {
@@ -200,7 +240,7 @@ sub getcol {
 
     my $cursor = $self->{'cursor'};
 
-    my $field = ${$self->{'fields'}}[$number];
+    my $field = $self->{'fields'}->[$number];
 
     return $self->get($field);
 }

@@ -672,8 +672,9 @@ int exportvar(name, scope)
     PTR old;
     SCOPE srch = searchback(scope);
     if (!srch) return 0;
-    old = btreesearch(srch->vars, name);
-    if (old) free(old);
+/*    old = btreesearch(srch->vars, name);
+    if (old) free(old);*/
+    /* Do NOT release memory here, btreeadd does it */
     btreeadd(&srch->vars, name, strdup(value));
     return 1;
 }

@@ -593,12 +593,12 @@ sub txt2html {
     eval { require HTML::Entities; };
     if (0 && UNIVERSAL::can('HTML::Entities', 'encode_entities')) {
         HTML::Entities::encode_entities($txt);
-        return $txt;
+    } else {
+        $txt =~ s/\&/&amp;/g;
+        $txt =~ s/\</&lt;/g;
+        $txt =~ s/\>/&gt;/g;
+        $txt =~ s/"/&quot;/g;
     }
-    $txt =~ s/\&/&amp;/g;
-    $txt =~ s/\</&lt;/g;
-    $txt =~ s/\>/&gt;/g;
-    $txt =~ s/"/&quot;/g;
     $txt =~ s/\n\r?/<BR>/g;
 
     $txt;

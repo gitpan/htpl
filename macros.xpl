@@ -10,7 +10,7 @@
 			<__EXPORT SCOPE="" VAR="dbobj"/>
 		</__MACRO>
 		<__MACRO NAME="GOTO" MAX="1" MIN="1">
-			<__SET VALUE="%1%"
+			<__SET VALUE="$%1%"
 				VAR="dbobj"/>
 			<__EXPORT SCOPE="" VAR="dbobj"/>
 		</__MACRO>
@@ -19,8 +19,10 @@
 			<__DO>my %$dbobj% = 
 			HTML::HTPL::Db->new("%1%", "%2%", "%3%");
 		</__DO></__MACRO>
-		<__MACRO PRIVATE="1" NAME="RETRIEVE">
-<__IMPORT SCOPE="" VAR="dbobj"/></__MACRO>
+	<__MACRO PRIVATE="1" NAME="RETRIEVE">
+		<__IMPORT SCOPE="" VAR="dbobj"/>
+		<__INCLUDE ASSERT="!%$dbobj%">SQL SCOPE BEGIN</__INCLUDE>
+	</__MACRO>
 	<__MACRO MIN="2" NAME="CURSOR"><__INCLUDE>SQL SCOPE RETRIEVE</__INCLUDE>
 		<__DO>
 $%1% = %$dbobj%->cursor(&amp;HTML::HTPL::Db'parse_sql("%2*%"));
@@ -28,7 +30,15 @@ $%1% = %$dbobj%->cursor(&amp;HTML::HTPL::Db'parse_sql("%2*%"));
         <__MACRO MIN="1" NAME="EXEC"><__INCLUDE>SQL SCOPE RETRIEVE</__INCLUDE>
                 <__DO>
 %$dbobj%->execsql(&amp;HTML::HTPL::Db'parse_sql("%1*%"));</__DO></__MACRO>
-
+	<__MACRO NAME="EMULATE" MIN="1">
+		<__INCLUDE>SQL SCOPE RETRIEVE</__INCLUDE>
+		<__DO>$HTML::HTPL::save_sql_scope = $HTML::HTPL::htpl_db_obj;
+			$HTML::HTPL::htpl_db_obj = %$dbobj%;
+		</__DO>
+		<__INCLUDE>SQL %1*%</__INCLUDE>
+		<__DO>%$dbobj% = $HTML::HTPL::htpl_db_obj;
+			$HTML::HTPL::htpl_db_obj = $HTML::HTPL::save_sql_scope;
+			undef $HTML::HTPL::save_sql_scope;</__DO></__MACRO>
 	</__MACRO>
 	<__MACRO MIN="1" MAX="3" NAME="CONNECT">$HTML::HTPL::htpl_db_obj = HTML::HTPL::Db->new("%1%", "%2%", "%3%");</__MACRO>
 	<__MACRO MIN="1" MAX="3" NAME="MYSQL"><__ALIAS>SQL CONNECT DBI:mysql:%1% %2*%</__ALIAS></__MACRO>
@@ -63,6 +73,11 @@ $%1% = %$dbobj%->cursor(&amp;HTML::HTPL::Db'parse_sql("%2*%"));
 	<__MACRO MIN="2" MAX="2" NAME="BATCH">$HTML::HTPL::htpl_db_obj->batch_insert("%1%", $%2%);</__MACRO>
 
 	<__MACRO NAME="QUERY">$%1% = $HTML::HTPL::htpl_db_obj->query("%2%", qw(%3*%));</__MACRO>
+	<__MACRO MIN="2" NAME="APPEND">
+		<__INCLUDE>SQL CURSOR __htpl__temp__ %2*%</__INCLUDE>
+		<__INCLUDE>MERGE %1% __htpl__temp__</__INCLUDE>
+		<__DO>undef $__htpl__temp__;</__DO>
+	</__MACRO>
 </__MACRO>
 
 <__MACRO NAME="LDAP">
@@ -256,6 +271,7 @@ $__htpl_cases_default = sub
 
 <__MACRO NAME="TIME">
 	<__MACRO NAME="MODIFIED">print scalar(localtime(&amp;lastmodified()));</__MACRO>
+	<__MACRO NAME="NOW">print scalar(localtime);</__MACRO>
 </__MACRO>
 
 <__MACRO NAME="COUNTER">print &amp;increasefile("%1%");</__MACRO>
@@ -472,10 +488,10 @@ $HTML::HTPL::pts_obj = new RPC::PlClient(
 	"getObject", "%3%");</__MACRO>
 </__MACRO>
 
-<__MACRO AREA="1" NAME="REM"><__FWD>&amp;begintransaction;</__FWD>
+<__MACRO AREA="1" NAME="REM" BLOCK="rem"><__FWD>&amp;begintransaction;</__FWD>
 <__REV>&amp;endtransaction;</__REV></__MACRO>
 
-<__MACRO NAME="DEFINE" AREA="1">
+<__MACRO NAME="DEFINE" AREA="1" BLOCK="define">
 <__FWD MIN="1" MAX="1">
 <__SET VALUE="%1%" VAR="var"/>
 <__DO>&amp;begintransaction;</__DO></__FWD>
@@ -569,12 +585,41 @@ $HTML::HTPL::acl->{'acl'}->IsAuthorized($session{'username'}, $REALM);
 </__MACRO>
 <__MACRO NAME="EXIT">exit;</__MACRO>
 <__MACRO NAME="REWIND">&amp;rewind;</__MACRO>
-<__MACRO NAME="INIT" AREA="1" ONCE="1" BLOCK="init">
-        <__FWD>sub InitDoc {</__FWD>
+<__MACRO NAME="INIT" AREA="1" BLOCK="init">
+        <__FWD ONCE="1">sub InitDoc {</__FWD>
         <__REV>}</__REV>
 </__MACRO>
-<__MACRO NAME="CLEANUP" AREA="1" ONCE="1" BLOCK="clean">
-        <__FWD>sub CleanDoc {</__FWD>
+<__MACRO NAME="CLEANUP" AREA="1" BLOCK="clean">
+        <__FWD ONCE="1">sub CleanDoc {</__FWD>
         <__REV>}</__REV>
+</__MACRO>
+<__MACRO NAME="REQ_SYMBOL" PRIVATE="1" NOOP="1">
+	<__PRE>use Symbol;</__PRE>
+</__MACRO>
+<__MACRO NAME="FILE" BLOCK="file" AREA="1">
+	<__FWD MIN="1" MAX="1"><__INCLUDE>REQ_SYMBOL</__INCLUDE>
+		push(@HTML::HTPL::file_saves, select);
+		$HTML::HTPL::new_file = gensym;
+		open($HTML::HTPL::new_file, ">%1%");
+		select $HTML::HTPL::new_file;
+	</__FWD>
+	<__REV>
+		$HTML::HTPL::new_file = select;	
+		select pop @HTML::HTPL::file_saves;
+		close($HTML::HTPL::new_file);
+		undef $HTML::HTPL::new_file;
+		undef @HTML::HTPL::file_saves unless @HTML::HTPL::file_saves;
+	</__REV>
+</__MACRO>
+<__MACRO NAME="DISPOSE" MIN="1">
+foreach (%1!%) {
+	undef %$_;
+	undef $_;
+}
+</__MACRO>
+<__MACRO NAME="MERGE" MIN="2">
+foreach (%2!%) {
+	$%1%->append($_);
+}
 </__MACRO>
 </HTPL>

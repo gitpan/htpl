@@ -1,7 +1,7 @@
 package HTML::HTPL;
 
 BEGIN{
-    $VERSION = q!3.13!;
+    $VERSION = q!3.14!;
 }
 
 sub import {

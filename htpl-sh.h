@@ -4,6 +4,7 @@ int parse_htpl_graph(STR, int);
 int parse_htpl_combobox(STR, int);
 int parse_htpl_fetchit(STR, int);
 int parse_htpl_catch(STR, int);
+int parse_htpl_merge(STR, int);
 int parse_htpl_continue(STR, int);
 int parse_htpl_else(STR, int);
 int parse_htpl_text(STR, int);
@@ -20,6 +21,7 @@ int parse_htpl_text_csv(STR, int);
 int parse_htpl_text_cube(STR, int);
 int parse_htpl_connection(STR, int);
 int parse_htpl_time(STR, int);
+int parse_htpl_time_now(STR, int);
 int parse_htpl_time_modified(STR, int);
 int parse_htpl_auth_create(STR, int);
 int parse_htpl_loop(STR, int);
@@ -71,6 +73,7 @@ int parse_htpl_sql_connect(STR, int);
 int parse_htpl_sql_project(STR, int);
 int parse_htpl_sql_scope(STR, int);
 int parse_htpl_sql_scope_goto(STR, int);
+int parse_htpl_sql_scope_emulate(STR, int);
 int parse_htpl_sql_scope_exec(STR, int);
 int parse_htpl_sql_scope_cursor(STR, int);
 int parse_htpl_sql_scope_retrieve(STR, int);
@@ -78,6 +81,7 @@ int parse_htpl_sql_scope_connect(STR, int);
 int parse_htpl_sql_scope_begin(STR, int);
 int parse_htpl_sql_delete(STR, int);
 int parse_htpl_sql_immediate(STR, int);
+int parse_htpl_sql_append(STR, int);
 int parse_htpl_sql_exec(STR, int);
 int parse_htpl_sql_execute(STR, int);
 int parse_htpl_sql_declare(STR, int);
@@ -107,6 +111,9 @@ int parse_htpl_out_tag(STR, int);
 int parse_htpl_rem(STR, int);
 int parse_htpl_rem___fwd(STR, int);
 int parse_htpl_rem___rev(STR, int);
+int parse_htpl_file(STR, int);
+int parse_htpl_file___fwd(STR, int);
+int parse_htpl_file___rev(STR, int);
 int parse_htpl_break(STR, int);
 int parse_htpl_destructor(STR, int);
 int parse_htpl_destructor___fwd(STR, int);
@@ -138,6 +145,7 @@ int parse_htpl_project(STR, int);
 int parse_htpl_die(STR, int);
 int parse_htpl_fetchitorbreak(STR, int);
 int parse_htpl_rewind(STR, int);
+int parse_htpl_req_symbol(STR, int);
 int parse_htpl_ifnotnull(STR, int);
 int parse_htpl_ifnotnull___fwd(STR, int);
 int parse_htpl_ifnotnull___rev(STR, int);
@@ -179,6 +187,7 @@ int parse_htpl_ldap_add(STR, int);
 int parse_htpl_ldap_modify(STR, int);
 int parse_htpl_ldap_init(STR, int);
 int parse_htpl_fetchcell(STR, int);
+int parse_htpl_dispose(STR, int);
 int parse_htpl_if(STR, int);
 int parse_htpl_if___fwd(STR, int);
 int parse_htpl_if___rev(STR, int);
@@ -194,8 +203,6 @@ enum scopevalues {no_scope,
     scope_method,
     scope_switch,
     scope_destructor,
-    scope_foreach,
-    scope_if_then,
     scope_procedure,
     scope_class,
     scope_for,
@@ -203,6 +210,11 @@ enum scopevalues {no_scope,
     scope_contsructor,
     scope_catch,
     scope_clean,
+    scope_rem,
+    scope_define,
+    scope_foreach,
+    scope_if_then,
+    scope_file,
     scope_random_switch};
 #ifdef __HTPARSE__
 char *scope_names[] = {"none",
@@ -213,8 +225,6 @@ char *scope_names[] = {"none",
     "method",
     "switch",
     "destructor",
-    "foreach",
-    "if-then",
     "procedure",
     "class",
     "for",
@@ -222,11 +232,16 @@ char *scope_names[] = {"none",
     "contsructor",
     "catch",
     "clean",
+    "rem",
+    "define",
+    "foreach",
+    "if-then",
+    "file",
     "random-switch"};
-int scope_ids[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int scope_ids[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 #else
 extern char *scope_names[];
 extern int scope_ids[];
 #endif
 
-#define NUM_MACROS 187
+#define NUM_MACROS 196
