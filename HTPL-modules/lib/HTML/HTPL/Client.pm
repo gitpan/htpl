@@ -5,6 +5,7 @@ BEGIN {
         $RESPONSE_ERROR $RESPONSE_PREFIX $RESPONSE_ZLIB);
 } 
 
+use HTML::HTPL::Lib;
 use LWP::UserAgent;
 use HTTP::Request::Common;
 use URI::URL;
@@ -56,16 +57,15 @@ sub get {
     my $htplnet = $head->header($VERSION_HEADER);    
     Carp::croak("Server did not shake hands") unless ($htplnet);
     if ($key) {
-#        require Crypt::Simple;
-        my $cipher;
-        require Crypt::Blowfish;
-        $cipher = new Blowfish($key);
-        $var = &HTML::HTPL::encrypt($var, $cipher);
+        die $@ if $@;
+        my $cipher = &HTML::HTPL::Lib::makecipher($key) || die $@;
+        $var = &HTML::HTPL::Lib::encrypt($var, $cipher);
     }
     return $var if ($sub eq "$RESPONSE_PREFIX$RESPONSE_SIMPLE");
     if ($sub eq "$RESPONSE_PREFIX$RESPONSE_FREEZETHAW") {
-        require FreezeThaw;
-        my ($v) = FreezeThaw::thaw($var) ;
+        require Storable;
+        import Storable;
+        my ($v) = thaw($var) ;
         return $v;
     }
     Carp::croak("Unknown response $sub");

@@ -428,7 +428,7 @@ SYNC
 
 <__MACRO MIN="1" NAME="CALL">&amp;%1%(%2, *%);</__MACRO>
 
-<__MACRO MIN="1" NAME="INCLUDE">&amp;include(qw(%1*%));</__MACRO>
+<__MACRO MIN="1" NAME="COPY">&amp;include(qw(%1*%));</__MACRO>
 
 <__MACRO NAME="PTS"><__PRE>use RPC::PlClient;</__PRE>
 <__MACRO MIN="2" MAX="3" SCOPE="1" NAME="SET">

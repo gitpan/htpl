@@ -1188,29 +1188,55 @@ sub html_treeview {
 
 sub encrypt {
     my ($block, $cipher) = @_;
+    my $result;
+
     my $len = length($block);
     my $round = (int($len / 8) + (1 - int((8 - $len % 8) / 8))) * 8;
-    $block = substr($block . ("\0" x 8), 0, $round);
-    my $result;
+    my $left  = $round - $len;
+    $block .= "\0" x $left;
+
+
     foreach ($block =~ /(.{8})/gs) {
         $result .= $cipher->encrypt($_);
     }
     return pack("w", $len) . $result;
 }
 
+
 sub decrypt {
     my ($block, $cipher) = @_;
-    my $len = unpack("w", $block);
-    my $rev = quotemeta(pack("w", $len));
-    return undef unless ($block =~ s/^$rev//);
-    my $round = length($block);
-    return undef if ($round % 8);
     my $result;
+
+    $block =~ s/^([\x80-\xFF]*.)//;
+    my $len = unpack("w", $1);
+
 
     foreach ($block =~ /(.{8})/gs) {
         $result .= $cipher->decrypt($_);
     }
     return substr($result, 0, $len);
+}
+
+sub makecipher {
+    my $key = shift;
+    if ($key =~ /^(\w+)::(\w+)$/) {
+        my ($key, $type) = ($2, $1);
+        eval "require Crypt::$type;";
+        return undef if $@;
+	$key = pack("C*", map {hex($_);} ($key =~ /(..)/g));
+        my $cipher;
+        eval {
+            $cipher = $type->new($key);
+        };
+        unless ($cipher) {
+            $type = "Crypt::$type";
+            eval { $cipher = $type->new($key); };
+        }
+        return undef unless $cipher;
+        return $cipher;
+    }
+    require Crypt::Blowfish;
+    new Blowfish($key);
 }
 
 sub begintransaction {

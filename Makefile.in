@@ -163,7 +163,9 @@ install-samples: $(SCRIPTS)
 	test -d $(HTDOCS) || mkdir $(HTDOCS)
 	test -d $(HTDOCS)/htpl-cache || mkdir $(HTDOCS)/htpl-cache 
 	install -m 755 procs.htpm $(HTDOCS)
-	install -m 755 server_procs $(HTDOCS)
+	if [ ! -f $(HTDOCS)/server_procs ; then \
+		install -m 755 server_procs $(HTDOCS) ; \
+	fi
 	install -m 755 server.htpl $(HTDOCS)
 	install -m 755 list.htpl $(HTDOCS)
 	for f in $(SCRIPTS) ; do \

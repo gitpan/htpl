@@ -1,8 +1,8 @@
 <#
 use HTML::HTPL::Client;
 use strict qw(vars subs);
-use vars qw($func $params $fn $mod $sub $src $users $key $call $found
-        $bin $code @params $res $type);
+use vars qw($func $params $fn $mod $sub $src $users $cipher $key $call $found
+        $bin $code @params $res $type $REMOTE_USER);
 
 &rewind;
 
@@ -23,8 +23,9 @@ while(<C>) {
     }
 }
 &err("Illegal function call: $func") unless ($found);
+
 &err("Permission denied") unless (!$users ||
-               ${__PACKAGE__ . '::REMOTE_USER'} =~ /^$users$/);
+               $REMOTE_USER =~ /^$users$/);
 
 if ($src) {
     my ($srcdate, $moddate);
@@ -58,16 +59,15 @@ eval '$res = &$coderef(@params);';
 
 $type = $RESPONSE_SIMPLE;
 if (ref($res)) {
-    require FreezeThaw;
-    $res = FreezeThaw::freeze($res);
+    require Storable;
+    import Storable;
+    $res = freeze($res);
     $type = $RESPONSE_FREEZETHAW;
 }
 
 if ($key) {
-#    require Crypt::Simple;
-    require Crypt::Blowfish;
-    my $cipher = new Blowfish($key);
-    $res = &HTML::HTPL::encrypt($res, $cipher);
+    my $cipher = &HTML::HTPL::Lib::makecipher($key) || &err("Cipher: $@");
+    $res = &HTML::HTPL::Lib::encrypt($res, $cipher);
 }
 
 require Compress::Zlib;

@@ -874,7 +874,7 @@ automaton */
             helper = strchr(sub, ' ');
             if (helper) *helper = '\0';
             helper = strchr(htmlbuff, ' ');
-            if (helper) *helper++ = '\0';
+            if (helper) *helper++ /*= '\0' */;
             if ((!strcasecmp(sub, "HTINCLUDE")
               || !strcasecmp(sub, "HTUSE")) && helper) {
                 pchar pch;
@@ -1281,7 +1281,17 @@ void generate(inputfile, script, xs, binary)
     FILENAME header;
 
 /* Check existence */
-    fclose(FOPEN(inputfile, "r"));
+    if (i = fopen(inputfile, "r")) fclose(i);
+    else {
+        puts("Status: 404 HTPL page not found");
+	puts("Content-type: text/plain");
+	puts("");
+	printf("The HTPL file %s was not found on this server.\n", GETENV("PATH_INFO"));
+	puts("");
+	printf("Processed by HTPL version %04.2f\n", (float)VERSION);
+        exit(-1);
+    }
+
 
 /* Check dependencies - don't create a perl script if it's newer than the
 HTPL page. Check in dependency database if used */
@@ -1553,6 +1563,7 @@ dump processed perl script to STDOUT */
 /* If script failed, dump debug information */
     if (code) {
 #ifndef __DEBUG__
+	fprintf(myout, "Status: 501 HTPL script returned errors\n");
         fprintf(myout, "Content-type: text/plain\n\n");
         fprintf(myout, "HTPL version %04.2f\n", (float)VERSION);
 #endif

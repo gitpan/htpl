@@ -44,6 +44,7 @@ sub handler {
         $filename .= "/index.htpl";
     }
     return 404 unless (-e $filename);
+    return $Apache::Constants::NOT_FOUND unless (-e $filename);
 
     %ENV = $r->cgi_env;
 
