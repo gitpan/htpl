@@ -12,11 +12,14 @@ HTDOCS = @PRERUN@@HTDOCS@
 HTLOGS = @PRERUN@@HTLOGS@
 CONF = @PRERUN@@HTCONF@
 OBJEMBED = @OBJEMBED@
+DEFEMBED = @DEFEMBED@
 EGO = @EGO@
 XML = @XML@
 DEPDBDEF = @DEPDBDEF@
 INSTALLBIN = @PRERUN@/usr/local/bin
 MODDIR = @MODDIR@
+LIBS = @LIBS@
+MODPERL = @MODPERL@
 
 # Defines
 
@@ -31,34 +34,34 @@ SRVC = htplsrvc
 GEN = htpgen
 SH = /bin/sh
 CONDS = -DTMP_DIR=\"$(TEMP)\" -DPERL_BIN=\"$(PERL_BIN)\" $(DEFEMBED)
-INFO = -DCOMPILATION=`$(PERL) -e "print time;"` @DEPDBDEF@ -DBUILD=`cat build` 
-CCFLAGS = -O3 $(LIBS) $(CONDS) $(INFO)
+COMPILE = -DCOMPILATION=`$(PERL) -e "print time;"`
+BUILD = -DBUILD=`$(PERL) -e "print ((stat('HTPL-modules/lib/HTML/HTPL.pm'))[9]);"`
+VERSION = -DVERSION=`$(PERL) -e 'require "HTPL-modules/lib/HTML/HTPL.pm"; print $$HTML::HTPL::VERSION;'`
+INFO = $(DEPDBDEF) $(BUILD) $(VERSION) $(COMPILE)  
+CCFLAGS = -O3 $(LIBS) $(CONDS) $(INFO) 
 CC = $(CCPROG) $(CCFLAGS)
 CS = htpl.c htpl-l.c htpl-sub.c htpl-parse.c $(OBJEMBED)
 HS = htpl.h htpl-sh.h
 OBV = Makefile
-DEP = $(CS) $(HS) $(OBV) $(OBJEMBED)
+DEP = $(CS) $(HS) $(OBV) $(OBJEMBED) 
 REP = htreporter
 SCRIPTS = $(RUN) $(CMP) $(COMP) $(REP) $(SRVC) $(GEN) $(UPD) $(CON)
 TARGETS = $(BIN) $(DBG) $(PMS) $(SCRIPTS)
 CWD = `pwd`
-DEFEMBED = `test -z "$(OBJEMBED)" || echo -D__PERLEMBED__`
-PL = `test -z "$(OBJEMBED)" || $(PERL) -MExtUtils::Embed -e ccopts -e ldopts`
-LIBS = `test -z "$(DEPDBDEF)" || echo -ldb` `test -z "$(OBJEMBED)" || echo -lperl`
-MODPERL = @MODPERL@
+PL = `@PL@`
 MODULES = HTPL-modules HTPL-SQL Hebrew Calendar $(MODPERL)
 
 # Rules
 
-all : $(TARGETS) $(EGO)
+all: $(TARGETS) $(EGO)
 
-clean : clean-modules
+clean: clean-modules
 	/bin/rm -f $(TARGETS) $(SCRIPTS) || true
 	test -n "$(XML)" && /bin/rm -f htpl-sh.h htpl-parse.c htplparse.pm perl.sh htpl-config.pl || true
 	/bin/rm -f Makefile core || true
 	/bin/rm -f config.status config.cache || true
 
-realclean : clean
+realclean: clean
 	/bin/rm -f core *.perl *.ht.pl perl.sh || true
 
 release: 
@@ -69,52 +72,53 @@ release:
 's/^\$$VERSION\s+=.*;/"\$$VERSION = ". scalar(<STDIN>) . ";"/e;' \
 	HTPL-modules/lib/HTML/HTPL.pm 
 
-dist : clean-modules
-	$(PERL) -e "print time;" > build
+dist: clean-modules
+	# $(PERL) -e "print time;" > build
+	touch HTPL-modules/lib/HTML/HTPL.pm
 	mkdir `cat release.name`
 	cp -r `cat MANIFEST` `cat release.name`
 	tar zcvf `cat release.name`.tar.gz `cat release.name`
 	/bin/rm -rf `cat release.name`
 
-$(BIN) : $(DEP)
+$(BIN): $(DEP)
 	$(CC) -o $(BIN) $(CS) $(PL)
 
-$(DBG) : $(DEP)
+$(DBG): $(DEP)
 	$(CC) -D__DEBUG__ -o $(DBG) $(CS) $(PL) 
 
 # Cancel this dependency if you fail to compile with no XML
-htpl-parse.c : macros.xpl htpl-crp.pl htplparse.pm
+htpl-parse.c: macros.xpl htpl-crp.pl htplparse.pm
 	test -n "$(XML)" && $(PERL) htpl-crp.pl
 
 htplparse.pm: htplparse.yp
 	test -n "$(XML)" && yapp htplparse.yp
 
-htpl-sh.h : htpl-parse.c
+htpl-sh.h: htpl-parse.c
 
-htpl-xsi.c : 
+htpl-xsi.c: 
 	$(PERL) -MExtUtils::Embed -e xsinit -- -o htpl-xsi.c
 
-$(RUN) : $(OBV)
+$(RUN): $(OBV)
 	echo "#!/bin/sh" > $@
 	echo "$(INSTALLDIR)/$(DBG) -rwb$(INSTALLDIR) \$$*" >> $@
 	chmod 755 $@
 
-$(CMP) : $(OBV)
+$(CMP): $(OBV)
 	echo "#!/bin/sh" > $@
 	echo "$(INSTALLDIR)/$(DBG) -twb$(INSTALLDIR) \$$1" >> $@
 	chmod 755 $@
 
-$(CON) : $(OBV)
+$(CON): $(OBV)
 	echo "#!/bin/sh" > $@
 	echo "$(INSTALLDIR)/$(DBG) -rbc$(INSTALLDIR) \$$1" >> $@
 	chmod 755 $@
 
-$(UPD) : $(OBV)
+$(UPD): $(OBV)
 	echo "#!/bin/sh" > $@
 	echo "$(INSTALLDIR)/$(DBG) -tb$(INSTALLDIR) \$$1" >> $@
 	chmod 755 $@
 
-install-it : 
+install-it: 
 	for f in $(DBG) $(BIN) ; do \
 	$(INSBIN) -m 755 $$f $(INSTALLDIR) ; \
 	done
@@ -126,9 +130,9 @@ install-it :
 	fi
 	touch $(HTLOGS)
 
-install-root : install-it install-samples
+install-root: install-it install-samples
 
-install-samples : $(SCRIPTS)
+install-samples: $(SCRIPTS)
 	if [ -z "$(MODPERL)" ]; then \
 	$(PERL) config-srv.pl $(CONF) $(INSTALLDIR)/$(BIN) $(HTDOCS) ; \
 	else \
@@ -150,17 +154,17 @@ install-samples : $(SCRIPTS)
 	ln -s $(INSTALLDIR)/$(DBG) $(INSTALLBIN) ; \
 	fi
 
-build : @MODMAKE@
+build: @MODMAKE@
 
-install : all @MODINS@
+install: all @MODINS@
 
 pureinstall: @MODINS@
 	
-htpl-author.ego :
+htpl-author.ego:
 	touch htpl-author.ego
 	echo "$$USER@$$HOSTNAME installed htpl." | mail htpl@atheist.org.il
 
-build-it :
+build-it:
 	chmod +x perl.sh
 	for pk in $(MODULES) ; do \
 	cd $$pk ; \
@@ -171,7 +175,7 @@ build-it :
 	cd .. ; \
 	done
 
-build-root :
+build-root:
 	for pk in $(MODULES) ; do \
 	cd $$pk ; \
 	$(PERL) Makefile.PL ; \
@@ -195,15 +199,17 @@ Makefile: Makefile.in config.status
 config.status: configure
 	./config.status --recheck || ./configure
 
-CPAN : @CPANMAKE@
+CPAN: @CPANMAKE@
 
-CPAN-root :
+CPAN-root:
 	$(PERL) pre-install.pl $(NOPREREQ)
 
-CPAN-it :
+CPAN-it:
 	$(PERL) pre-install.pl NOPREREQ $(MODDIR)
 
 win:
 	$(CCPROG) -o htpl.exe htpl.c htpl-l.c htpl-parse.c htpl-sub.c htpl-win.c
 	$(CCPROG) -D__DEBUG__ -o htpldbg.exe htpl.c htpl-l.c htpl-parse.c htpl-sub.c htpl-win.c
+
+
 

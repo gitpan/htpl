@@ -1,9 +1,16 @@
 package HTML::HTPL;
 
-use HTML::HTPL::Lib;
-use HTML::HTPL::Sys;
+BEGIN{
+    $VERSION = 2.82;
+}
 
-$VERSION = 2.82;
+sub import {
+    require HTML::HTPL::Lib;
+    require HTML::HTPL::Sys;
+    import HTML::HTPL::Sys;
+    import HTML::HTPL::Lib;
+}
+
 
 1;
 __END__

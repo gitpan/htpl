@@ -32,7 +32,9 @@
 #undef FOPEN
 #endif
 
-#define VERSION 2.6
+#ifndef VERSION
+#define VERSION 2.8
+#endif
 
 #define HEADER_FILE "htpl.head"
 #define HEADER_FILE_OFFLINE "htpl.offhead"

@@ -25,6 +25,7 @@ To INSTALL, see the INSTALL document.
  6.4. HTPL directives
  6.5. Writing your own macros
  6.6. Additional information
+ 6.7. Compiling with dependency database.
  7. Extensions (To be written)
  7.1. Running as mod_perl
  7.2. HTPL database components
@@ -72,6 +73,12 @@ make CPAN
 *IMPORTANT* * IMPORTANT* IMPORTANT* *IMPORTANT*
 If you intend to install htpl as root, run configure as root!
 *IMPORTANT* * IMPORTANT* IMPORTANT* *IMPORTANT*
+
+*SECURITY NOTE* *SECURITY NOTE* *SECURITY NOTE* *SECURITY NOTE*
+Check appendix 6.7 regarding dependency database if you are installing
+HTPL in a shared UNIX machine.
+*SECURITY NOTE* *SECURITY NOTE* *SECURITY NOTE* *SECURITY NOTE*
+
 
 4. How does HTPL work?
 
@@ -1381,4 +1388,125 @@ Another strategy is to create a file called htpl.dbg containing the
 subnets to allow debug information to, each line in the format of:
 a.b.c.d e.f.g.h
 Subnet first and then netmask. Localhost will automatically be authorized.
+
+6.7. Compiling with dependency database.
+
+In order for htpl.cgi to create compiled perl scripts, the web server must
+have write access to the directory where they are written.
+I suggest the following:
+1) If possible, run the whole httpd with your own user-id. On a dedicated
+machine, run httpd as user www, and have the htdocs directory owned by
+this user.
+2) If not, try to run httpd with the SU_EXEC property set to your own user
+id. Ask your system administrator if you need help.
+3) On a multi user machine, you can use cgi_wrap. Edit your created
+.htaccess and replace the referrence to /cgi-bin/htpl.cgi to
+/cgi-bin/cgiwrap/you-user-name/htpl.cgi
+Request your administrator to install cgiwrap.
+4) If those are impossible, you will have to create a directory called
+htpl-cache under your html directory to hold the scripts. Have that
+directory world writable.
+Since this way anybody could edit the compiled scripts to add code,
+compile HTPL with the dependency database, by issuing:
+./configure --enable-depdb
+HTPL will maintaing a database of dependencies, in a file called
+htpl-depend.db in the htpl-cache directory. Perl files that were changed
+since created, will be recompiled.
+It's your responsibility to erase the file htpl-depend.db from time to
+time to save disk space.
+
+7. Extensions
+
+7.1 Running as mod_perl
+
+In order ro run HTPL in mod_perl mode, issue ./configure --enable-modperl
+when compiling.
+HTPL will install a module called Apache::HTPL and configure your Apache
+for it.
+You must have mod_perl already installed for it!
+Under mod_perl you can't assume the output is going to STDOUT -
+Apache::HTPL will use select() to capture the output.
+Package variables will be cleared with each execution, but variables that
+need to be initialized can be stored on other namespaces. Don't use it for
+persistent objects, as Apache uses a one client per process model.
+
+7.2 HTPL database components
+
+These components use the Tie::DBI module, available from CPAN.
+Edit a file called <class>.htpc, with <class> substituted by the class
+name for the method.
+Create the following definitions in the file:
+#DATABASE <dsn> <user> <passwd>
+#TABLE <table>
+#INDEX <index column>
+#AUTOCOMMIT <0..2, default - yes, see Tie::DBI for options>
+#CACHESIZE <cache size in records, default 100>
+#WORKSECTION <other class variables, optional>
+
+Then, one line:
+#BEGIN
+And then methods and procedures, in the HTPL notation.
+This will create a collection of objects, each containing the methods
+described in the class, that can be autoread and stored on the database.
+
+Here is an example:
+#DATABASE dbi:Oracle:workers sysdba system
+#TABLE workers
+#INDEX id
+#AUTOCOMMIT 0
+#WORKSECTION newsalary
+#BEGIN
+
+# Filename: workers.htpc
+# Table contains id as the primary key, salary as current salary
+
+#METHOD suggest n
+$newsalary = $n;
+#END METHOD
+
+#METHOD accept
+$salary = $newsalary;
+&store;
+#END METHOD
+
+# EOF
+
+<HTML>
+<#
+# edit.htpl
+#USE workers
+
+unless ($id) {
+>
+No id specified!
+<#
+}
+
+my $obj = $workers{$id};
+
+>
+Current salary: <% $obj->salary %><BR>
+Nominated salary: <% $obj->newsalary %><BR>
+
+<#
+if ($new) {
+    $obj->suggest($new);
+    $obj->accept;
+    &redirect($SELF_URL);
+}
+
+$new = $obj->salary + 1000;
+>
+<A HREF="$SELF_URL?id=$id&new=$new">Raise salary</A>
+
+The example speak for itself -
+We have an oracle database, a table called workers.
+The page increases the salary with an object interface.
+
+The fields are directly read from the database and then stored in cache.
+When using mod_perl caching will reduce databae time.
+HTPL database components can be used in both HTPL pages and HTPL
+middleware servers, see below.
+When using HTPL middleware server, members which are not database fields
+can be saved between sessions.
 
